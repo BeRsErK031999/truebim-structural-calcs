@@ -1,0 +1,16 @@
+services:
+  truebim-structural-calcs:
+    image: truebim-structural-calcs:latest
+    container_name: truebim-structural-calcs
+    restart: unless-stopped
+    env_file:
+      - path: .env
+        required: false
+    ports:
+      - "127.0.0.1:3000:80"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1/ >/dev/null || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s

@@ -9,7 +9,10 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "typecheck": "tsc -b",
-    "test": "vitest run"
+    "test": "vitest run",
+    "deploy:build": "powershell -ExecutionPolicy Bypass -File scripts/build-image.ps1",
+    "deploy:export": "powershell -ExecutionPolicy Bypass -File scripts/export-image.ps1",
+    "deploy:package": "powershell -ExecutionPolicy Bypass -File scripts/build-image.ps1 && powershell -ExecutionPolicy Bypass -File scripts/export-image.ps1"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.4.0",

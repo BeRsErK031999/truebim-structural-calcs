@@ -6,6 +6,68 @@ Punching shear calculations can be saved locally in the browser. Saved items inc
 
 The app supports loading saved calculations back into the form, deleting history items, exporting a saved calculation as JSON and importing a previously exported JSON file. This is local browser storage only; there is no backend database or cross-device sync.
 
+## Docker deploy
+
+The production image is a multi-stage Docker build: Node builds the Vite app, then nginx serves the static `dist` output. Runtime uses Docker only and exposes the frontend inside the container on port `80`.
+
+Local build:
+
+```powershell
+docker build -t truebim-structural-calcs:latest .
+docker run --rm -p 127.0.0.1:3000:80 truebim-structural-calcs:latest
+```
+
+Docker Compose:
+
+```powershell
+Copy-Item .env.example .env
+docker compose up -d
+```
+
+## Office server deploy
+
+Office server deployment uses an exported Docker image archive and host nginx reverse proxy:
+
+- image archive path: `/opt/apps/images/truebim-structural-calcs.tar`;
+- project path: `/opt/apps/projects/truebim-structural-calcs`;
+- nginx config path: `/opt/apps/nginx/conf.d/nginx.truebim-structural-calcs.conf`;
+- reverse proxy hostname: `truebim-calc.local`;
+- upstream target: `127.0.0.1:3000`.
+
+See `docs/deployment.md` for the full first-time setup and troubleshooting flow.
+
+## Windows deploy scripts
+
+Run from the project root:
+
+```powershell
+.\scripts\build-image.ps1
+.\scripts\export-image.ps1
+.\scripts\upload-image.ps1
+.\scripts\deploy.ps1
+```
+
+Or run the full sequence:
+
+```powershell
+.\scripts\full-deploy.ps1
+```
+
+NPM aliases:
+
+```powershell
+npm run deploy:build
+npm run deploy:export
+npm run deploy:package
+```
+
+## Production notes
+
+- The app is served by an nginx container with SPA fallback, gzip, static asset caching and basic security headers.
+- Docker Compose binds the app to `127.0.0.1:3000:80`; public access should go through host nginx only.
+- The container uses `restart: unless-stopped` and includes an HTTP healthcheck.
+- Do not store SSH passwords or server secrets in this repository.
+
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
 Currently, two official plugins are available:
