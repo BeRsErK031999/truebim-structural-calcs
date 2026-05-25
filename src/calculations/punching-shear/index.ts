@@ -1,6 +1,6 @@
 export { defaultPunchingShearInput } from './defaults'
 export { calculatePunchingShear } from './engine'
-export { concreteMaterials, getConcreteMaterial } from './materials'
+export { draftConcreteClassData, getConcreteClassData } from './materials'
 export { buildPunchingShearReport } from './report'
 export {
   concreteInputSchema,

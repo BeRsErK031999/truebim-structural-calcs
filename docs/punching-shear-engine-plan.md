@@ -18,7 +18,7 @@ The clean-room scaffold for punching shear lives in `src/calculations/punching-s
 
 ## Why Result Is `not_implemented`
 
-The current engine is intentionally not a design calculation. It exists to establish stable contracts between UI, validation, geometry, reporting and future calculation code. Engineering formulas, perimeter formulas, material values and reinforcement contribution are not yet verified against СП63.13330.
+The engine now returns draft statuses for the narrow center rectangular force-only case. It still returns `not_implemented` for openings, edge, corner, round columns, and shear reinforcement. It exists to establish stable contracts between UI, validation, geometry, reporting and future calculation code. Engineering formulas, material values and reinforcement contribution are not yet verified against СП63.13330.
 
 The result therefore returns:
 
@@ -26,6 +26,21 @@ The result therefore returns:
 - `utilization: null`;
 - placeholder perimeter values;
 - warnings that formulas are not implemented and values must not be used for design.
+
+## Draft Center Check
+
+The first draft check supports only:
+
+- `caseType = "center"`;
+- rectangular column;
+- no openings;
+- no slab edges;
+- no shear reinforcement;
+- force-only check by `N`.
+
+The draft formula is `v = N / (u * h0)`, where `N` is converted from kN to N, `u` is the generated draft control perimeter in mm, and `h0` is the effective depth in mm. Since `1 N/mm² = 1 MPa`, the resulting draft stress is reported in MPa.
+
+The warning `Draft calculation. Verify formulas and coefficients against СП63.13330 before design use.` must remain visible in UI and reports until formulas and coefficients are independently verified.
 
 ## Next Steps For СП63 Implementation
 

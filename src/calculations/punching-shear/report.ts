@@ -5,8 +5,8 @@ export function buildPunchingShearReport(
   result: PunchingShearResult,
 ): PunchingShearReportModel {
   return {
-    title: 'Punching Shear Calculation Stub',
-    standard: 'СП63.13330 - implementation pending',
+    title: 'Punching Shear Draft Center Check',
+    standard: 'СП63.13330 - draft verification pending',
     caseType: input.caseType,
     inputSummary: {
       caseType: input.caseType,
@@ -18,9 +18,10 @@ export function buildPunchingShearReport(
     },
     resultSummary: {
       status: result.status,
-      utilization: result.utilization,
-      perimeterMm: result.perimeter.perimeterMm,
-      effectiveDepthMm: result.perimeter.effectiveDepthMm,
+      utilization: result.utilizationRatio,
+      perimeterMm: result.controlPerimeterMm,
+      effectiveDepthMm: result.effectiveDepthMm,
+      passed: result.passed === null ? 'not evaluated' : String(result.passed),
     },
     geometrySummary: {
       perimeterMm: result.perimeter.perimeterMm,
@@ -46,14 +47,32 @@ export function buildPunchingShearReport(
       elementCount: result.svgModel.elements.length,
       scaleMode: result.svgModel.metadata.scaleMode,
     },
+    formulaSummary: [
+      'DRAFT / NOT FOR DESIGN USE',
+      'v = N / (u * h0)',
+      'N = design shear force',
+      'u = control perimeter',
+      'h0 = effective depth',
+    ],
+    calculationValues: {
+      N: result.designShearForceN,
+      u: result.controlPerimeterMm,
+      h0: result.effectiveDepthMm,
+      v: result.shearStressMpa,
+      R: result.draftConcreteResistanceMpa,
+      utilization: result.utilizationRatio,
+      passed: result.passed,
+    },
     warnings: result.warnings,
     calculationSteps: [
+      'DRAFT / NOT FOR DESIGN USE.',
       'Input schema validation completed.',
       'Units normalized into the current internal DTO shape.',
-      'Material placeholder selected.',
+      'Draft material resistance selected.',
       'Control perimeter draft geometry generated.',
       'SVG sketch model generated from geometry DTOs.',
-      'Engineering formulas intentionally skipped.',
+      'Draft center force-only check evaluated where supported.',
+      'Moments, openings, slab edges, and shear reinforcement intentionally skipped.',
     ],
   }
 }

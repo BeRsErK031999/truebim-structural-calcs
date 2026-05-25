@@ -1,11 +1,15 @@
 import {
   pointsToSvg,
+  type PunchingShearCheckStatus,
   type PunchingSketchModel,
   type SvgSketchElement,
   viewBoxToString,
 } from '@/calculations/punching-shear'
 import { useCalculationStore } from '@/entities/calculation/model/store'
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card'
+
+const draftWarning =
+  'Draft calculation. Verify formulas and coefficients against СП63.13330 before design use.'
 
 export function ResultPanel() {
   const result = useCalculationStore((state) => state.punchingShearResult)
@@ -16,29 +20,30 @@ export function ResultPanel() {
       <CardHeader>
         <CardTitle className="flex items-center justify-between">
           <span>Результаты</span>
-          <span className="rounded-md bg-amber-50 px-2.5 py-1 text-sm font-semibold text-amber-700">
-            {result?.status ?? 'Черновик'}
-          </span>
+          <StatusBadge status={result?.status} />
         </CardTitle>
       </CardHeader>
       <CardContent className="grid gap-5">
+        <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm font-medium leading-6 text-amber-900">
+          {draftWarning}
+        </div>
+
         <div className="grid grid-cols-2 gap-3">
-          <Metric label="Нагрузка" value="placeholder" unit="кН" />
-          <Metric label="Несущая" value="not ready" unit="кН" />
-          <Metric label="Коэф." value={result?.utilization?.toString() ?? '--'} unit="η" />
-          <Metric label="Контур" value={formatNumber(result?.perimeter.perimeterMm)} unit="мм" />
+          <Metric label="N" value={formatKn(result?.designShearForceN)} unit="кН" />
+          <Metric label="Контур" value={formatNumber(result?.controlPerimeterMm)} unit="мм" />
+          <Metric label="h0" value={formatNumber(result?.effectiveDepthMm)} unit="мм" />
+          <Metric label="v" value={formatDecimal(result?.shearStressMpa)} unit="МПа" />
+          <Metric label="R draft" value={formatDecimal(result?.draftConcreteResistanceMpa)} unit="МПа" />
+          <Metric label="Utilization" value={formatDecimal(result?.utilizationRatio)} unit="η" />
+          <Metric label="Pass/fail" value={formatPassed(result?.passed)} unit="" />
         </div>
 
         <EngineeringPreview svgModel={result?.svgModel} />
 
         {result ? (
-          <div className="rounded-lg border border-amber-200 bg-amber-50 p-4">
-            <p className="text-sm font-semibold text-amber-900">Архитектурный stub</p>
-            <p className="mt-2 text-sm leading-6 text-amber-800">
-              Инженерные формулы еще не реализованы. Значения нельзя использовать для
-              проектирования.
-            </p>
-            <ul className="mt-3 grid gap-1 text-sm text-amber-800">
+          <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
+            <p className="text-sm font-semibold text-slate-900">Warnings</p>
+            <ul className="mt-3 grid gap-1 text-sm text-slate-700">
               {result.warnings.map((warning) => (
                 <li key={warning}>- {warning}</li>
               ))}
@@ -51,8 +56,8 @@ export function ResultPanel() {
             <p className="text-sm font-semibold text-slate-800">{report.title}</p>
             <p className="mt-1 text-sm text-slate-600">{report.standard}</p>
             <p className="mt-2 text-sm text-slate-600">
-              Segments: {report.geometrySummary.segmentCount}, SVG elements:{' '}
-              {report.svgMetadata.elementCount}
+              Formula: {report.formulaSummary[1]}. Segments:{' '}
+              {report.geometrySummary.segmentCount}.
             </p>
           </div>
         ) : null}
@@ -61,11 +66,35 @@ export function ResultPanel() {
   )
 }
 
+function StatusBadge({ status }: { status?: PunchingShearCheckStatus }) {
+  const labelByStatus: Record<PunchingShearCheckStatus | 'draft', string> = {
+    draft: 'Черновик',
+    draft_ok: 'Draft pass',
+    draft_failed: 'Draft fail',
+    not_implemented: 'not_implemented',
+    invalid_input: 'invalid_input',
+  }
+  const classByStatus: Record<PunchingShearCheckStatus | 'draft', string> = {
+    draft: 'bg-slate-100 text-slate-700',
+    draft_ok: 'bg-emerald-50 text-emerald-700',
+    draft_failed: 'bg-red-50 text-red-700',
+    not_implemented: 'bg-amber-50 text-amber-700',
+    invalid_input: 'bg-red-50 text-red-700',
+  }
+  const statusKey = status ?? 'draft'
+
+  return (
+    <span className={`rounded-md px-2.5 py-1 text-sm font-semibold ${classByStatus[statusKey]}`}>
+      {labelByStatus[statusKey]}
+    </span>
+  )
+}
+
 function EngineeringPreview({ svgModel }: { svgModel?: PunchingSketchModel }) {
   if (!svgModel) {
     return (
       <div className="flex aspect-[4/3] items-center justify-center rounded-lg border border-dashed border-slate-300 bg-slate-50 text-sm text-slate-500">
-        Запустите stub, чтобы построить draft geometry preview
+        Запустите draft check, чтобы построить geometry preview
       </div>
     )
   }
@@ -95,7 +124,7 @@ function EngineeringPreview({ svgModel }: { svgModel?: PunchingSketchModel }) {
       </svg>
       <div className="mt-3 flex items-center justify-between text-xs text-slate-500">
         <span>Geometry preview: mm, fit-to-view</span>
-        <span>Formulas disabled</span>
+        <span>Draft force-only check</span>
       </div>
     </div>
   )
@@ -179,12 +208,28 @@ function Metric({ label, value, unit }: { label: string; value: string; unit: st
     <div className="rounded-lg border border-slate-200 bg-white p-3">
       <p className="text-xs font-medium uppercase tracking-[0.12em] text-slate-500">{label}</p>
       <p className="mt-2 text-xl font-semibold text-slate-950">
-        {value} <span className="text-sm font-medium text-slate-500">{unit}</span>
+        {value} {unit ? <span className="text-sm font-medium text-slate-500">{unit}</span> : null}
       </p>
     </div>
   )
 }
 
-function formatNumber(value?: number) {
-  return value === undefined ? '--' : value.toFixed(0)
+function formatNumber(value?: number | null) {
+  return value === undefined || value === null ? '--' : value.toFixed(0)
+}
+
+function formatDecimal(value?: number | null) {
+  return value === undefined || value === null ? '--' : value.toFixed(3)
+}
+
+function formatKn(value?: number | null) {
+  return value === undefined || value === null ? '--' : (value / 1000).toFixed(2)
+}
+
+function formatPassed(value?: boolean | null) {
+  if (value === undefined || value === null) {
+    return '--'
+  }
+
+  return value ? 'Pass' : 'Fail'
 }

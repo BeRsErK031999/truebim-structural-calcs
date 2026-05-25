@@ -1,6 +1,15 @@
 export type PunchingShearCaseType = 'center' | 'edge' | 'corner' | 'opening' | 'round'
 
-export type PunchingShearCheckStatus = 'not_implemented' | 'pass' | 'fail' | 'warning'
+import type { ContourLoop } from './domain/contour'
+import type { BoundingBox, Point2D } from './domain/point'
+import type { Segment2D } from './domain/segment'
+import type { PunchingSketchModel } from './sketch/svg'
+
+export type PunchingShearCheckStatus =
+  | 'draft_ok'
+  | 'draft_failed'
+  | 'not_implemented'
+  | 'invalid_input'
 
 export type ForceInput = {
   axialForceKn: number
@@ -50,11 +59,6 @@ export type ShearReinforcementInput = {
 
 export type ConcreteClassName = 'B15' | 'B20' | 'B25' | 'B30' | 'B35' | 'B40'
 
-import type { ContourLoop } from './domain/contour'
-import type { BoundingBox, Point2D } from './domain/point'
-import type { Segment2D } from './domain/segment'
-import type { PunchingSketchModel } from './sketch/svg'
-
 export type ControlPerimeterSegment = Segment2D & {
   kind: 'line' | 'arc'
   lengthMm: number
@@ -88,9 +92,16 @@ export type PunchingShearResult = {
   status: PunchingShearCheckStatus
   caseType: PunchingShearCaseType
   utilization: number | null
+  designShearForceN: number | null
+  controlPerimeterMm: number | null
+  effectiveDepthMm: number | null
+  shearStressMpa: number | null
+  draftConcreteResistanceMpa: number | null
+  utilizationRatio: number | null
+  passed: boolean | null
   material: {
     className: ConcreteClassName
-    rbtMpa: number
+    draftConcreteResistanceMpa: number
   }
   perimeter: ControlPerimeterResult
   svgModel: PunchingSketchModel
@@ -107,6 +118,8 @@ export type PunchingShearReportModel = {
   geometrySummary: Record<string, string | number>
   segments: Array<Record<string, string | number>>
   svgMetadata: Record<string, string | number>
+  formulaSummary: string[]
+  calculationValues: Record<string, string | number | boolean | null>
   warnings: string[]
   calculationSteps: string[]
 }
