@@ -4,6 +4,13 @@ import type { ReactNode } from 'react'
 import { useForm } from 'react-hook-form'
 
 import {
+  buildPunchingShearReport,
+  calculatePunchingShear,
+  defaultPunchingShearInput,
+  type ConcreteClassName,
+  type PunchingShearInput,
+} from '@/calculations/punching-shear'
+import {
   calculationInputSchema,
   type CalculationFormInput,
   type CalculationInput,
@@ -23,6 +30,7 @@ import {
 
 export function CalculationForm() {
   const setDraft = useCalculationStore((state) => state.setDraft)
+  const setPunchingShearResult = useCalculationStore((state) => state.setPunchingShearResult)
   const form = useForm<CalculationFormInput, unknown, CalculationInput>({
     resolver: zodResolver(calculationInputSchema),
     defaultValues: defaultCalculationDraft,
@@ -31,6 +39,12 @@ export function CalculationForm() {
 
   const handleSubmit = form.handleSubmit((values) => {
     setDraft(values)
+
+    const input = mapDraftToPunchingShearInput(values)
+    const result = calculatePunchingShear(input)
+    const report = buildPunchingShearReport(input, result)
+
+    setPunchingShearResult(result, report)
   })
 
   return (
@@ -84,7 +98,7 @@ export function CalculationForm() {
           <div className="flex flex-wrap gap-3">
             <Button size="lg" type="submit" className="h-11 rounded-lg">
               <Calculator className="size-4" />
-              Подготовить расчет
+              Запустить stub
             </Button>
             <Button size="lg" type="button" variant="outline" className="h-11 rounded-lg">
               <Save className="size-4" />
@@ -95,6 +109,35 @@ export function CalculationForm() {
       </CardContent>
     </Card>
   )
+}
+
+function mapDraftToPunchingShearInput(values: CalculationInput): PunchingShearInput {
+  const effectiveDepthMm = Math.max(values.thickness - 30, 1)
+
+  return {
+    ...defaultPunchingShearInput,
+    forces: {
+      ...defaultPunchingShearInput.forces,
+      axialForceKn: values.load,
+    },
+    slab: {
+      thicknessMm: values.thickness,
+      effectiveDepthMm,
+    },
+    concrete: {
+      className: normalizeConcreteClass(values.concreteClass),
+    },
+    rectColumn: {
+      widthXMm: 400,
+      widthYMm: 400,
+    },
+  }
+}
+
+function normalizeConcreteClass(value: string): ConcreteClassName {
+  const knownClasses: ConcreteClassName[] = ['B15', 'B20', 'B25', 'B30', 'B35', 'B40']
+
+  return knownClasses.includes(value as ConcreteClassName) ? (value as ConcreteClassName) : 'B25'
 }
 
 function Field({
