@@ -1,6 +1,7 @@
 import { calculateControlPerimeter } from './geometry/perimeter'
 import { getConcreteMaterial } from './materials'
 import { punchingShearInputSchema } from './schemas'
+import { buildPunchingSketchModel } from './sketch/punchingSketch'
 import { normalizePunchingShearInput } from './units'
 import type { PunchingShearInput, PunchingShearResult } from './types'
 
@@ -14,6 +15,7 @@ export function calculatePunchingShear(input: PunchingShearInput): PunchingShear
   const normalizedInput = normalizePunchingShearInput(parsedInput)
   const material = getConcreteMaterial(normalizedInput.concrete.className)
   const perimeter = calculateControlPerimeter(normalizedInput)
+  const svgModel = buildPunchingSketchModel(normalizedInput, perimeter)
 
   return {
     status: 'not_implemented',
@@ -24,9 +26,9 @@ export function calculatePunchingShear(input: PunchingShearInput): PunchingShear
       rbtMpa: material.rbtMpa,
     },
     perimeter,
+    svgModel,
     warnings: [...engineeringStubWarnings, ...perimeter.warnings],
     placeholders: [
-      'perimeterMm',
       'utilization',
       'concrete capacity',
       'moment contribution',
