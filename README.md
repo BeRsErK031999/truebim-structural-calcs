@@ -36,6 +36,8 @@ Office server deployment uses an exported Docker image archive and host nginx re
 
 See `docs/deployment.md` for the full first-time setup and troubleshooting flow.
 
+First office deployment evidence is recorded in `docs/deployment-evidence.md`.
+
 ## Windows deploy scripts
 
 Run from the project root:
