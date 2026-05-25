@@ -18,7 +18,7 @@ export function ResultPanel() {
   return (
     <Card className="sticky top-6 rounded-lg border border-slate-200 bg-white shadow-sm">
       <CardHeader>
-        <CardTitle className="flex items-center justify-between">
+        <CardTitle className="flex items-center justify-between gap-3">
           <span>Результаты</span>
           <StatusBadge status={result?.status} />
         </CardTitle>
@@ -44,9 +44,11 @@ export function ResultPanel() {
           <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
             <p className="text-sm font-semibold text-slate-900">Warnings</p>
             <ul className="mt-3 grid gap-1 text-sm text-slate-700">
-              {result.warnings.map((warning) => (
-                <li key={warning}>- {warning}</li>
-              ))}
+              {result.warnings.length > 0 ? (
+                result.warnings.map((warning) => <li key={warning}>- {warning}</li>)
+              ) : (
+                <li>- Нет предупреждений</li>
+              )}
             </ul>
           </div>
         ) : null}
@@ -56,8 +58,8 @@ export function ResultPanel() {
             <p className="text-sm font-semibold text-slate-800">{report.title}</p>
             <p className="mt-1 text-sm text-slate-600">{report.standard}</p>
             <p className="mt-2 text-sm text-slate-600">
-              Formula: {report.formulaSummary[1]}. Segments:{' '}
-              {report.geometrySummary.segmentCount}.
+              Formula: {report.formulaSummary[1] ?? 'n/a'}. Segments:{' '}
+              {report.geometrySummary.segmentCount ?? 'n/a'}.
             </p>
           </div>
         ) : null}
@@ -68,7 +70,7 @@ export function ResultPanel() {
 
 function StatusBadge({ status }: { status?: PunchingShearCheckStatus }) {
   const labelByStatus: Record<PunchingShearCheckStatus | 'draft', string> = {
-    draft: 'Черновик',
+    draft: 'Нет расчета',
     draft_ok: 'Draft pass',
     draft_failed: 'Draft fail',
     not_implemented: 'not_implemented',
@@ -93,7 +95,7 @@ function StatusBadge({ status }: { status?: PunchingShearCheckStatus }) {
 function EngineeringPreview({ svgModel }: { svgModel?: PunchingSketchModel }) {
   if (!svgModel) {
     return (
-      <div className="flex aspect-[4/3] items-center justify-center rounded-lg border border-dashed border-slate-300 bg-slate-50 text-sm text-slate-500">
+      <div className="flex aspect-[4/3] items-center justify-center rounded-lg border border-dashed border-slate-300 bg-slate-50 px-4 text-center text-sm text-slate-500">
         Запустите draft check, чтобы построить geometry preview
       </div>
     )
@@ -215,15 +217,17 @@ function Metric({ label, value, unit }: { label: string; value: string; unit: st
 }
 
 function formatNumber(value?: number | null) {
-  return value === undefined || value === null ? '--' : value.toFixed(0)
+  return value === undefined || value === null || !Number.isFinite(value) ? '--' : value.toFixed(0)
 }
 
 function formatDecimal(value?: number | null) {
-  return value === undefined || value === null ? '--' : value.toFixed(3)
+  return value === undefined || value === null || !Number.isFinite(value) ? '--' : value.toFixed(3)
 }
 
 function formatKn(value?: number | null) {
-  return value === undefined || value === null ? '--' : (value / 1000).toFixed(2)
+  return value === undefined || value === null || !Number.isFinite(value)
+    ? '--'
+    : (value / 1000).toFixed(2)
 }
 
 function formatPassed(value?: boolean | null) {

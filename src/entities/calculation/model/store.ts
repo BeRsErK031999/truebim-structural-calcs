@@ -1,30 +1,24 @@
 import { create } from 'zustand'
 
+import { defaultPunchingShearInput } from '@/calculations/punching-shear'
 import type {
+  PunchingShearInput,
   PunchingShearReportModel,
   PunchingShearResult,
 } from '@/calculations/punching-shear'
 
-import type { CalculationInput } from './schema'
-
 type CalculationState = {
-  draft: CalculationInput
+  draft: PunchingShearInput
   punchingShearResult: PunchingShearResult | null
   punchingShearReport: PunchingShearReportModel | null
-  setDraft: (draft: CalculationInput) => void
+  setDraft: (draft: PunchingShearInput) => void
   setPunchingShearResult: (
     result: PunchingShearResult,
     report: PunchingShearReportModel,
   ) => void
 }
 
-export const defaultCalculationDraft: CalculationInput = {
-  elementName: 'Плита Пм-1',
-  concreteClass: 'B25',
-  load: 420,
-  thickness: 220,
-  reinforcementRatio: 0.8,
-}
+export const defaultCalculationDraft: PunchingShearInput = defaultPunchingShearInput
 
 export const useCalculationStore = create<CalculationState>((set) => ({
   draft: defaultCalculationDraft,

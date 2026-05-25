@@ -20,6 +20,7 @@ export type ForceInput = {
 export type SlabGeometryInput = {
   thicknessMm: number
   effectiveDepthMm: number
+  concreteCoverMm: number
 }
 
 export type RectColumnInput = {

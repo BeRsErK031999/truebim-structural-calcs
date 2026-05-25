@@ -5,10 +5,35 @@ import { calculatePunchingShear } from '../engine'
 import { buildPunchingShearReport } from '../report'
 import { punchingShearInputSchema } from '../schemas'
 import type { PunchingShearInput } from '../types'
+import { useCalculationStore } from '@/entities/calculation/model/store'
 
 describe('punching shear draft center check', () => {
   it('validates the default input', () => {
     expect(() => punchingShearInputSchema.parse(defaultPunchingShearInput)).not.toThrow()
+  })
+
+  it('rejects negative geometry in the schema', () => {
+    const input: PunchingShearInput = {
+      ...defaultPunchingShearInput,
+      slab: {
+        ...defaultPunchingShearInput.slab,
+        effectiveDepthMm: -190,
+      },
+    }
+
+    expect(punchingShearInputSchema.safeParse(input).success).toBe(false)
+  })
+
+  it('rejects NaN before it can reach the engine from the form', () => {
+    const input = {
+      ...defaultPunchingShearInput,
+      rectColumn: {
+        ...defaultPunchingShearInput.rectColumn,
+        widthXMm: Number.NaN,
+      },
+    }
+
+    expect(punchingShearInputSchema.safeParse(input).success).toBe(false)
   })
 
   it('returns a draft status for the default center input', () => {
@@ -26,6 +51,62 @@ describe('punching shear draft center check', () => {
 
     expect(result.shearStressMpa).toBeCloseTo(expectedStress)
     expect(result.utilizationRatio).toBeCloseTo(expectedUtilization)
+  })
+
+  it('handles form-like numeric values for the center rectangular case', () => {
+    const formLikeInput: PunchingShearInput = {
+      ...defaultPunchingShearInput,
+      forces: {
+        axialForceKn: 600,
+        momentXKnM: 12,
+        momentYKnM: 8,
+      },
+      slab: {
+        thicknessMm: 240,
+        effectiveDepthMm: 205,
+        concreteCoverMm: 35,
+      },
+      rectColumn: {
+        widthXMm: 500,
+        widthYMm: 350,
+      },
+      concrete: {
+        className: 'B30',
+      },
+      shearReinforcement: {
+        enabled: false,
+      },
+    }
+    const result = calculatePunchingShear(formLikeInput)
+
+    expect(['draft_ok', 'draft_failed']).toContain(result.status)
+    expect(result.controlPerimeterMm).toBeGreaterThan(0)
+  })
+
+  it('does not produce NaN result values for valid default input', () => {
+    const result = calculatePunchingShear(defaultPunchingShearInput)
+    const numericValues = [
+      result.utilization,
+      result.designShearForceN,
+      result.controlPerimeterMm,
+      result.effectiveDepthMm,
+      result.shearStressMpa,
+      result.draftConcreteResistanceMpa,
+      result.utilizationRatio,
+    ].filter((value): value is number => value !== null)
+
+    expect(numericValues.every(Number.isFinite)).toBe(true)
+  })
+
+  it('updates the calculation store result after calculation', () => {
+    const result = calculatePunchingShear(defaultPunchingShearInput)
+    const report = buildPunchingShearReport(defaultPunchingShearInput, result)
+
+    useCalculationStore.getState().setDraft(defaultPunchingShearInput)
+    useCalculationStore.getState().setPunchingShearResult(result, report)
+
+    expect(useCalculationStore.getState().punchingShearResult).toBe(result)
+    expect(useCalculationStore.getState().punchingShearReport).toBe(report)
   })
 
   it('returns a boolean passed value for supported draft checks', () => {

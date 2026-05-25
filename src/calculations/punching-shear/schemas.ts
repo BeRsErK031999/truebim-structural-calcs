@@ -2,8 +2,14 @@ import { z } from 'zod'
 
 import type { PunchingShearInput } from './types'
 
-const positiveNumber = z.number().positive()
-const nonNegativeNumber = z.number().nonnegative()
+const positiveNumber = z
+  .number({ error: 'Введите число' })
+  .finite('Введите корректное число')
+  .positive('Значение должно быть больше 0')
+const nonNegativeNumber = z
+  .number({ error: 'Введите число' })
+  .finite('Введите корректное число')
+  .nonnegative('Значение не может быть отрицательным')
 
 export const punchingShearCaseTypeSchema = z.enum([
   'center',
@@ -22,6 +28,7 @@ export const forceInputSchema = z.object({
 export const slabGeometryInputSchema = z.object({
   thicknessMm: positiveNumber,
   effectiveDepthMm: positiveNumber,
+  concreteCoverMm: positiveNumber,
 })
 
 export const rectColumnInputSchema = z.object({

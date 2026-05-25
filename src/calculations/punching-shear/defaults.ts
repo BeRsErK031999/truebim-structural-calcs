@@ -10,6 +10,7 @@ export const defaultPunchingShearInput: PunchingShearInput = {
   slab: {
     thicknessMm: 220,
     effectiveDepthMm: 190,
+    concreteCoverMm: 30,
   },
   concrete: {
     className: 'B25',

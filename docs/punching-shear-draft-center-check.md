@@ -22,11 +22,11 @@ Where:
 - `N` is design shear force, converted from kN to N;
 - `u` is the draft geometric control perimeter in mm;
 - `h0` is effective depth in mm;
-- `v` is draft shear stress in MPa because `1 N/mm² = 1 MPa`.
+- `v` is draft shear stress in MPa because `1 N/mm^2 = 1 MPa`.
 
 ## Limitations
 
-This is not a final СП63 implementation. It is a draft architecture and arithmetic flow for the narrow center rectangular case.
+This is not a final SP63 implementation. It is a draft architecture and arithmetic flow for the narrow center rectangular case.
 
 The engine does not account for:
 
@@ -36,8 +36,27 @@ The engine does not account for:
 - slab edges;
 - corner columns;
 - round columns;
-- verified СП63 coefficients;
+- verified SP63 coefficients;
 - verified material resistance values.
+
+## Input Form
+
+The first production-like input form is connected directly to `PunchingShearInput` through React Hook Form and the existing Zod schemas.
+
+Available fields:
+
+- calculation case: center rectangular column;
+- loads: `N`, `Mx`, `My`;
+- slab geometry: thickness, effective depth `h0`, concrete cover;
+- column geometry: rectangular column width in X and height in Y;
+- materials: concrete class `B15` to `B40`;
+- shear reinforcement: enabled/disabled.
+
+The edge, corner, opening and round-column cases are shown as coming soon and remain disabled in the form. Openings do not have UI yet.
+
+Calculation is started manually with the draft calculate button. Field edits update form state and validation, but the engine is called only on submit or explicit reset to defaults.
+
+Warnings remain visible because the current check is still a draft scope: moments, openings, slab edges and shear reinforcement are stored in input where applicable, but their calculation effects are not implemented in the engine yet.
 
 ## Not For Design Use
 
@@ -47,9 +66,9 @@ The UI and report must show:
 Draft calculation. Verify formulas and coefficients against СП63.13330 before design use.
 ```
 
-Current values are not suitable for structural design because formulas, coefficients, material values, rounding rules and benchmark examples are not yet independently verified against trusted СП63 sources.
+Current values are not suitable for structural design because formulas, coefficients, material values, rounding rules and benchmark examples are not yet independently verified against trusted SP63 sources.
 
-## СП63 Verification Items
+## SP63 Verification Items
 
 Before production use, verify:
 
