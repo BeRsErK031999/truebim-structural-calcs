@@ -1,4 +1,7 @@
 import type { PunchingShearCheckStatus } from '@/calculations/punching-shear'
+import { punchingShearVerificationCases } from '@/calculations/punching-shear/verification/verificationDataset'
+import { runVerificationCases } from '@/calculations/punching-shear/verification/verificationRunner'
+import type { VerificationSummary } from '@/calculations/punching-shear/verification/verificationSummary'
 import type { AppMetadata } from '@/shared/config/appMetadata'
 
 export type DiagnosticsModel = {
@@ -10,6 +13,7 @@ export type DiagnosticsModel = {
   localStorageAvailable: boolean
   savedCalculationsCount: number
   currentCalculationStatus: PunchingShearCheckStatus | 'none'
+  verification: VerificationSummary
   warning: string
 }
 
@@ -40,6 +44,8 @@ export function buildDiagnosticsModel({
   savedCalculationsCount: number
   currentCalculationStatus?: PunchingShearCheckStatus
 }): DiagnosticsModel {
+  const verification = runVerificationCases(punchingShearVerificationCases).summary
+
   return {
     appLoaded: 'yes',
     version: metadata.version,
@@ -49,6 +55,7 @@ export function buildDiagnosticsModel({
     localStorageAvailable,
     savedCalculationsCount,
     currentCalculationStatus: currentCalculationStatus ?? 'none',
+    verification,
     warning: 'Client-side diagnostics only',
   }
 }

@@ -23,6 +23,13 @@ describe('diagnostics helpers', () => {
       savedCalculationsCount: 3,
       currentCalculationStatus: 'draft_ok',
       warning: 'Client-side diagnostics only',
+      verification: {
+        totalCases: 3,
+        draftCases: 3,
+        verifiedCases: 0,
+        failedCases: 0,
+        warning: 'No СП63 verified cases yet',
+      },
     })
   })
 

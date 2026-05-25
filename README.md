@@ -44,6 +44,8 @@ Release hardening checks are documented in `docs/release-checklist.md`.
 
 Client-side runtime diagnostics are available at `/diagnostics`.
 
+СП63 punching shear verification pack process is documented in `docs/sp63-verification-pack.md`.
+
 ## Windows deploy scripts
 
 Run from the project root:

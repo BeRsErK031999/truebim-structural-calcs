@@ -47,6 +47,37 @@ export function DiagnosticsPage() {
           </dl>
         </CardContent>
       </Card>
+
+      <Card className="rounded-lg border border-slate-200 bg-white shadow-sm">
+        <CardHeader>
+          <CardTitle>Verification</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <dl className="grid gap-3 md:grid-cols-2">
+            <DiagnosticItem
+              label="Total cases"
+              value={diagnostics.verification.totalCases.toString()}
+            />
+            <DiagnosticItem
+              label="Draft cases"
+              value={diagnostics.verification.draftCases.toString()}
+            />
+            <DiagnosticItem
+              label="Verified cases"
+              value={diagnostics.verification.verifiedCases.toString()}
+            />
+            <DiagnosticItem
+              label="Failed cases"
+              value={diagnostics.verification.failedCases.toString()}
+            />
+          </dl>
+          {diagnostics.verification.warning ? (
+            <p className="mt-4 text-sm font-medium text-amber-700">
+              {diagnostics.verification.warning}
+            </p>
+          ) : null}
+        </CardContent>
+      </Card>
     </div>
   )
 }
