@@ -1,6 +1,7 @@
-import { Building2, Columns3, DraftingCompass, Layers3 } from 'lucide-react'
+import { Activity, Building2, Columns3, DraftingCompass, Layers3 } from 'lucide-react'
 import { NavLink } from 'react-router-dom'
 
+import { getAppMetadata } from '@/shared/config/appMetadata'
 import { Badge } from '@/shared/ui/badge'
 import { Separator } from '@/shared/ui/separator'
 import type { CalculationSection } from '@/types/navigation'
@@ -10,9 +11,12 @@ const sections: CalculationSection[] = [
   { title: 'Поперечная сила', path: '/shear', icon: Layers3, status: 'planned' },
   { title: 'Балки', path: '/beams', icon: Building2, status: 'planned' },
   { title: 'Колонны', path: '/columns', icon: Columns3, status: 'planned' },
+  { title: 'Diagnostics', path: '/diagnostics', icon: Activity, status: 'active' },
 ]
 
 export function Sidebar() {
+  const metadata = getAppMetadata()
+
   return (
     <aside className="border-slate-200 bg-white/90 px-4 py-4 shadow-sm lg:sticky lg:top-0 lg:h-screen lg:border-r lg:px-5 lg:py-6">
       <div className="flex items-center gap-3">
@@ -55,6 +59,16 @@ export function Sidebar() {
           </NavLink>
         ))}
       </nav>
+
+      <Separator className="my-5" />
+
+      <div className="grid gap-1 rounded-lg border border-slate-200 bg-slate-50 p-3 text-xs text-slate-600">
+        <p className="font-semibold text-slate-900">Build</p>
+        <p>Version: {metadata.version}</p>
+        <p>Commit: {metadata.commit}</p>
+        <p>Time: {metadata.buildTime}</p>
+        <p>Env: {metadata.environment}</p>
+      </div>
     </aside>
   )
 }

@@ -19,6 +19,8 @@ if (-not $DeployUser) {
 }
 
 if ($env:TRUEBIM_DEPLOY_PASSWORD) {
+  Write-Warning 'Password deploy mode is temporary. Use SSH key deploy for regular workflow.'
+
   $env:TRUEBIM_DEPLOY_HOST = $DeployHost
   $env:TRUEBIM_DEPLOY_USER = $DeployUser
   $env:TRUEBIM_DEPLOY_COMMANDS = $DeployCommands

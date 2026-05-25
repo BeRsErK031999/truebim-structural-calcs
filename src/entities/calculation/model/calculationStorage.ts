@@ -63,6 +63,10 @@ export function listSavedCalculations() {
     .sort((left, right) => right.updatedAt.localeCompare(left.updatedAt))
 }
 
+export function getSavedCalculationCount() {
+  return readSavedCalculations().length
+}
+
 export function getSavedCalculation(id: string) {
   return readSavedCalculations().find((calculation) => calculation.id === id) ?? null
 }

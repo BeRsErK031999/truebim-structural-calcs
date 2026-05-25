@@ -157,6 +157,33 @@ curl -I http://127.0.0.1:3000
 curl -I http://truebim-calc.local
 ```
 
+Container health:
+
+```bash
+docker inspect --format '{{json .State.Health}}' truebim-structural-calcs
+```
+
+Host nginx health:
+
+```bash
+sudo nginx -t
+sudo systemctl status nginx --no-pager -l
+```
+
+Frontend through the container binding:
+
+```bash
+curl -I http://127.0.0.1:3000
+curl -I http://127.0.0.1:3000/diagnostics
+```
+
+Frontend through host nginx:
+
+```bash
+curl -I http://192.168.22.37
+curl -I -H 'Host: truebim-calc.local' http://127.0.0.1/diagnostics
+```
+
 Restart only this project:
 
 ```bash

@@ -38,6 +38,12 @@ See `docs/deployment.md` for the full first-time setup and troubleshooting flow.
 
 First office deployment evidence is recorded in `docs/deployment-evidence.md`.
 
+SSH key deploy setup is documented in `docs/ssh-key-deploy.md`.
+
+Release hardening checks are documented in `docs/release-checklist.md`.
+
+Client-side runtime diagnostics are available at `/diagnostics`.
+
 ## Windows deploy scripts
 
 Run from the project root:

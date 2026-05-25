@@ -8,6 +8,7 @@ import {
   deleteSavedCalculation,
   exportCalculationToJson,
   getSavedCalculation,
+  getSavedCalculationCount,
   importCalculationFromJson,
   listSavedCalculations,
   saveCalculation,
@@ -35,11 +36,13 @@ describe('calculation local storage', () => {
     saveCalculation(savedCalculation)
 
     expect(listSavedCalculations()).toHaveLength(1)
+    expect(getSavedCalculationCount()).toBe(1)
     expect(getSavedCalculation('calc-1')?.title).toBe('Test calculation')
 
     deleteSavedCalculation('calc-1')
 
     expect(listSavedCalculations()).toHaveLength(0)
+    expect(getSavedCalculationCount()).toBe(0)
     expect(getSavedCalculation('calc-1')).toBeNull()
   })
 
