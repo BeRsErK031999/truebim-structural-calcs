@@ -50,24 +50,24 @@ export function DiagnosticsPage() {
 
       <Card className="rounded-lg border border-slate-200 bg-white shadow-sm">
         <CardHeader>
-          <CardTitle>Verification</CardTitle>
+          <CardTitle>Верификация</CardTitle>
         </CardHeader>
         <CardContent>
           <dl className="grid gap-3 md:grid-cols-2">
             <DiagnosticItem
-              label="Total cases"
+              label="Всего случаев"
               value={diagnostics.verification.totalCases.toString()}
             />
             <DiagnosticItem
-              label="Draft cases"
+              label="Черновые случаи"
               value={diagnostics.verification.draftCases.toString()}
             />
             <DiagnosticItem
-              label="Verified cases"
+              label="Проверенные случаи"
               value={diagnostics.verification.verifiedCases.toString()}
             />
             <DiagnosticItem
-              label="Failed cases"
+              label="Проваленные случаи"
               value={diagnostics.verification.failedCases.toString()}
             />
           </dl>

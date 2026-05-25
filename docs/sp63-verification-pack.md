@@ -58,3 +58,31 @@ Case можно переводить в `status: "verified"` только пос
 ## Почему warning нельзя снять без verified cases
 
 UI warning защищает пользователя от восприятия draft-расчета как production-реализации СП63. Пока в verification pack нет verified cases, приложение не имеет инженерно подтвержденных golden values. Поэтому warning должен оставаться видимым до появления проверенных cases и прохождения тестов по ним.
+
+## How to add first verified case
+
+Первый verified case нужно готовить через отдельный JSON-файл, а не через ручное редактирование dataset вслепую. Заготовки лежат в:
+
+- `src/calculations/punching-shear/verification/templates/verifiedCenterCase.template.ts`;
+- `src/calculations/punching-shear/verification/templates/verifiedCaseInstructions.md`;
+- `examples/verification/center-verified-case.example.json`.
+
+Нужно снять исходные данные расчета: тип случая, усилия, толщину плиты, эффективную высоту, защитный слой, класс бетона, размеры колонны, наличие отверстий и параметры поперечного армирования. Для первого случая рекомендуется оставить простой центральный случай прямоугольной колонны без отверстий и без поперечного армирования.
+
+Затем эти же исходные данные нужно прогнать через доверенный источник: ручной расчет инженера, webcad, проверенный Excel или нормативный пример. Из источника нужно получить expected values:
+
+- `controlPerimeterMm`;
+- `effectiveDepthMm`;
+- `shearStressMpa`;
+- `utilizationRatio`;
+- `passed`.
+
+После этого заполните JSON: замените `null` в `expected` на числа, укажите `status: "verified"` и подробно заполните `source`. В `source` обязательно должен быть trusted marker: `manual`, `webcad`, `excel` или `нормативный пример`. Без такого источника case нельзя считать verified, потому что приложение не должно подменять инженерную сверку внутренней draft-арифметикой.
+
+Проверка JSON выполняется командой:
+
+```powershell
+npm run verification:validate -- examples/verification/center-verified-case.example.json
+```
+
+Скрипт только валидирует файл и выводит понятный список проблем. Он не добавляет case в `verificationDataset.ts` автоматически. Текущий example намеренно не проходит проверку как verified, потому что содержит `null`, `TODO` и `status: "draft"`.

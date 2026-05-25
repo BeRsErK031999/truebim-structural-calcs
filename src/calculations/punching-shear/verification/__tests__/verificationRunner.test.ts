@@ -16,7 +16,7 @@ describe('punching shear verification runner', () => {
       draftCases: 3,
       verifiedCases: 0,
       failedCases: 0,
-      warning: 'No СП63 verified cases yet',
+      warning: 'Пока нет verified cases по СП63',
     })
   })
 

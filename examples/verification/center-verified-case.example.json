@@ -1,0 +1,44 @@
+{
+  "id": "verified-center-rect-example",
+  "title": "Пример будущего verified case для центральной прямоугольной колонны",
+  "source": "TODO: replace with manual/webcad/excel verified source",
+  "standard": "СП63.13330",
+  "caseType": "center",
+  "input": {
+    "caseType": "center",
+    "forces": {
+      "axialForceKn": 420,
+      "momentXKnM": 0,
+      "momentYKnM": 0
+    },
+    "slab": {
+      "thicknessMm": 220,
+      "effectiveDepthMm": 190,
+      "concreteCoverMm": 30
+    },
+    "concrete": {
+      "className": "B25"
+    },
+    "rectColumn": {
+      "widthXMm": 400,
+      "widthYMm": 400
+    },
+    "openings": [],
+    "shearReinforcement": {
+      "enabled": false
+    }
+  },
+  "expected": {
+    "controlPerimeterMm": null,
+    "effectiveDepthMm": null,
+    "shearStressMpa": null,
+    "utilizationRatio": null,
+    "passed": null
+  },
+  "tolerance": {
+    "relativePercent": 0.1,
+    "absolute": 0.000001
+  },
+  "notes": "TODO: replace with engineering assumptions and verification notes",
+  "status": "draft"
+}

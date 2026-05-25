@@ -35,6 +35,7 @@ export const trustedVerificationSourceMarkers = [
   'excel',
   'engineer',
   'normative',
+  'нормативный пример',
 ]
 
 export function canUseVerificationStatus(

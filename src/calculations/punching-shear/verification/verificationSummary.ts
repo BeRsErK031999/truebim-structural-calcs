@@ -27,7 +27,7 @@ export function summarizeVerificationResults(
     rejectedCases: countByStatus(results, 'rejected'),
     passedCases: results.filter((result) => result.passed === true).length,
     failedCases: results.filter((result) => result.passed === false).length,
-    warning: verifiedCases === 0 ? 'No СП63 verified cases yet' : null,
+    warning: verifiedCases === 0 ? 'Пока нет verified cases по СП63' : null,
   }
 }
 
