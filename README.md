@@ -1,5 +1,11 @@
 # React + TypeScript + Vite
 
+## Local saved calculations
+
+Punching shear calculations can be saved locally in the browser. Saved items include the form input, draft result, report, status, warnings and metadata, and are stored in `localStorage` under `truebim-structural-calcs:saved-calculations:v1`.
+
+The app supports loading saved calculations back into the form, deleting history items, exporting a saved calculation as JSON and importing a previously exported JSON file. This is local browser storage only; there is no backend database or cross-device sync.
+
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
 Currently, two official plugins are available:

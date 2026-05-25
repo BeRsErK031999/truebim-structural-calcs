@@ -1,6 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Calculator, RotateCcw } from 'lucide-react'
-import { useEffect } from 'react'
+import { Calculator, FileUp, RotateCcw, Save } from 'lucide-react'
+import { useEffect, useState } from 'react'
 import { useForm, useWatch } from 'react-hook-form'
 
 import {
@@ -13,6 +13,7 @@ import {
 } from '@/calculations/punching-shear'
 import { defaultCalculationDraft, useCalculationStore } from '@/entities/calculation/model/store'
 import { Button } from '@/shared/ui/button'
+import { Card, CardContent } from '@/shared/ui/card'
 
 import { FormSection } from './components/FormSection'
 import { NumberField } from './components/NumberField'
@@ -30,8 +31,16 @@ const caseOptions: Array<{ value: PunchingShearCaseType; label: string; disabled
 const concreteClassOptions: ConcreteClassName[] = ['B15', 'B20', 'B25', 'B30', 'B35', 'B40']
 
 export function CalculationForm() {
+  const draft = useCalculationStore((state) => state.draft)
+  const result = useCalculationStore((state) => state.punchingShearResult)
   const setDraft = useCalculationStore((state) => state.setDraft)
   const setPunchingShearResult = useCalculationStore((state) => state.setPunchingShearResult)
+  const saveCurrentCalculation = useCalculationStore((state) => state.saveCurrentCalculation)
+  const importSavedCalculation = useCalculationStore((state) => state.importSavedCalculation)
+  const [importText, setImportText] = useState('')
+  const [isImportOpen, setIsImportOpen] = useState(false)
+  const [formMessage, setFormMessage] = useState<string | null>(null)
+  const [formError, setFormError] = useState<string | null>(null)
   const form = useForm<PunchingShearInput>({
     resolver: zodResolver(punchingShearInputSchema),
     defaultValues: getDefaultValues(),
@@ -57,10 +66,17 @@ export function CalculationForm() {
     void trigger()
   }, [trigger])
 
+  useEffect(() => {
+    reset(structuredClone(draft))
+    void trigger()
+  }, [draft, reset, trigger])
+
   const runCalculation = (input: PunchingShearInput) => {
     const result = calculatePunchingShear(input)
     const report = buildPunchingShearReport(input, result)
 
+    setFormError(null)
+    setFormMessage(null)
     setDraft(input)
     setPunchingShearResult(result, report)
   }
@@ -71,6 +87,32 @@ export function CalculationForm() {
     reset(defaults)
     runCalculation(defaults)
     void trigger()
+  }
+
+  const handleSaveCurrentCalculation = () => {
+    try {
+      const savedCalculation = saveCurrentCalculation()
+
+      setFormError(null)
+      setFormMessage(`Расчет сохранен: ${savedCalculation.title}`)
+    } catch (error) {
+      setFormMessage(null)
+      setFormError(error instanceof Error ? error.message : 'Не удалось сохранить расчет')
+    }
+  }
+
+  const handleImportCalculation = () => {
+    try {
+      const savedCalculation = importSavedCalculation(importText)
+
+      setImportText('')
+      setIsImportOpen(false)
+      setFormError(null)
+      setFormMessage(`Импортирован расчет: ${savedCalculation.title}`)
+    } catch (error) {
+      setFormMessage(null)
+      setFormError(error instanceof Error ? error.message : 'Не удалось импортировать JSON')
+    }
   }
 
   return (
@@ -216,7 +258,74 @@ export function CalculationForm() {
           <RotateCcw className="size-4" />
           Сбросить к значениям по умолчанию
         </Button>
+        <Button
+          className="h-11 rounded-lg"
+          disabled={!result}
+          size="lg"
+          type="button"
+          variant="outline"
+          onClick={handleSaveCurrentCalculation}
+        >
+          <Save className="size-4" />
+          Сохранить расчет
+        </Button>
+        <Button
+          className="h-11 rounded-lg"
+          size="lg"
+          type="button"
+          variant="outline"
+          onClick={() => {
+            setIsImportOpen((value) => !value)
+            setFormError(null)
+            setFormMessage(null)
+          }}
+        >
+          <FileUp className="size-4" />
+          Импорт JSON
+        </Button>
       </div>
+
+      {isImportOpen ? (
+        <Card className="rounded-lg border border-slate-200 bg-white shadow-sm">
+          <CardContent className="grid gap-3 p-4">
+            <textarea
+              className="min-h-36 w-full resize-y rounded-lg border border-slate-300 bg-white p-3 text-sm outline-none focus-visible:border-slate-500 focus-visible:ring-3 focus-visible:ring-slate-200"
+              placeholder="Вставьте JSON сохраненного расчета"
+              value={importText}
+              onChange={(event) => setImportText(event.target.value)}
+            />
+            <div className="flex flex-wrap gap-3">
+              <Button
+                className="h-10 rounded-lg"
+                disabled={importText.trim().length === 0}
+                type="button"
+                onClick={handleImportCalculation}
+              >
+                Импортировать
+              </Button>
+              <Button
+                className="h-10 rounded-lg"
+                type="button"
+                variant="outline"
+                onClick={() => setIsImportOpen(false)}
+              >
+                Отмена
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      ) : null}
+
+      {formError ? (
+        <p className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+          {formError}
+        </p>
+      ) : null}
+      {formMessage ? (
+        <p className="rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-700">
+          {formMessage}
+        </p>
+      ) : null}
     </form>
   )
 }

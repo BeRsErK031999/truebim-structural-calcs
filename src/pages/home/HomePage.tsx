@@ -4,6 +4,7 @@ import { CalculationForm } from '@/features/calculation-form/CalculationForm'
 import { Badge } from '@/shared/ui/badge'
 import { Card, CardContent } from '@/shared/ui/card'
 import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs'
+import { CalculationHistoryPanel } from '@/widgets/calculation-history/CalculationHistoryPanel'
 import { ResultPanel } from '@/widgets/results/ResultPanel'
 
 const workflowCards = [
@@ -64,7 +65,10 @@ export function HomePage() {
 
       <section className="grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_420px]">
         <CalculationForm />
-        <ResultPanel />
+        <div className="grid gap-6">
+          <ResultPanel />
+          <CalculationHistoryPanel />
+        </div>
       </section>
     </motion.div>
   )
