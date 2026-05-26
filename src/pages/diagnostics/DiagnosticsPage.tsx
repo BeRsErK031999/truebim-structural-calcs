@@ -59,6 +59,22 @@ export function DiagnosticsPage() {
               value={diagnostics.stressDistributionSupport}
             />
             <DiagnosticItem
+              label="Stress regression support"
+              value={diagnostics.stressRegressionSupport}
+            />
+            <DiagnosticItem
+              label="Stress checksum support"
+              value={diagnostics.stressChecksumSupport}
+            />
+            <DiagnosticItem
+              label="Axis convention validation"
+              value={diagnostics.axisConventionValidationSupport}
+            />
+            <DiagnosticItem
+              label="Drift detection support"
+              value={diagnostics.driftDetectionSupport}
+            />
+            <DiagnosticItem
               label="Moment transfer status"
               value={diagnostics.momentTransferStatus}
             />
@@ -104,6 +120,10 @@ export function DiagnosticsPage() {
             <DiagnosticItem
               label="Verified evidence count"
               value={diagnostics.verifiedEvidenceCount.toString()}
+            />
+            <DiagnosticItem
+              label="Verified moment evidence templates"
+              value={diagnostics.verifiedMomentEvidenceCount.toString()}
             />
           </dl>
         </CardContent>

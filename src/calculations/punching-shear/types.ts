@@ -213,6 +213,8 @@ export type PunchingShearReportModel = {
   calculationValues: Record<string, string | number | boolean | null>
   momentTransferSummary: Record<string, string | number | boolean | null>
   stressDistributionSummary: Record<string, string | number | boolean | null>
+  stressRegressionSummary: Record<string, string | number | boolean | null>
+  axisConventionSummary: Record<string, string | number | boolean | null>
   verificationCapabilities: {
     verified: string[]
     draft: string[]

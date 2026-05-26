@@ -1,4 +1,6 @@
 import type { PunchingShearInput, PunchingShearReportModel, PunchingShearResult } from './types'
+import { defaultAxisConvention } from './verification/axisConvention'
+import { createStressDistributionChecksum } from './verification/stressDistributionComparison'
 
 export function buildPunchingShearReport(
   input: PunchingShearInput,
@@ -109,6 +111,20 @@ export function buildPunchingShearReport(
       segmentCount: result.stressDistribution?.segmentStresses.length ?? 0,
       baseStressMpa: result.stressDistribution?.baseStressMpa ?? result.shearStressMpa,
       method: result.stressDiagramMetadata?.method ?? 'draft-linear-perimeter-redistribution',
+    },
+    stressRegressionSummary: {
+      checksum: createStressDistributionChecksum(result.stressDistribution),
+      driftDetected: 'no expected baseline',
+      expectedVsActual: 'pending trusted stress evidence',
+      tolerance: 'not applied until expected values are populated',
+      regressionStatus: result.stressDistribution ? 'draft-placeholder' : 'disabled',
+    },
+    axisConventionSummary: {
+      xPositiveDirection: defaultAxisConvention.xPositiveDirection,
+      yPositiveDirection: defaultAxisConvention.yPositiveDirection,
+      momentXSignConvention: defaultAxisConvention.momentXSignConvention,
+      momentYSignConvention: defaultAxisConvention.momentYSignConvention,
+      traversal: defaultAxisConvention.traversal,
     },
     verificationCapabilities: {
       verified: result.verifiedFeatures,

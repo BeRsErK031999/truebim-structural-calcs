@@ -78,9 +78,13 @@ describe('report export', () => {
 
     expect(html).toContain('Moment Transfer')
     expect(html).toContain('Stress Distribution')
+    expect(html).toContain('Stress Regression')
+    expect(html).toContain('Axis Convention')
     expect(html).toContain('Moment transfer draft-only')
     expect(markdown).toContain('## Moment Transfer')
     expect(markdown).toContain('## Stress Distribution')
+    expect(markdown).toContain('## Stress Regression')
+    expect(markdown).toContain('## Axis Convention')
   })
 
   it('includes input N and calculated u, h0, v and utilization values', () => {

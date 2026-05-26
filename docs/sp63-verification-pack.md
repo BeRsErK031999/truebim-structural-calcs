@@ -127,3 +127,11 @@ See `docs/openings-and-boundaries-draft.md` for the boundary/opening geometry ar
 Draft JSON templates for future trusted edge, corner and opening validation live in `examples/verification/`. Use `docs/verified-edge-opening-workflow.md` before promoting any of those templates to `status: "verified"`.
 
 Draft JSON templates for future trusted moment transfer validation also live in `examples/verification/`. Use `docs/verified-moment-transfer-workflow.md` before promoting Mx/My cases to `status: "verified"`.
+
+## Stress regression evidence workflow
+
+Moment stress evidence templates now also live in `examples/verification/moments/`. They are draft placeholders for low/high Mx, low/high My and combined Mx/My checks. These files are intended for trusted stress evidence collection only; nullable expected values must stay nullable until the external source is available.
+
+The stress regression workflow compares expected and actual stress scalars, eccentricity, transfer factors and deterministic stress checksums. It reports `passed`, `failed`, `drifted` and `draft-placeholder` counts and validates axis convention assumptions before evidence is trusted.
+
+See `docs/stress-regression-workflow.md` for the checksum, snapshot and axis-convention process.

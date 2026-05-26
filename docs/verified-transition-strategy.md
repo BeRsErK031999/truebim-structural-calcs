@@ -47,6 +47,14 @@ For `center-force-only`, the linked trusted evidence is `verified-center-rect-00
 
 For `center-moment-transfer`, the result can be `partial` when the matching draft Mx/My regression case still passes and the base force-only case is verified. The moment arithmetic itself remains listed under draft features until trusted moment expected values are available.
 
+## Stress Evidence Collection
+
+The next moment-transfer milestone uses stress regression evidence without changing formulas or verified transition logic. Draft templates live under `examples/verification/moments/` and support max/min stress, transfer factors, eccentricity, stress checksums and point metadata.
+
+The stress regression runner counts `passed`, `failed`, `drifted` and `draft-placeholder` cases. Draft placeholders with nullable expected values are collection targets, not verification evidence. A moment case can only move toward `verified` after trusted expected stress values, checksum and axis convention assumptions pass the regression workflow.
+
+See `docs/stress-regression-workflow.md`.
+
 ## Why Edge And Openings Stay Draft
 
 Edge, corner, and opening cases currently exercise geometry generation and report plumbing. They do not yet have trusted SP63 arithmetic evidence, so they remain `draft` even when the calculation runs and produces stable regression output.

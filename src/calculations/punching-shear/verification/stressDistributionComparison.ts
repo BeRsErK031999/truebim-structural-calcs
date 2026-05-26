@@ -1,13 +1,19 @@
-import type { StressDistribution } from '../types'
+import type { StressDistribution, StressPoint } from '../types'
 
 export function createStressDistributionChecksum(distribution: StressDistribution | null) {
   if (!distribution) {
     return 'disabled'
   }
 
-  return distribution.points
-    .map((point) => `${point.position.x.toFixed(3)},${point.position.y.toFixed(3)},${point.stressMpa.toFixed(6)}`)
+  const orderedPoints = orderStressPointsByPerimeterTraversal(distribution.points)
+  const stressValues = orderedPoints
+    .map((point) => `${point.id}:${roundChecksumValue(point.stressMpa, 6)}`)
     .join('|')
+  const coordinates = orderedPoints
+    .map((point) => `${roundChecksumValue(point.position.x, 3)},${roundChecksumValue(point.position.y, 3)}`)
+    .join('|')
+
+  return `count=${orderedPoints.length};coords=${coordinates};stress=${stressValues}`
 }
 
 export function compareStressDistributionChecksum({
@@ -40,4 +46,20 @@ export function compareStressDistributionChecksum({
       ? ['Stress distribution checksum comparison passed.']
       : [`stressDistributionChecksum: expected ${expectedChecksum}, actual ${actualChecksum}`],
   }
+}
+
+function orderStressPointsByPerimeterTraversal(points: StressPoint[]) {
+  return [...points].sort((first, second) => {
+    const segmentOrder = first.sourceSegmentId.localeCompare(second.sourceSegmentId)
+
+    if (segmentOrder !== 0) {
+      return segmentOrder
+    }
+
+    return first.id.localeCompare(second.id)
+  })
+}
+
+function roundChecksumValue(value: number, digits: number) {
+  return value.toFixed(digits)
 }

@@ -17,6 +17,13 @@ export { compareTransferFactors } from './verification/transferFactorComparison'
 export { createStressDistributionChecksum } from './verification/stressDistributionComparison'
 export { buildStressSnapshot } from './verification/stressSnapshot'
 export { buildStressSnapshotHtml } from './verification/stressSnapshotHtml'
+export { defaultAxisConvention, getAxisConventionForInput } from './verification/axisConvention'
+export { validateAxisConvention } from './verification/axisConventionValidation'
+export { runStressRegressionCase, runStressRegressionCases } from './verification/stressRegressionRunner'
+export { summarizeStressRegressionResults } from './verification/stressRegressionSummary'
+export { buildStressRegressionReport } from './verification/stressRegressionReport'
+export { buildStressRegressionSnapshot } from './verification/stressRegressionSnapshot'
+export { buildStressRegressionSnapshotHtml } from './verification/stressRegressionSnapshotHtml'
 export { getVerifiedCapabilityMatrix } from './verified/verifiedCapabilities'
 export { buildVerifiedStatus } from './verified/verifiedStatus'
 export { buildPunchingShearReport } from './report'
@@ -66,6 +73,14 @@ export type {
   VerificationLevel,
   VerifiedFeatureId,
 } from './verified/verifiedMode'
+export type { AxisConvention } from './verification/axisConvention'
+export type {
+  StressRegressionCase,
+  StressRegressionCaseResult,
+  StressRegressionExpected,
+} from './verification/stressRegressionRunner'
+export type { StressRegressionSummary } from './verification/stressRegressionSummary'
+export type { StressRegressionSnapshot } from './verification/stressRegressionSnapshot'
 export type { ContourLoop } from './domain/contour'
 export type { BoundingBox, Point2D } from './domain/point'
 export type { Polygon2D } from './domain/polygon'

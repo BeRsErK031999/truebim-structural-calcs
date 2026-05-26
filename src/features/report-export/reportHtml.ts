@@ -183,6 +183,23 @@ export function buildPunchingShearHtmlReport(
       ['formulas verified', String(result.stressDiagramMetadata?.formulasVerified ?? false)],
     ])}
 
+    <h2>Stress Regression</h2>
+    ${renderTable([
+      ['checksum', String(report.stressRegressionSummary.checksum)],
+      ['drift detected', String(report.stressRegressionSummary.driftDetected)],
+      ['expected vs actual', String(report.stressRegressionSummary.expectedVsActual)],
+      ['tolerance', String(report.stressRegressionSummary.tolerance)],
+      ['regression status', String(report.stressRegressionSummary.regressionStatus)],
+    ])}
+
+    <h2>Axis Convention</h2>
+    ${renderTable([
+      ['X positive direction', String(report.axisConventionSummary.xPositiveDirection)],
+      ['Y positive direction', String(report.axisConventionSummary.yPositiveDirection)],
+      ['Mx sign convention', String(report.axisConventionSummary.momentXSignConvention)],
+      ['My sign convention', String(report.axisConventionSummary.momentYSignConvention)],
+    ])}
+
     <h2>Assumptions</h2>
     <ul>${reportAssumptions.map((assumption) => `<li>${escapeHtml(assumption)}</li>`).join('')}</ul>
 

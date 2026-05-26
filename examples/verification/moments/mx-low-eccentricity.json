@@ -1,0 +1,52 @@
+{
+  "id": "moment-evidence-mx-low-eccentricity",
+  "title": "Mx low eccentricity stress evidence template",
+  "status": "draft",
+  "source": "TODO: trusted manual/WebCAD/Excel stress evidence",
+  "standard": "SP63.13330",
+  "caseType": "center",
+  "axisConvention": {
+    "traversal": "counterclockwise",
+    "xPositiveDirection": "right",
+    "yPositiveDirection": "up",
+    "momentXSignConvention": "positive-mx-increases-positive-y-stress",
+    "momentYSignConvention": "positive-my-increases-positive-x-stress"
+  },
+  "input": {
+    "caseType": "center",
+    "forces": { "axialForceKn": 420, "momentXKnM": 6, "momentYKnM": 0 },
+    "slab": { "thicknessMm": 220, "effectiveDepthMm": 190, "concreteCoverMm": 30 },
+    "concrete": { "className": "B25" },
+    "rectColumn": { "widthXMm": 400, "widthYMm": 400 },
+    "openings": [],
+    "shearReinforcement": { "enabled": false }
+  },
+  "expected": {
+    "maxStressMpa": null,
+    "minStressMpa": null,
+    "transferFactorX": null,
+    "transferFactorY": null,
+    "eccentricityX": null,
+    "eccentricityY": null,
+    "stressPointCount": null,
+    "stressDistributionChecksum": null,
+    "stressPoints": []
+  },
+  "tolerance": {
+    "relativePercent": 0.1,
+    "absolute": 0.000001,
+    "stressTolerancePercent": 0.1,
+    "eccentricityToleranceMm": 0.001
+  },
+  "metadata": {
+    "supports": [
+      "stress distribution",
+      "max/min stress",
+      "transfer factors",
+      "eccentricity",
+      "stress checksum",
+      "stress point metadata"
+    ]
+  },
+  "notes": "Draft placeholder. Fill expected values only after trusted comparison."
+}
