@@ -93,6 +93,35 @@ export function DiagnosticsPage() {
               label="Opening verification support"
               value={diagnostics.openingVerificationSupport}
             />
+            <DiagnosticItem
+              label="Verified arithmetic support"
+              value={diagnostics.verifiedArithmeticSupport}
+            />
+            <DiagnosticItem
+              label="Partial verification support"
+              value={diagnostics.partialVerificationSupport}
+            />
+            <DiagnosticItem
+              label="Verified evidence count"
+              value={diagnostics.verifiedEvidenceCount.toString()}
+            />
+          </dl>
+        </CardContent>
+      </Card>
+
+      <Card className="rounded-lg border border-slate-200 bg-white shadow-sm">
+        <CardHeader>
+          <CardTitle>Verified Capability Matrix</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <dl className="grid gap-3 md:grid-cols-2">
+            {diagnostics.verifiedCapabilityMatrix.map((capability) => (
+              <DiagnosticItem
+                key={capability.id}
+                label={capability.label}
+                value={`${capability.status} | arithmetic: ${capability.arithmeticSupport}`}
+              />
+            ))}
           </dl>
         </CardContent>
       </Card>

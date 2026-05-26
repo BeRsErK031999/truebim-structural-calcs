@@ -4,6 +4,7 @@ import type { ContourLoop } from './domain/contour'
 import type { BoundingBox, Point2D } from './domain/point'
 import type { Segment2D } from './domain/segment'
 import type { PunchingSketchModel } from './sketch/svg'
+import type { VerificationEvidence, VerificationLevel, VerifiedFeatureId } from './verified/verifiedMode'
 
 export type PunchingShearCheckStatus =
   | 'draft_ok'
@@ -186,6 +187,12 @@ export type PunchingShearResult = {
   perimeter: ControlPerimeterResult
   svgModel: PunchingSketchModel
   momentTransfer: MomentTransferResult
+  verifiedMode: VerificationLevel
+  verificationLevel: VerificationLevel
+  verifiedFeatures: VerifiedFeatureId[]
+  draftFeatures: VerifiedFeatureId[]
+  verificationEvidenceIds: string[]
+  verificationEvidence: VerificationEvidence[]
   warnings: string[]
   placeholders: string[]
 }
@@ -206,6 +213,11 @@ export type PunchingShearReportModel = {
   calculationValues: Record<string, string | number | boolean | null>
   momentTransferSummary: Record<string, string | number | boolean | null>
   stressDistributionSummary: Record<string, string | number | boolean | null>
+  verificationCapabilities: {
+    verified: string[]
+    draft: string[]
+  }
+  verificationEvidence: VerificationEvidence[]
   warnings: string[]
   calculationSteps: string[]
 }

@@ -75,3 +75,7 @@ Before setting `status: "verified"`:
 5. Run `npm run lint`, `npm run typecheck`, `npm run test` and `npm run build`.
 
 The moment transfer warning remains until the verified formula scope is complete and intentionally promoted.
+
+## Current Transition Status
+
+Center rectangular moment transfer is `partial` in the capability matrix. The UI, diagnostics and reports may show a partially verified calculation when the base center force-only evidence is linked, but Mx/My arithmetic remains draft until a trusted moment case is promoted.

@@ -20,6 +20,12 @@ Center rectangular cases now include draft Mx/My plumbing: eccentricity values, 
 
 This is not verified SP63 support. The implementation is architecture and verification workflow preparation only; see `docs/moment-transfer-draft.md`.
 
+## Verified transition layer
+
+Punching shear results now expose granular verification status: `verifiedMode`, `verificationLevel`, `verifiedFeatures`, `draftFeatures` and linked verification evidence. The current verified scope is only center rectangular force-only arithmetic. Center rectangular moment transfer is partial because it can link to verified force-only evidence but Mx/My arithmetic is still provisional.
+
+Edge, corner, openings, shear reinforcement and round columns remain draft. See `docs/verified-transition-strategy.md`.
+
 ## Draft openings and boundaries
 
 Edge, corner and opening cases now have clean-room draft geometry support for rectangular columns. The engine clips the draft control perimeter against slab boundaries, subtracts opening-affected segments using tangent geometry, and exposes removed segments/tangents in SVG previews and reports.

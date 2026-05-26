@@ -8,6 +8,7 @@ import {
 import { punchingShearInputSchema } from './schemas'
 import { buildPunchingSketchModel } from './sketch/punchingSketch'
 import { knToN, normalizePunchingShearInput } from './units'
+import { applyVerifiedStatus, buildVerifiedStatus } from './verified/verifiedStatus'
 import type { PunchingShearInput, PunchingShearResult } from './types'
 
 const draftCalculationWarning =
@@ -36,7 +37,7 @@ export function calculatePunchingShear(input: PunchingShearInput): PunchingShear
     const momentTransfer = createDisabledMomentTransfer()
     const svgModel = buildPunchingSketchModel(normalizedInput, perimeter, momentTransfer)
 
-    return {
+    return withVerifiedStatus(normalizedInput, {
       ...createBaseResult(normalizedInput, perimeter, svgModel, momentTransfer),
       status: 'not_implemented',
       warnings: [
@@ -44,18 +45,18 @@ export function calculatePunchingShear(input: PunchingShearInput): PunchingShear
         ...perimeter.warnings,
         'Only rectangular center, edge, corner, and opening draft geometry cases are implemented',
       ],
-    }
+    })
   }
 
   if (perimeter.perimeterMm <= 0 || perimeter.effectiveDepthMm <= 0) {
     const momentTransfer = createDisabledMomentTransfer()
     const svgModel = buildPunchingSketchModel(normalizedInput, perimeter, momentTransfer)
 
-    return {
+    return withVerifiedStatus(normalizedInput, {
       ...createBaseResult(normalizedInput, perimeter, svgModel, momentTransfer),
       status: 'invalid_input',
       warnings: [...draftScopeWarnings, ...perimeter.warnings, 'Invalid perimeter geometry'],
-    }
+    })
   }
 
   const designShearForceN = knToN(normalizedInput.forces.axialForceKn)
@@ -73,7 +74,7 @@ export function calculatePunchingShear(input: PunchingShearInput): PunchingShear
   const utilizationRatio = designStressMpa / draftConcreteResistanceMpa
   const passed = utilizationRatio <= 1
 
-  return {
+  return withVerifiedStatus(normalizedInput, {
     ...createBaseResult(normalizedInput, perimeter, svgModel, momentTransfer),
     status: passed ? 'draft_ok' : 'draft_failed',
     utilization: utilizationRatio,
@@ -98,7 +99,7 @@ export function calculatePunchingShear(input: PunchingShearInput): PunchingShear
       'openings subtraction',
       'edge and corner behavior',
     ],
-  }
+  })
 }
 
 function isSupportedDraftGeometryCase(input: PunchingShearInput) {
@@ -121,11 +122,11 @@ function createInvalidInputResult(input: PunchingShearInput, validationWarnings:
   const momentTransfer = createDisabledMomentTransfer()
   const svgModel = buildPunchingSketchModel(fallbackInput, perimeter, momentTransfer)
 
-  return {
+  return withVerifiedStatus(fallbackInput, {
     ...createBaseResult(fallbackInput, perimeter, svgModel, momentTransfer),
     status: 'invalid_input',
     warnings: [...draftScopeWarnings, ...validationWarnings],
-  } satisfies PunchingShearResult
+  } satisfies PunchingShearResult)
 }
 
 function createBaseResult(
@@ -161,6 +162,12 @@ function createBaseResult(
     perimeter,
     svgModel,
     momentTransfer,
+    verifiedMode: 'draft',
+    verificationLevel: 'draft',
+    verifiedFeatures: [],
+    draftFeatures: [],
+    verificationEvidenceIds: [],
+    verificationEvidence: [],
     warnings: [...draftScopeWarnings, ...perimeter.warnings],
     placeholders: [
       'utilization',
@@ -169,4 +176,8 @@ function createBaseResult(
       'openings subtraction',
     ],
   }
+}
+
+function withVerifiedStatus(input: PunchingShearInput, result: PunchingShearResult) {
+  return applyVerifiedStatus(result, buildVerifiedStatus(input, result))
 }

@@ -69,3 +69,8 @@ This verifies the current center rectangular draft arithmetic only. It does not
 remove the draft calculation warning and does not claim full SP63 design
 coverage for moments, openings, slab edges, round columns, or shear
 reinforcement.
+
+The result model now links this case through `verificationEvidenceIds` and uses
+it to mark only `center-force-only` as verified. Center moment transfer can be
+shown as partial when this trusted force-only evidence is present, but Mx/My
+arithmetic remains draft until a trusted moment case is promoted.

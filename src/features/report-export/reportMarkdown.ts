@@ -42,6 +42,7 @@ export function buildPunchingShearMarkdownReport(
       ['build time', metadata.buildTime],
       ['calculation type', 'punching-shear'],
       ['status', result.status],
+      ['verification level', result.verificationLevel],
       ['Verification source', reportMetadata.verificationSource],
     ]),
     '',
@@ -107,11 +108,33 @@ export function buildPunchingShearMarkdownReport(
     table([
       ['geometry draft-ready', String(result.perimeter.perimeterMm > 0)],
       ['stress draft-ready', String(result.shearStressMpa !== null || result.stressDistribution !== null)],
-      ['verified arithmetic available', 'false'],
-      ['geometry verified', 'false'],
-      ['stress verified', 'false'],
-      ['moment transfer verified', 'false'],
+      ['verified arithmetic available', String(result.verifiedFeatures.length > 0)],
+      ['geometry verified', String(result.verifiedFeatures.includes('center-force-only'))],
+      ['stress verified', String(result.verifiedFeatures.includes('center-force-only'))],
+      ['moment transfer verified', String(result.verifiedFeatures.includes('center-moment-transfer'))],
     ]),
+    '',
+    '## Verification Capabilities',
+    '',
+    'Verified:',
+    '',
+    ...formatFeatureList(result.verifiedFeatures),
+    '',
+    'Draft:',
+    '',
+    ...formatFeatureList(result.draftFeatures),
+    '',
+    '## Verification Evidence',
+    '',
+    result.verificationEvidence.length > 0
+      ? table([
+          ['case ID', 'source | checkedBy | checkedAt | status'],
+          ...result.verificationEvidence.map((evidence) => [
+            evidence.id,
+            `${evidence.verificationSource} | ${evidence.checkedBy ?? 'n/a'} | ${evidence.checkedAt ?? 'n/a'} | ${evidence.status}`,
+          ] satisfies [string, string]),
+        ])
+      : 'No verified evidence linked.',
     '',
     '### Segments',
     '',
@@ -194,7 +217,9 @@ export function buildPunchingShearMarkdownReport(
     '## Verification Status',
     '',
     `- Verification source: ${reportMetadata.verificationSource}`,
-    '- draft / not verified',
+    `- verification level: ${result.verificationLevel}`,
+    `- verified features: ${formatInlineFeatures(result.verifiedFeatures)}`,
+    `- draft features: ${formatInlineFeatures(result.draftFeatures)}`,
     '- This report can be used to create a verified case only after checking with manual calculation, WebCAD, Excel, or another trusted source.',
     '',
     '## Source Report Notes',
@@ -202,6 +227,14 @@ export function buildPunchingShearMarkdownReport(
     ...report.calculationSteps.map((step) => `- ${step}`),
     '',
   ].join('\n')
+}
+
+function formatFeatureList(features: string[]) {
+  return features.length > 0 ? features.map((feature) => `- ${feature}`) : ['- none']
+}
+
+function formatInlineFeatures(features: string[]) {
+  return features.length > 0 ? features.join(', ') : 'none'
 }
 
 function createReportWarnings(result: PunchingShearResult) {

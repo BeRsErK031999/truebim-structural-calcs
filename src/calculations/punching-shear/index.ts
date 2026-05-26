@@ -17,6 +17,8 @@ export { compareTransferFactors } from './verification/transferFactorComparison'
 export { createStressDistributionChecksum } from './verification/stressDistributionComparison'
 export { buildStressSnapshot } from './verification/stressSnapshot'
 export { buildStressSnapshotHtml } from './verification/stressSnapshotHtml'
+export { getVerifiedCapabilityMatrix } from './verified/verifiedCapabilities'
+export { buildVerifiedStatus } from './verified/verifiedStatus'
 export { buildPunchingShearReport } from './report'
 export {
   concreteInputSchema,
@@ -59,6 +61,11 @@ export type {
   StressPoint,
   MomentTransferResult,
 } from './types'
+export type {
+  VerificationEvidence,
+  VerificationLevel,
+  VerifiedFeatureId,
+} from './verified/verifiedMode'
 export type { ContourLoop } from './domain/contour'
 export type { BoundingBox, Point2D } from './domain/point'
 export type { Polygon2D } from './domain/polygon'

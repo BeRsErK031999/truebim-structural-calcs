@@ -30,6 +30,10 @@ export type VerificationCaseResult = {
   fieldResults: VerificationFieldComparison[]
   passed: boolean
   statusAllowed: boolean
+  verificationLevel: PunchingShearResult['verificationLevel']
+  verifiedFeatures: PunchingShearResult['verifiedFeatures']
+  draftFeatures: PunchingShearResult['draftFeatures']
+  verificationEvidenceIds: PunchingShearResult['verificationEvidenceIds']
   actual: VerificationExpected
 }
 
@@ -70,6 +74,10 @@ export function runVerificationCase(verificationCase: VerificationCase): Verific
     fieldResults,
     passed: statusAllowed && fieldResults.every((fieldResult) => fieldResult.passed),
     statusAllowed,
+    verificationLevel: calculationResult.verificationLevel,
+    verifiedFeatures: calculationResult.verifiedFeatures,
+    draftFeatures: calculationResult.draftFeatures,
+    verificationEvidenceIds: calculationResult.verificationEvidenceIds,
     actual,
   }
 }

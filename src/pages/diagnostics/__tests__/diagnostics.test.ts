@@ -44,10 +44,20 @@ describe('diagnostics helpers', () => {
       geometryVerificationSupport: 'draft',
       clippingVerificationSupport: 'draft',
       openingVerificationSupport: 'draft',
+      verifiedArithmeticSupport: 'verified',
+      partialVerificationSupport: 'partial',
+      verifiedEvidenceCount: 1,
       openingDraftCasesCount: 2,
       verifiedEdgeCount: 0,
       verifiedOpeningCount: 0,
     })
+    expect(model.verifiedCapabilityMatrix).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ id: 'center-force-only', status: 'verified' }),
+        expect.objectContaining({ id: 'center-moment-transfer', status: 'partial' }),
+        expect.objectContaining({ id: 'openings', status: 'draft' }),
+      ]),
+    )
   })
 
   it('reports the verified case count from the verification dataset', () => {

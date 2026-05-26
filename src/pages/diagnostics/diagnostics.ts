@@ -1,4 +1,5 @@
 import type { PunchingShearCheckStatus } from '@/calculations/punching-shear'
+import { getVerifiedCapabilityMatrix } from '@/calculations/punching-shear/verified/verifiedCapabilities'
 import { punchingShearVerificationCases } from '@/calculations/punching-shear/verification/verificationDataset'
 import { runVerificationCases } from '@/calculations/punching-shear/verification/verificationRunner'
 import type { VerificationSummary } from '@/calculations/punching-shear/verification/verificationSummary'
@@ -26,6 +27,10 @@ export type DiagnosticsModel = {
   geometryVerificationSupport: 'draft'
   clippingVerificationSupport: 'draft'
   openingVerificationSupport: 'draft'
+  verifiedCapabilityMatrix: ReturnType<typeof getVerifiedCapabilityMatrix>
+  verifiedArithmeticSupport: 'verified'
+  partialVerificationSupport: 'partial'
+  verifiedEvidenceCount: number
   openingDraftCasesCount: number
   verifiedEdgeCount: number
   verifiedOpeningCount: number
@@ -62,6 +67,7 @@ export function buildDiagnosticsModel({
   currentCalculationStatus?: PunchingShearCheckStatus
 }): DiagnosticsModel {
   const verification = runVerificationCases(punchingShearVerificationCases).summary
+  const verifiedCapabilityMatrix = getVerifiedCapabilityMatrix()
   const momentCases = punchingShearVerificationCases.filter(
     (verificationCase) =>
       verificationCase.input.forces.momentXKnM > 0 ||
@@ -105,6 +111,12 @@ export function buildDiagnosticsModel({
     geometryVerificationSupport: 'draft',
     clippingVerificationSupport: 'draft',
     openingVerificationSupport: 'draft',
+    verifiedCapabilityMatrix,
+    verifiedArithmeticSupport: 'verified',
+    partialVerificationSupport: 'partial',
+    verifiedEvidenceCount: punchingShearVerificationCases.filter(
+      (verificationCase) => verificationCase.status === 'verified',
+    ).length,
     openingDraftCasesCount: openingDraftCases.length,
     verifiedEdgeCount: verifiedEdgeCases.length,
     verifiedOpeningCount: verifiedOpeningCases.length,

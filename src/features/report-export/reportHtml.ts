@@ -65,6 +65,7 @@ export function buildPunchingShearHtmlReport(
       ['build time', metadata.buildTime],
       ['calculation type', 'punching-shear'],
       ['status', result.status],
+      ['verification level', result.verificationLevel],
       ['Verification source', reportMetadata.verificationSource],
     ])}
 
@@ -120,11 +121,18 @@ export function buildPunchingShearHtmlReport(
     ${renderTable([
       ['geometry draft-ready', String(result.perimeter.perimeterMm > 0)],
       ['stress draft-ready', String(result.shearStressMpa !== null || result.stressDistribution !== null)],
-      ['verified arithmetic available', 'false'],
-      ['geometry verified', 'false'],
-      ['stress verified', 'false'],
-      ['moment transfer verified', 'false'],
+      ['verified arithmetic available', String(result.verifiedFeatures.length > 0)],
+      ['geometry verified', String(result.verifiedFeatures.includes('center-force-only'))],
+      ['stress verified', String(result.verifiedFeatures.includes('center-force-only'))],
+      ['moment transfer verified', String(result.verifiedFeatures.includes('center-moment-transfer'))],
     ])}
+    <h2>Verification Capabilities</h2>
+    <h3>Verified</h3>
+    ${renderFeatureList(result.verifiedFeatures)}
+    <h3>Draft</h3>
+    ${renderFeatureList(result.draftFeatures)}
+    <h2>Verification Evidence</h2>
+    ${renderEvidence(result)}
     ${renderSegments(result)}
     ${renderSvg(result)}
 
@@ -186,7 +194,9 @@ export function buildPunchingShearHtmlReport(
 
     <h2>Verification Status</h2>
     <p class="note">Verification source: ${escapeHtml(reportMetadata.verificationSource)}</p>
-    <p class="note">draft / not verified</p>
+    <p class="note">verification level: ${escapeHtml(result.verificationLevel)}</p>
+    <p class="note">verified features: ${escapeHtml(formatInlineFeatures(result.verifiedFeatures))}</p>
+    <p class="note">draft features: ${escapeHtml(formatInlineFeatures(result.draftFeatures))}</p>
     <p class="note">This report can be used to create a verified case only after checking with manual calculation, WebCAD, Excel, or another trusted source.</p>
 
     <h2>Source Report Notes</h2>
@@ -194,6 +204,30 @@ export function buildPunchingShearHtmlReport(
   </main>
 </body>
 </html>`
+}
+
+function renderFeatureList(features: string[]) {
+  return `<ul>${(features.length > 0 ? features : ['none'])
+    .map((feature) => `<li>${escapeHtml(feature)}</li>`)
+    .join('')}</ul>`
+}
+
+function renderEvidence(result: PunchingShearResult) {
+  if (result.verificationEvidence.length === 0) {
+    return '<p class="note">No verified evidence linked.</p>'
+  }
+
+  return renderTable([
+    ['case ID', 'source | checkedBy | checkedAt | status'],
+    ...result.verificationEvidence.map((evidence) => [
+      evidence.id,
+      `${evidence.verificationSource} | ${evidence.checkedBy ?? 'n/a'} | ${evidence.checkedAt ?? 'n/a'} | ${evidence.status}`,
+    ] satisfies [string, string]),
+  ])
+}
+
+function formatInlineFeatures(features: string[]) {
+  return features.length > 0 ? features.join(', ') : 'none'
 }
 
 function renderSegments(result: PunchingShearResult) {

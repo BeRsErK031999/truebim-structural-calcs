@@ -43,6 +43,29 @@ describe('punching shear draft center check', () => {
     expect(result.status).not.toBe('not_implemented')
   })
 
+  it('returns VERIFIED verification level for the trusted center force-only case', () => {
+    const result = calculatePunchingShear(defaultPunchingShearInput)
+
+    expect(result.verificationLevel).toBe('verified')
+    expect(result.verifiedFeatures).toContain('center-force-only')
+    expect(result.draftFeatures).toEqual([])
+    expect(result.verificationEvidenceIds).toContain('verified-center-rect-001')
+  })
+
+  it('returns PARTIALLY VERIFIED for center moment transfer until trusted moment evidence exists', () => {
+    const result = calculatePunchingShear({
+      ...defaultPunchingShearInput,
+      forces: {
+        ...defaultPunchingShearInput.forces,
+        momentXKnM: 12,
+      },
+    })
+
+    expect(result.verificationLevel).toBe('partial')
+    expect(result.verifiedFeatures).toContain('center-force-only')
+    expect(result.draftFeatures).toContain('center-moment-transfer')
+  })
+
   it('calculates utilization ratio from draft stress and draft resistance', () => {
     const result = calculatePunchingShear(defaultPunchingShearInput)
     const expectedStress =
@@ -175,8 +198,30 @@ describe('punching shear draft center check', () => {
       expect(['draft_ok', 'draft_failed']).toContain(result.status)
       expect(result.perimeter.edgeAffected).toBe(true)
       expect(result.perimeter.cornerAffected).toBe(caseType === 'corner')
+      expect(result.verificationLevel).toBe('draft')
+      expect(result.draftFeatures).toContain(caseType)
     },
   )
+
+  it('keeps openings as DRAFT verification scope', () => {
+    const result = calculatePunchingShear({
+      ...defaultPunchingShearInput,
+      caseType: 'opening',
+      openings: [
+        {
+          id: 'opening-1',
+          widthXMm: 300,
+          widthYMm: 200,
+          centerXMm: 600,
+          centerYMm: 0,
+        },
+      ],
+    })
+
+    expect(result.verificationLevel).toBe('draft')
+    expect(result.verifiedFeatures).not.toContain('center-force-only')
+    expect(result.draftFeatures).toContain('openings')
+  })
 
   it.each(['round'] as const)(
     'returns not_implemented for %s cases',
@@ -212,5 +257,6 @@ describe('punching shear draft center check', () => {
       'Draft calculation. Verify formulas and coefficients against СП63.13330 before design use.',
     )
     expect(report.formulaSummary).toContain('DRAFT / NOT FOR DESIGN USE')
+    expect(report.verificationCapabilities.verified).toContain('center-force-only')
   })
 })

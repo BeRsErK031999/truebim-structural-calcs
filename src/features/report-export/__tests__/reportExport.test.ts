@@ -42,6 +42,18 @@ describe('report export', () => {
     expect(html).toContain('TrueBIM Structural Calculations - Punching Shear Report')
   })
 
+  it('includes verification capability sections', () => {
+    const result = calculatePunchingShear(defaultPunchingShearInput)
+    const report = buildPunchingShearReport(defaultPunchingShearInput, result)
+    const html = buildPunchingShearHtmlReport(defaultPunchingShearInput, result, report)
+    const markdown = buildPunchingShearMarkdownReport(defaultPunchingShearInput, result, report)
+
+    expect(html).toContain('Verification Capabilities')
+    expect(html).toContain('Verification Evidence')
+    expect(markdown).toContain('## Verification Capabilities')
+    expect(markdown).toContain('verified-center-rect-001')
+  })
+
   it('builds a Markdown report with the formula', () => {
     const result = calculatePunchingShear(defaultPunchingShearInput)
     const report = buildPunchingShearReport(defaultPunchingShearInput, result)

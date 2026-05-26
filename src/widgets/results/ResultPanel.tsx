@@ -84,6 +84,17 @@ export function ResultPanel() {
           {draftWarning}
         </div>
 
+        {result ? (
+          <div className="grid gap-3 rounded-lg border border-slate-200 bg-slate-50 p-4">
+            <div className="flex items-center justify-between gap-3">
+              <p className="text-sm font-semibold text-slate-900">Verification Level</p>
+              <VerificationLevelBadge level={result.verificationLevel} />
+            </div>
+            <FeatureList title="Verified features" features={result.verifiedFeatures} />
+            <FeatureList title="Draft features" features={result.draftFeatures} />
+          </div>
+        ) : null}
+
         <div className="grid gap-3 rounded-lg border border-slate-200 bg-slate-50 p-4">
           <p className="text-sm leading-6 text-slate-700">
             Скачайте отчет и отправьте его инженеру/на проверку. После проверки значения можно
@@ -178,6 +189,40 @@ export function ResultPanel() {
         ) : null}
       </CardContent>
     </Card>
+  )
+}
+
+function VerificationLevelBadge({ level }: { level: 'verified' | 'partial' | 'draft' }) {
+  const labelByLevel = {
+    verified: 'VERIFIED',
+    partial: 'PARTIALLY VERIFIED',
+    draft: 'DRAFT ONLY',
+  }
+  const classByLevel = {
+    verified: 'bg-emerald-50 text-emerald-700',
+    partial: 'bg-sky-50 text-sky-700',
+    draft: 'bg-amber-50 text-amber-700',
+  }
+
+  return (
+    <span className={`rounded-md px-2.5 py-1 text-sm font-semibold ${classByLevel[level]}`}>
+      {labelByLevel[level]}
+    </span>
+  )
+}
+
+function FeatureList({ title, features }: { title: string; features: string[] }) {
+  return (
+    <div>
+      <p className="text-xs font-medium uppercase tracking-[0.12em] text-slate-500">{title}</p>
+      <ul className="mt-2 grid gap-1 text-sm text-slate-700">
+        {features.length > 0 ? (
+          features.map((feature) => <li key={feature}>- {feature}</li>)
+        ) : (
+          <li>- none</li>
+        )}
+      </ul>
+    </div>
   )
 }
 

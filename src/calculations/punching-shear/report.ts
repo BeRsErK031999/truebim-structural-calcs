@@ -110,6 +110,11 @@ export function buildPunchingShearReport(
       baseStressMpa: result.stressDistribution?.baseStressMpa ?? result.shearStressMpa,
       method: result.stressDiagramMetadata?.method ?? 'draft-linear-perimeter-redistribution',
     },
+    verificationCapabilities: {
+      verified: result.verifiedFeatures,
+      draft: result.draftFeatures,
+    },
+    verificationEvidence: result.verificationEvidence,
     warnings: result.warnings,
     calculationSteps: [
       'DRAFT / NOT FOR DESIGN USE.',
