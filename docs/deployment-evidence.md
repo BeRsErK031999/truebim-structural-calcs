@@ -131,6 +131,99 @@ Active: active (running) since Sat 2026-05-16 06:53:54 UTC
 ExecReload=/usr/sbin/nginx -g daemon on; master_process on; -s reload (code=exited, status=0/SUCCESS)
 ```
 
+## Root path nginx fix
+
+Problem: `http://192.168.22.37/` returned the default text page:
+
+```text
+apps platform is ready
+```
+
+Cause: the active default nginx server block was `/etc/nginx/sites-enabled/apps-platform`, which points to `/etc/nginx/sites-available/apps-platform`. Its `location /` returned the apps platform landing page, while `truebim-structural-calcs` was only routed through the `truebim-calc.local` server name.
+
+Before changing nginx, the application container was checked:
+
+```text
+docker ps --filter name=truebim-structural-calcs
+
+NAMES                      PORTS                    STATUS
+truebim-structural-calcs   127.0.0.1:3000->80/tcp   Up ... (healthy)
+```
+
+The container-bound application endpoint also returned the app:
+
+```text
+curl http://127.0.0.1:3000
+
+<!doctype html>
+...
+<title>truebim-structural-calcs</title>
+```
+
+Changed file:
+
+```text
+/etc/nginx/sites-available/apps-platform
+```
+
+Backup created before the edit:
+
+```text
+/etc/nginx/sites-available/apps-platform.bak-20260525095046
+```
+
+Change made: `location /` now proxies the root IP traffic to the app container:
+
+```nginx
+location / {
+    proxy_pass http://127.0.0.1:3000;
+    proxy_http_version 1.1;
+    ...
+}
+```
+
+Validation and reload:
+
+```text
+nginx: the configuration file /etc/nginx/nginx.conf syntax is ok
+nginx: configuration file /etc/nginx/nginx.conf test is successful
+```
+
+After a successful config test, nginx reload was executed.
+
+Post-fix checks:
+
+```text
+curl -I http://192.168.22.37/
+
+HTTP/1.1 200 OK
+Server: nginx/1.24.0 (Ubuntu)
+Content-Type: text/html
+Content-Length: 474
+```
+
+The root body now returns the `truebim-structural-calcs` HTML:
+
+```text
+<!doctype html>
+...
+<title>truebim-structural-calcs</title>
+```
+
+The platform health endpoint was preserved:
+
+```text
+curl http://127.0.0.1/health
+
+ok
+```
+
+Safety notes:
+
+- global `/etc/nginx/nginx.conf` was not changed;
+- `docker prune` was not executed;
+- the edit was scoped to the default apps-platform server block root route.
+
 ## Known Limitations
 
 - The deployed Docker tag is `latest`; immutable version tags are not configured yet.

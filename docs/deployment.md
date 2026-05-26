@@ -126,6 +126,8 @@ truebim-calc.local -> 192.168.22.37
 
 ## Server Flow
 
+Note: on the current office server, root IP traffic for `http://192.168.22.37/` is intentionally routed to `truebim-structural-calcs` through the apps platform default block at `/etc/nginx/sites-available/apps-platform`. The `truebim-calc.local` server block remains available for hostname-based routing, but the root IP is currently assigned to this project.
+
 Load the uploaded Docker image:
 
 ```bash
