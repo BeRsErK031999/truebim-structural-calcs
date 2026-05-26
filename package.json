@@ -11,6 +11,7 @@
     "typecheck": "tsc -b",
     "test": "vitest run",
     "verification:validate": "node scripts/create-verified-case.mjs",
+    "verification:stress": "node scripts/run-stress-regression.mjs",
     "deploy:build": "powershell -ExecutionPolicy Bypass -File scripts/build-image.ps1",
     "deploy:export": "powershell -ExecutionPolicy Bypass -File scripts/export-image.ps1",
     "deploy:package": "powershell -ExecutionPolicy Bypass -File scripts/build-image.ps1 && powershell -ExecutionPolicy Bypass -File scripts/export-image.ps1"

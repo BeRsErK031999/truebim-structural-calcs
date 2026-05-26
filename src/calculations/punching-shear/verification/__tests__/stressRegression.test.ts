@@ -1,4 +1,8 @@
+/// <reference types="node" />
+
 import { describe, expect, it } from 'vitest'
+import { readFileSync } from 'node:fs'
+import path from 'node:path'
 
 import { defaultPunchingShearInput } from '../../defaults'
 import { calculatePunchingShear } from '../../engine'
@@ -53,6 +57,53 @@ describe('stress regression workflow', () => {
       draftPlaceholder: true,
       regressionStatus: 'draft-placeholder',
     })
+  })
+
+  it('loads the center Mx low eccentricity draft template', () => {
+    const template = loadMomentTemplate('mx-low-eccentricity.json')
+
+    expect(template).toMatchObject({
+      id: 'moment-evidence-mx-low-eccentricity',
+      status: 'draft',
+      input: {
+        caseType: 'center',
+        forces: {
+          axialForceKn: 420,
+          momentXKnM: 50,
+          momentYKnM: 0,
+        },
+      },
+    })
+  })
+
+  it('does not turn draft placeholders into verified moment evidence', () => {
+    const template = loadMomentTemplate('mx-low-eccentricity.json')
+    const regressionResult = runStressRegressionCase(template)
+
+    expect(template.status).toBe('draft')
+    expect(template.expected.maxStressMpa).toBeNull()
+    expect(regressionResult).toMatchObject({
+      sourceStatus: 'draft',
+      draftPlaceholder: true,
+      regressionStatus: 'draft-placeholder',
+    })
+    expect(regressionResult.result.verificationLevel).toBe('partial')
+    expect(regressionResult.result.verifiedFeatures).not.toContain('center-moment-transfer')
+  })
+
+  it('counts null expected values as placeholders without a verified claim', () => {
+    const template = loadMomentTemplate('mx-low-eccentricity.json')
+    const regressionResult = runStressRegressionCase(template)
+    const summary = summarizeStressRegressionResults([regressionResult])
+
+    expect(summary).toMatchObject({
+      total: 1,
+      passed: 0,
+      failed: 0,
+      drifted: 0,
+      draftPlaceholders: 1,
+    })
+    expect(regressionResult.comparisons.every((comparison) => comparison.passed)).toBe(true)
   })
 
   it('summarizes regression statuses', () => {
@@ -158,4 +209,10 @@ function momentInput() {
       momentYKnM: 8,
     },
   }
+}
+
+function loadMomentTemplate(filename: string): StressRegressionCase {
+  const templatePath = path.resolve(process.cwd(), 'examples', 'verification', 'moments', filename)
+
+  return JSON.parse(readFileSync(templatePath, 'utf-8')) as StressRegressionCase
 }

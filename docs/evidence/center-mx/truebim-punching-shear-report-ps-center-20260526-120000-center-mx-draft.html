@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>TrueBIM Structural Calculations - Punching Shear Report</title>
+  <style>
+    body { margin: 0; font-family: Arial, sans-serif; color: #0f172a; background: #f8fafc; }
+    main { max-width: 1040px; margin: 0 auto; padding: 32px 20px 48px; }
+    h1 { margin: 0 0 12px; font-size: 30px; }
+    h2 { margin: 28px 0 12px; font-size: 20px; }
+    table { width: 100%; border-collapse: collapse; background: #fff; }
+    th, td { border: 1px solid #cbd5e1; padding: 9px 10px; text-align: left; vertical-align: top; }
+    th { background: #e2e8f0; }
+    .warning { margin: 18px 0; padding: 18px; border: 2px solid #b45309; background: #fffbeb; color: #78350f; font-size: 20px; font-weight: 700; }
+    .note { color: #475569; line-height: 1.55; }
+    .draft { color: #b45309; font-weight: 700; }
+    .svg-wrap { background: #fff; border: 1px solid #cbd5e1; padding: 12px; overflow: auto; }
+    svg { max-width: 100%; height: auto; background: #fff; }
+    code { background: #e2e8f0; padding: 2px 5px; border-radius: 4px; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>TrueBIM Structural Calculations - Punching Shear Report</h1>
+    <div class="warning">DRAFT CALCULATION - NOT FOR DESIGN USE</div>
+    <p class="note">This report is a draft calculation export. Verify against SP63 before any design use.</p>
+
+    <h2>Metadata</h2>
+    <table><tbody><tr><th>calculationId</th><td>ps-center-20260526-120000-center-mx-draft</td></tr><tr><th>generatedAt</th><td>2026-05-26T12:00:00.000+07:00</td></tr><tr><th>app version</th><td>0.0.0</td></tr><tr><th>commit</th><td>747efba</td></tr><tr><th>build time</th><td>2026-05-26T07:40:17.761Z</td></tr><tr><th>calculation type</th><td>punching-shear</td></tr><tr><th>status</th><td>draft_failed</td></tr><tr><th>verification level</th><td>partial</td></tr><tr><th>Verification source</th><td>NOT VERIFIED</td></tr></tbody></table>
+
+    <h2>Input Data</h2>
+    <table><tbody><tr><th>case type</th><td>center</td></tr><tr><th>N</th><td>420 kN</td></tr><tr><th>Mx</th><td>50 kN*m</td></tr><tr><th>My</th><td>0 kN*m</td></tr><tr><th>slab thickness</th><td>220 mm</td></tr><tr><th>effective depth</th><td>190 mm</td></tr><tr><th>concrete cover</th><td>30 mm</td></tr><tr><th>column width</th><td>400 mm</td></tr><tr><th>column height</th><td>400 mm</td></tr><tr><th>concrete class</th><td>B25</td></tr><tr><th>shear reinforcement enabled</th><td>false</td></tr></tbody></table>
+
+    <h2>Geometry</h2>
+    <table><tbody><tr><th>control perimeter</th><td>2360 mm</td></tr><tr><th>effective depth</th><td>190 mm</td></tr><tr><th>segment count</th><td>4</td></tr><tr><th>bounding box minX</th><td>-295 mm</td></tr><tr><th>bounding box minY</th><td>-295 mm</td></tr><tr><th>bounding box width</th><td>590 mm</td></tr><tr><th>bounding box height</th><td>590 mm</td></tr></tbody></table>
+    <h2>Boundary Effects</h2>
+    <table><tbody><tr><th>edge affected</th><td>false</td></tr><tr><th>corner affected</th><td>false</td></tr><tr><th>removed perimeter</th><td>0 mm</td></tr><tr><th>clipped perimeter</th><td>2360 mm</td></tr></tbody></table>
+    <h2>Openings</h2>
+    <table><tbody><tr><th>opening count</th><td>0</td></tr><tr><th>affected openings</th><td>none</td></tr><tr><th>removed segments</th><td>0</td></tr><tr><th>tangent geometry</th><td>0</td></tr></tbody></table>
+    <h2>Geometry Verification</h2>
+    <table><tbody><tr><th>clipped perimeter</th><td>2360 mm</td></tr><tr><th>removed perimeter</th><td>0 mm</td></tr><tr><th>removed segments</th><td>0</td></tr><tr><th>tangent count</th><td>0</td></tr><tr><th>opening affected</th><td>false</td></tr><tr><th>boundary classification</th><td>center</td></tr></tbody></table>
+    <h2>Verification Readiness</h2>
+    <table><tbody><tr><th>geometry draft-ready</th><td>true</td></tr><tr><th>stress draft-ready</th><td>true</td></tr><tr><th>verified arithmetic available</th><td>true</td></tr><tr><th>geometry verified</th><td>true</td></tr><tr><th>stress verified</th><td>true</td></tr><tr><th>moment transfer verified</th><td>false</td></tr></tbody></table>
+    <h2>Verification Capabilities</h2>
+    <h3>Verified</h3>
+    <ul><li>center-force-only</li></ul>
+    <h3>Draft</h3>
+    <ul><li>center-moment-transfer</li></ul>
+    <h2>Verification Evidence</h2>
+    <table><tbody><tr><th>case ID</th><td>source | checkedBy | checkedAt | status</td></tr><tr><th>verified-center-rect-001</th><td>Manual engineer calculation | manual verification workflow | 2026-05-26 | verified</td></tr></tbody></table>
+    <h2>Segments</h2><table><tbody><tr><th>id</th><td>kind | start | end | length</td></tr><tr><th>center-rectangular-control-perimeter-1</th><td>line | (-295 mm, -295 mm) | (295 mm, -295 mm) | 590 mm</td></tr><tr><th>center-rectangular-control-perimeter-2</th><td>line | (295 mm, -295 mm) | (295 mm, 295 mm) | 590 mm</td></tr><tr><th>center-rectangular-control-perimeter-3</th><td>line | (295 mm, 295 mm) | (-295 mm, 295 mm) | 590 mm</td></tr><tr><th>center-rectangular-control-perimeter-4</th><td>line | (-295 mm, 295 mm) | (-295 mm, -295 mm) | 590 mm</td></tr></tbody></table>
+    <h2>SVG Preview</h2><div class="svg-wrap"><svg role="img" viewBox="-435 -435 870 870" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <marker id="dimension-arrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+        <path d="M 0 0 L 10 5 L 0 10 z" fill="#64748b" />
+      </marker>
+    </defs>
+    <rect x="-435" y="-435" width="870" height="870" fill="#f8fafc" />
+    <rect x="-435" y="-435" width="870" height="870" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="2" vector-effect="non-scaling-stroke" />
+<polygon points="-200,-200 200,-200 200,200 -200,200" fill="#1e293b" stroke="#020617" stroke-width="2" vector-effect="non-scaling-stroke" />
+<line x1="-295" y1="-295" x2="295" y2="-295" stroke="#0f766e" stroke-width="2" stroke-dasharray="0" vector-effect="non-scaling-stroke" />
+<line x1="295" y1="-295" x2="295" y2="295" stroke="#0f766e" stroke-width="2" stroke-dasharray="0" vector-effect="non-scaling-stroke" />
+<line x1="295" y1="295" x2="-295" y2="295" stroke="#0f766e" stroke-width="2" stroke-dasharray="0" vector-effect="non-scaling-stroke" />
+<line x1="-295" y1="295" x2="-295" y2="-295" stroke="#0f766e" stroke-width="2" stroke-dasharray="0" vector-effect="non-scaling-stroke" />
+<line x1="-295" y1="-295" x2="295" y2="-295" stroke="hsl(200 82% 48%)" stroke-width="7" stroke-dasharray="0" vector-effect="non-scaling-stroke" />
+<line x1="295" y1="-295" x2="295" y2="295" stroke="hsl(100 82% 48%)" stroke-width="7" stroke-dasharray="0" vector-effect="non-scaling-stroke" />
+<line x1="295" y1="295" x2="-295" y2="295" stroke="hsl(0 82% 48%)" stroke-width="7" stroke-dasharray="0" vector-effect="non-scaling-stroke" />
+<line x1="-295" y1="295" x2="-295" y2="-295" stroke="hsl(100 82% 48%)" stroke-width="7" stroke-dasharray="0" vector-effect="non-scaling-stroke" />
+<circle cx="-295" cy="-295" r="9" fill="hsl(200 82% 48%)" stroke="#dc2626" stroke-width="2" vector-effect="non-scaling-stroke" />
+<circle cx="0" cy="-295" r="9" fill="hsl(200 82% 48%)" stroke="#dc2626" stroke-width="2" vector-effect="non-scaling-stroke" />
+<circle cx="295" cy="-295" r="9" fill="hsl(200 82% 48%)" stroke="#dc2626" stroke-width="2" vector-effect="non-scaling-stroke" />
+<circle cx="295" cy="-295" r="9" fill="hsl(200 82% 48%)" stroke="#dc2626" stroke-width="2" vector-effect="non-scaling-stroke" />
+<circle cx="295" cy="0" r="9" fill="hsl(100 82% 48%)" stroke="#dc2626" stroke-width="2" vector-effect="non-scaling-stroke" />
+<circle cx="295" cy="295" r="9" fill="hsl(0 82% 48%)" stroke="#dc2626" stroke-width="2" vector-effect="non-scaling-stroke" />
+<circle cx="295" cy="295" r="9" fill="hsl(0 82% 48%)" stroke="#dc2626" stroke-width="2" vector-effect="non-scaling-stroke" />
+<circle cx="0" cy="295" r="9" fill="hsl(0 82% 48%)" stroke="#dc2626" stroke-width="2" vector-effect="non-scaling-stroke" />
+<circle cx="-295" cy="295" r="9" fill="hsl(0 82% 48%)" stroke="#dc2626" stroke-width="2" vector-effect="non-scaling-stroke" />
+<circle cx="-295" cy="295" r="9" fill="hsl(0 82% 48%)" stroke="#dc2626" stroke-width="2" vector-effect="non-scaling-stroke" />
+<circle cx="-295" cy="0" r="9" fill="hsl(100 82% 48%)" stroke="#dc2626" stroke-width="2" vector-effect="non-scaling-stroke" />
+<circle cx="-295" cy="-295" r="9" fill="hsl(200 82% 48%)" stroke="#dc2626" stroke-width="2" vector-effect="non-scaling-stroke" />
+<text x="313" y="277" fill="#475569" font-size="18">max 1.693 MPa</text>
+<text x="-277" y="-267" fill="#475569" font-size="18">min 0.181 MPa</text>
+<line x1="-295" y1="-349" x2="295" y2="-349" stroke="#7c3aed" stroke-width="2" stroke-dasharray="6 6" vector-effect="non-scaling-stroke" marker-start="url(#dimension-arrow)" marker-end="url(#dimension-arrow)" /><text x="0" y="-357" fill="#475569" font-size="18" text-anchor="middle">Mx draft</text>
+<line x1="0" y1="0" x2="0" y2="119.04761904761904" stroke="#0891b2" stroke-width="2" stroke-dasharray="6 6" vector-effect="non-scaling-stroke" marker-start="url(#dimension-arrow)" marker-end="url(#dimension-arrow)" /><text x="0" y="51.52380952380952" fill="#475569" font-size="18" text-anchor="middle">e draft</text>
+<circle cx="0" cy="119.04761904761904" r="10" fill="#cffafe" stroke="#0891b2" stroke-width="2" vector-effect="non-scaling-stroke" />
+<line x1="-200" y1="242" x2="200" y2="242" stroke="#64748b" stroke-width="2" stroke-dasharray="6 6" vector-effect="non-scaling-stroke" marker-start="url(#dimension-arrow)" marker-end="url(#dimension-arrow)" /><text x="0" y="234" fill="#475569" font-size="18" text-anchor="middle">400 mm column X</text>
+<line x1="242" y1="-200" x2="242" y2="200" stroke="#64748b" stroke-width="2" stroke-dasharray="6 6" vector-effect="non-scaling-stroke" marker-start="url(#dimension-arrow)" marker-end="url(#dimension-arrow)" /><text x="242" y="-8" fill="#475569" font-size="18" text-anchor="middle">400 mm column Y</text>
+<line x1="200" y1="0" x2="295" y2="0" stroke="#64748b" stroke-width="2" stroke-dasharray="6 6" vector-effect="non-scaling-stroke" marker-start="url(#dimension-arrow)" marker-end="url(#dimension-arrow)" /><text x="247.5" y="-8" fill="#475569" font-size="18" text-anchor="middle">95 mm draft offset</text>
+<line x1="-295" y1="367" x2="295" y2="367" stroke="#64748b" stroke-width="2" stroke-dasharray="6 6" vector-effect="non-scaling-stroke" marker-start="url(#dimension-arrow)" marker-end="url(#dimension-arrow)" /><text x="0" y="359" fill="#475569" font-size="18" text-anchor="middle">590 mm contour X</text>
+<line x1="367" y1="-295" x2="367" y2="295" stroke="#64748b" stroke-width="2" stroke-dasharray="6 6" vector-effect="non-scaling-stroke" marker-start="url(#dimension-arrow)" marker-end="url(#dimension-arrow)" /><text x="367" y="-8" fill="#475569" font-size="18" text-anchor="middle">590 mm contour Y</text>
+<line x1="-399" y1="-399" x2="-309" y2="-399" stroke="#64748b" stroke-width="2" stroke-dasharray="6 6" vector-effect="non-scaling-stroke" marker-start="url(#dimension-arrow)" marker-end="url(#dimension-arrow)" /><text x="-354" y="-407" fill="#475569" font-size="18" text-anchor="middle">X</text>
+<line x1="-399" y1="-399" x2="-399" y2="-309" stroke="#64748b" stroke-width="2" stroke-dasharray="6 6" vector-effect="non-scaling-stroke" marker-start="url(#dimension-arrow)" marker-end="url(#dimension-arrow)" /><text x="-399" y="-362" fill="#475569" font-size="18" text-anchor="middle">Y</text>
+<text x="-399" y="399" fill="#475569" font-size="18">Scale: 1 unit = 1 mm, fit-to-view</text>
+<text x="-295" y="-319" fill="#475569" font-size="18">Control perimeter draft geometry</text>
+  </svg></div>
+
+    <h2>Calculation Summary</h2>
+    <table><tbody><tr><th>formula</th><td>v = N / (u * h0)</td></tr><tr><th>N</th><td>420000 N</td></tr><tr><th>u</th><td>2360 mm</td></tr><tr><th>h0</th><td>190 mm</td></tr><tr><th>v</th><td>0.937 MPa</td></tr><tr><th>draft resistance</th><td>1.050 MPa</td></tr><tr><th>utilization ratio</th><td>1.612 (161.2%)</td></tr><tr><th>passed</th><td>false</td></tr></tbody></table>
+
+    <h2>Moment Transfer</h2>
+    <table><tbody><tr><th>status</th><td>draft</td></tr><tr><th>Mx</th><td>50 kN*m</td></tr><tr><th>My</th><td>0 kN*m</td></tr><tr><th>eccentricity X</th><td>0.000 mm</td></tr><tr><th>eccentricity Y</th><td>119.048 mm</td></tr><tr><th>max stress</th><td>1.693 MPa</td></tr><tr><th>min stress</th><td>0.181 MPa</td></tr><tr><th>redistribution notes</th><td>DRAFT provisional linear perimeter redistribution; not SP63 verified</td></tr></tbody></table>
+    <p class="draft">Moment transfer draft-only. Verify against SP63. Stress redistribution is not verified.</p>
+
+    <h2>Moment Verification</h2>
+    <table><tbody><tr><th>eccentricity X</th><td>0.000 mm</td></tr><tr><th>eccentricity Y</th><td>119.048 mm</td></tr><tr><th>transfer factor X</th><td>draft metadata only</td></tr><tr><th>transfer factor Y</th><td>draft metadata only</td></tr><tr><th>max stress</th><td>1.693 MPa</td></tr><tr><th>min stress</th><td>0.181 MPa</td></tr><tr><th>stress point count</th><td>12</td></tr><tr><th>stress distribution metadata</th><td>draft-linear-perimeter-redistribution</td></tr></tbody></table>
+
+    <h2>Stress Distribution</h2>
+    <table><tbody><tr><th>status</th><td>draft</td></tr><tr><th>point count</th><td>12</td></tr><tr><th>segment count</th><td>4</td></tr><tr><th>base stress</th><td>0.937 MPa</td></tr><tr><th>method</th><td>draft-linear-perimeter-redistribution</td></tr><tr><th>formulas verified</th><td>false</td></tr></tbody></table>
+
+    <h2>Stress Regression</h2>
+    <table><tbody><tr><th>checksum</th><td>count=12;coords=295.000,-295.000|0.000,-295.000|-295.000,-295.000|295.000,295.000|295.000,0.000|295.000,-295.000|-295.000,295.000|0.000,295.000|295.000,295.000|-295.000,-295.000|-295.000,0.000|-295.000,295.000;stress=center-rectangular-control-perimeter-1-end:0.180680|center-rectangular-control-perimeter-1-mid:0.180680|center-rectangular-control-perimeter-1-start:0.180680|center-rectangular-control-perimeter-2-end:1.692647|center-rectangular-control-perimeter-2-mid:0.936664|center-rectangular-control-perimeter-2-start:0.180680|center-rectangular-control-perimeter-3-end:1.692647|center-rectangular-control-perimeter-3-mid:1.692647|center-rectangular-control-perimeter-3-start:1.692647|center-rectangular-control-perimeter-4-end:0.180680|center-rectangular-control-perimeter-4-mid:0.936664|center-rectangular-control-perimeter-4-start:1.692647</td></tr><tr><th>drift detected</th><td>no expected baseline</td></tr><tr><th>expected vs actual</th><td>pending trusted stress evidence</td></tr><tr><th>tolerance</th><td>not applied until expected values are populated</td></tr><tr><th>regression status</th><td>draft-placeholder</td></tr></tbody></table>
+
+    <h2>Axis Convention</h2>
+    <table><tbody><tr><th>X positive direction</th><td>right</td></tr><tr><th>Y positive direction</th><td>up</td></tr><tr><th>Mx sign convention</th><td>positive-mx-increases-positive-y-stress</td></tr><tr><th>My sign convention</th><td>positive-my-increases-positive-x-stress</td></tr></tbody></table>
+
+    <h2>Assumptions</h2>
+    <ul><li>Center, edge, corner, and opening geometry are draft-only where provided</li><li>Openings use draft tangent subtraction geometry</li><li>Slab edges use draft control perimeter clipping geometry</li><li>No shear reinforcement contribution</li><li>Moments use draft redistribution where provided</li><li>Draft concrete resistance values</li><li>Draft perimeter geometry</li></ul>
+
+    <h2>Unsupported in this draft</h2>
+    <ul><li>verified openings formulas</li><li>verified edge column formulas</li><li>verified corner column formulas</li><li>round columns</li><li>shear reinforcement contribution</li><li>verified moment transfer</li><li>verified SP63 coefficients</li></ul>
+
+    <h2>Warnings</h2>
+    <ul><li>DRAFT CALCULATION - NOT FOR DESIGN USE</li><li>Draft calculation. Verify formulas and coefficients against СП63.13330 before design use.</li><li>Moment transfer uses draft-only stress redistribution when Mx/My are provided</li><li>Openings and boundary clipping are draft geometry only</li><li>Shear reinforcement is not included in this draft</li><li>Draft formula must be verified before design use</li><li>Control perimeter geometry is draft-only; engineering formulas are intentionally disabled</li><li>Draft offset uses effectiveDepthMm / 2 as a geometry placeholder pending SP63 verification</li><li>Moment transfer is DRAFT-only and not verified for design use</li><li>Verify moment transfer formulas against SP63 before design use</li><li>Stress redistribution is provisional and not verified</li><li>Partially verified calculation: only listed verified features have trusted evidence.</li><li>Center moment transfer remains provisional until a trusted moment verification case passes.</li><li>Moment transfer is draft-only where Mx/My are provided</li><li>Openings and boundary clipping are draft geometry only.</li><li>Shear reinforcement is unsupported in this draft</li><li>Verify against SP63 before design use</li></ul>
+
+    <h2>Verification Status</h2>
+    <p class="note">Verification source: NOT VERIFIED</p>
+    <p class="note">verification level: partial</p>
+    <p class="note">verified features: center-force-only</p>
+    <p class="note">draft features: center-moment-transfer</p>
+    <p class="note">This report can be used to create a verified case only after checking with manual calculation, WebCAD, Excel, or another trusted source.</p>
+
+    <h2>Source Report Notes</h2>
+    <ul><li>DRAFT / NOT FOR DESIGN USE.</li><li>Input schema validation completed.</li><li>Units normalized into the current internal DTO shape.</li><li>Draft material resistance selected.</li><li>Control perimeter draft geometry generated.</li><li>SVG sketch model generated from geometry DTOs.</li><li>Draft moment-transfer stress distribution generated where Mx/My are present.</li><li>Draft rectangular force-only check evaluated where supported.</li><li>Draft openings and slab edge clipping geometry generated where provided.</li><li>Shear reinforcement intentionally skipped.</li></ul>
+  </main>
+</body>
+</html>

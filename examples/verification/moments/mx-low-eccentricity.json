@@ -2,7 +2,7 @@
   "id": "moment-evidence-mx-low-eccentricity",
   "title": "Mx low eccentricity stress evidence template",
   "status": "draft",
-  "source": "TODO: trusted manual/WebCAD/Excel stress evidence",
+  "source": "draft attempt: trusted source not available; manual/WebCAD/Excel validation pending",
   "standard": "SP63.13330",
   "caseType": "center",
   "axisConvention": {
@@ -14,7 +14,7 @@
   },
   "input": {
     "caseType": "center",
-    "forces": { "axialForceKn": 420, "momentXKnM": 6, "momentYKnM": 0 },
+    "forces": { "axialForceKn": 420, "momentXKnM": 50, "momentYKnM": 0 },
     "slab": { "thicknessMm": 220, "effectiveDepthMm": 190, "concreteCoverMm": 30 },
     "concrete": { "className": "B25" },
     "rectColumn": { "widthXMm": 400, "widthYMm": 400 },
@@ -48,5 +48,6 @@
       "stress point metadata"
     ]
   },
+  "comparisonNotes": "2026-05-26 center + Mx attempt recorded app output for N=420 kN, Mx=50 kN*m. Trusted WebCAD/manual/Excel/normative values were not available, so expected values remain null and no verified claim is made.",
   "notes": "Draft placeholder. Fill expected values only after trusted comparison."
 }
