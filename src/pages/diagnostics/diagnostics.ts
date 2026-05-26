@@ -43,6 +43,9 @@ export type DiagnosticsModel = {
   draftMomentCasesCount: number
   verifiedMomentEvidenceCount: number
   reviewModeSupport: 'local-only'
+  verificationCandidateSupport: 'yes'
+  candidateAutoPromotion: 'no'
+  manualDatasetImportRequired: 'yes'
   frozenReviewSnapshotsCount: number
   pendingReviewsCount: number
   acceptedReviewsCount: number
@@ -139,6 +142,9 @@ export function buildDiagnosticsModel({
     verifiedMomentCasesCount: momentCases.filter((verificationCase) => verificationCase.status === 'verified').length,
     draftMomentCasesCount: momentCases.filter((verificationCase) => verificationCase.status === 'draft').length,
     verifiedMomentEvidenceCount: momentCases.filter((verificationCase) => verificationCase.status === 'verified').length,
+    verificationCandidateSupport: 'yes',
+    candidateAutoPromotion: 'no',
+    manualDatasetImportRequired: 'yes',
     ...reviewDiagnostics,
     warning: 'Client-side diagnostics only',
   }

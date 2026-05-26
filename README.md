@@ -86,6 +86,14 @@ Release hardening checks are documented in `docs/release-checklist.md`.
 
 Client-side runtime diagnostics are available at `/diagnostics`.
 
+Engineering review can export verification candidate JSON from `/review`. The candidate CLI checks the exported JSON without importing it:
+
+```powershell
+npm run verification:candidate -- path/to/candidate.json
+```
+
+Accepted Review != VERIFIED, and Candidate != VERIFIED. Manual dataset import and the verification runner remain required for promotion.
+
 Процесс подготовки verification pack для продавливания по СП63 описан в `docs/sp63-verification-pack.md`.
 
 ## Windows deploy scripts

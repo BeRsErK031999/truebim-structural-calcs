@@ -127,6 +127,18 @@ export function DiagnosticsPage() {
             />
             <DiagnosticItem label="Review mode support" value={diagnostics.reviewModeSupport} />
             <DiagnosticItem
+              label="Verification candidate support"
+              value={diagnostics.verificationCandidateSupport}
+            />
+            <DiagnosticItem
+              label="Candidate auto promotion"
+              value={diagnostics.candidateAutoPromotion}
+            />
+            <DiagnosticItem
+              label="Manual dataset import required"
+              value={diagnostics.manualDatasetImportRequired}
+            />
+            <DiagnosticItem
               label="Frozen review snapshots"
               value={diagnostics.frozenReviewSnapshotsCount.toString()}
             />

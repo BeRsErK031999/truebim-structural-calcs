@@ -62,4 +62,13 @@ VERIFIED still requires the existing capability promotion lifecycle:
 
 Review snapshots are evidence collection artifacts. They help prepare trusted moment cases, especially center moment transfer, but the verified transition layer remains the authority for promotion.
 
+Accepted reviews can now be converted into verification candidate JSON from `/review`. A candidate is a staging artifact for manual validation and manual dataset import only.
+
+The candidate workflow keeps these boundaries explicit:
+
+- Accepted Review != VERIFIED;
+- Candidate != VERIFIED;
+- candidate export does not modify `verificationLevel`;
+- candidate export does not add anything to the verification dataset.
+
 For center moment transfer, the remaining work is to convert accepted trusted review snapshots into verified moment evidence cases with expected max/min stress, eccentricity, transfer factors, checksum, axis convention notes, and passing regression tests.

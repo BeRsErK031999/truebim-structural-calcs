@@ -1,4 +1,4 @@
-import { FileDown, FileJson, Lock, Upload } from 'lucide-react'
+import { ClipboardCopy, FileDown, FileJson, Lock, Upload } from 'lucide-react'
 import { useMemo, useState } from 'react'
 
 import { buildPunchingShearReport, calculatePunchingShear } from '@/calculations/punching-shear'
@@ -7,14 +7,20 @@ import {
   buildReviewComparison,
   buildReviewSnapshot,
   buildReviewSnapshotHtml,
+  buildCandidateSummary,
   compareFrozenReviewSnapshot,
   createReviewSession,
+  createVerificationCandidateFromReview,
+  downloadCandidateJson,
   exportReviewSession,
   freezeReviewSnapshot,
+  hasTrustedVerificationCandidateSource,
   importReviewSession,
+  requiredVerificationCandidateExpectedFields,
   saveReviewSession,
   serializeReviewSnapshot,
   transitionReviewStatus,
+  type VerificationCandidateCreationResult,
   type ReviewDiffItem,
   type ReviewSession,
   type ReviewStatus,
@@ -46,6 +52,7 @@ export function EngineeringReviewPage() {
   const setPunchingShearResult = useCalculationStore((state) => state.setPunchingShearResult)
   const result = storeResult ?? calculatePunchingShear(draft)
   const [session, setSession] = useState<ReviewSession>(() => createReviewSession({ input: draft }))
+  const [candidateResult, setCandidateResult] = useState<VerificationCandidateCreationResult | null>(null)
   const [message, setMessage] = useState<string | null>(null)
   const [importText, setImportText] = useState('')
   const comparison = useMemo(
@@ -58,9 +65,28 @@ export function EngineeringReviewPage() {
       ...item,
     })),
   )
+  const candidatePreview = useMemo(
+    () => createVerificationCandidateFromReview(session),
+    [session],
+  )
+  const candidateChecklist = [
+    { label: 'accepted status', complete: session.status === 'accepted' },
+    { label: 'trusted source', complete: hasTrustedVerificationCandidateSource(session.evidence.source) },
+    { label: 'checkedBy', complete: session.evidence.checkedBy.trim().length > 0 },
+    { label: 'checkedAt', complete: session.evidence.checkedAt.trim().length > 0 },
+    {
+      label: 'expected values',
+      complete: requiredVerificationCandidateExpectedFields.every((field) =>
+        Number.isFinite(session.evidence.expectedValues[field]),
+      ),
+    },
+    { label: 'tolerances', complete: true },
+    { label: 'axis notes', complete: session.evidence.axisConventionNotes.trim().length > 0 },
+  ]
 
   const updateSession = (nextSession: ReviewSession, save = false) => {
     setSession(nextSession)
+    setCandidateResult(null)
 
     if (save) {
       saveReviewSession(nextSession)
@@ -146,6 +172,30 @@ export function EngineeringReviewPage() {
     } catch {
       setMessage('Could not import review session JSON.')
     }
+  }
+
+  const handleCreateCandidate = () => {
+    const nextCandidateResult = createVerificationCandidateFromReview(session)
+
+    setCandidateResult(nextCandidateResult)
+    setMessage(
+      nextCandidateResult.validation.valid
+        ? 'Verification candidate JSON is ready for manual validation.'
+        : 'Verification candidate is incomplete. Complete the checklist before validation.',
+    )
+  }
+
+  const handleExportCandidate = () => {
+    const candidate = candidateResult?.candidate ?? candidatePreview.candidate
+
+    downloadCandidateJson(candidate)
+  }
+
+  const handleCopyCandidateSummary = async () => {
+    const candidate = candidateResult?.candidate ?? candidatePreview.candidate
+
+    await navigator.clipboard.writeText(buildCandidateSummary(candidate))
+    setMessage('Verification candidate summary copied.')
   }
 
   return (
@@ -343,6 +393,63 @@ export function EngineeringReviewPage() {
               No frozen snapshot drift detected.
             </div>
           )}
+          <div className="grid gap-4 rounded-lg border border-amber-200 bg-amber-50 p-4">
+            <div className="grid gap-2">
+              <p className="text-sm font-semibold text-amber-900">
+                Candidate is not VERIFIED and is not automatically added to the verification dataset.
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {candidateChecklist.map((item) => (
+                  <span
+                    key={item.label}
+                    className={
+                      item.complete
+                        ? 'rounded-md bg-emerald-100 px-2.5 py-1 text-sm font-semibold text-emerald-800'
+                        : 'rounded-md bg-white px-2.5 py-1 text-sm font-semibold text-amber-800'
+                    }
+                  >
+                    {item.complete ? 'ok' : 'missing'}: {item.label}
+                  </span>
+                ))}
+              </div>
+            </div>
+            <div className="flex flex-wrap gap-3">
+              <Button
+                type="button"
+                variant="outline"
+                disabled={session.status !== 'accepted'}
+                onClick={handleCreateCandidate}
+              >
+                <FileJson />
+                Create verification candidate
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                disabled={!candidateResult}
+                onClick={handleExportCandidate}
+              >
+                <FileDown />
+                Export candidate JSON
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                disabled={!candidateResult}
+                onClick={handleCopyCandidateSummary}
+              >
+                <ClipboardCopy />
+                Copy candidate summary
+              </Button>
+            </div>
+            {candidateResult && candidateResult.validation.errors.length > 0 ? (
+              <ul className="grid gap-1 text-sm font-medium text-amber-900">
+                {candidateResult.validation.errors.map((error) => (
+                  <li key={error}>{error}</li>
+                ))}
+              </ul>
+            ) : null}
+          </div>
           <textarea
             className="min-h-24 w-full resize-y rounded-lg border border-slate-300 bg-white p-3 text-sm outline-none focus-visible:border-slate-500 focus-visible:ring-3 focus-visible:ring-slate-200"
             placeholder="Paste review session JSON to import"
