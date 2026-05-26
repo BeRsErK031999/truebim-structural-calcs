@@ -5,13 +5,24 @@ import type {
   PunchingShearResult,
 } from '@/calculations/punching-shear'
 
+import {
+  formatUtilization,
+  formatValueWithUnit,
+} from './reportFormatting'
+import {
+  createReportMetadata,
+  reportAssumptions,
+  unsupportedDraftFeatures,
+  type ReportMetadata,
+} from './reportMetadata'
+
 export function buildPunchingShearMarkdownReport(
   input: PunchingShearInput,
   result: PunchingShearResult,
   report: PunchingShearReportModel,
+  reportMetadata: ReportMetadata = createReportMetadata(),
 ) {
   const metadata = getAppMetadata()
-  const generatedAt = new Date().toISOString()
   const warnings = createReportWarnings(result)
 
   return [
@@ -24,26 +35,28 @@ export function buildPunchingShearMarkdownReport(
     '## Metadata',
     '',
     table([
-      ['generatedAt', generatedAt],
+      ['calculationId', reportMetadata.calculationId],
+      ['generatedAt', reportMetadata.generatedAt],
       ['app version', metadata.version],
       ['commit', metadata.commit],
       ['build time', metadata.buildTime],
       ['calculation type', 'punching-shear'],
       ['status', result.status],
+      ['Verification source', reportMetadata.verificationSource],
     ]),
     '',
     '## Input Data',
     '',
     table([
       ['case type', input.caseType],
-      ['N, kN', formatNumber(input.forces.axialForceKn)],
-      ['Mx, kN*m', formatNumber(input.forces.momentXKnM)],
-      ['My, kN*m', formatNumber(input.forces.momentYKnM)],
-      ['slab thickness, mm', formatNumber(input.slab.thicknessMm)],
-      ['effective depth, mm', formatNumber(input.slab.effectiveDepthMm)],
-      ['concrete cover, mm', formatNumber(input.slab.concreteCoverMm)],
-      ['column width, mm', formatNullable(input.rectColumn?.widthXMm ?? input.roundColumn?.diameterMm)],
-      ['column height, mm', formatNullable(input.rectColumn?.widthYMm ?? input.roundColumn?.diameterMm)],
+      ['N', formatValueWithUnit(input.forces.axialForceKn, 'kN')],
+      ['Mx', formatValueWithUnit(input.forces.momentXKnM, 'kN*m')],
+      ['My', formatValueWithUnit(input.forces.momentYKnM, 'kN*m')],
+      ['slab thickness', formatValueWithUnit(input.slab.thicknessMm, 'mm')],
+      ['effective depth', formatValueWithUnit(input.slab.effectiveDepthMm, 'mm')],
+      ['concrete cover', formatValueWithUnit(input.slab.concreteCoverMm, 'mm')],
+      ['column width', formatValueWithUnit(input.rectColumn?.widthXMm ?? input.roundColumn?.diameterMm, 'mm')],
+      ['column height', formatValueWithUnit(input.rectColumn?.widthYMm ?? input.roundColumn?.diameterMm, 'mm')],
       ['concrete class', input.concrete.className],
       ['shear reinforcement enabled', String(input.shearReinforcement.enabled)],
     ]),
@@ -51,23 +64,23 @@ export function buildPunchingShearMarkdownReport(
     '## Geometry',
     '',
     table([
-      ['control perimeter, mm', formatNullable(result.controlPerimeterMm)],
-      ['effective depth, mm', formatNullable(result.effectiveDepthMm)],
+      ['control perimeter', formatValueWithUnit(result.controlPerimeterMm, 'mm')],
+      ['effective depth', formatValueWithUnit(result.effectiveDepthMm, 'mm')],
       ['segment count', String(result.perimeter.segments.length)],
-      ['bounding box minX, mm', formatNumber(result.perimeter.boundingBox.minX)],
-      ['bounding box minY, mm', formatNumber(result.perimeter.boundingBox.minY)],
-      ['bounding box width, mm', formatNumber(result.perimeter.boundingBox.width)],
-      ['bounding box height, mm', formatNumber(result.perimeter.boundingBox.height)],
+      ['bounding box minX', formatValueWithUnit(result.perimeter.boundingBox.minX, 'mm')],
+      ['bounding box minY', formatValueWithUnit(result.perimeter.boundingBox.minY, 'mm')],
+      ['bounding box width', formatValueWithUnit(result.perimeter.boundingBox.width, 'mm')],
+      ['bounding box height', formatValueWithUnit(result.perimeter.boundingBox.height, 'mm')],
     ]),
     '',
     '### Segments',
     '',
     result.perimeter.segments.length > 0
       ? table([
-          ['id', 'kind | start | end | length, mm'],
+          ['id', 'kind | start | end | length'],
           ...result.perimeter.segments.map((segment) => [
             segment.id,
-            `${segment.kind} | (${formatNumber(segment.start.x)}, ${formatNumber(segment.start.y)}) | (${formatNumber(segment.end.x)}, ${formatNumber(segment.end.y)}) | ${formatNumber(segment.lengthMm)}`,
+            `${segment.kind} | (${formatValueWithUnit(segment.start.x, 'mm')}, ${formatValueWithUnit(segment.start.y, 'mm')}) | (${formatValueWithUnit(segment.end.x, 'mm')}, ${formatValueWithUnit(segment.end.y, 'mm')}) | ${formatValueWithUnit(segment.lengthMm, 'mm')}`,
           ] satisfies [string, string]),
         ])
       : 'No segments available.',
@@ -76,14 +89,22 @@ export function buildPunchingShearMarkdownReport(
     '',
     table([
       ['formula', 'v = N / (u * h0)'],
-      ['N, N', formatNullable(result.designShearForceN)],
-      ['u, mm', formatNullable(result.controlPerimeterMm)],
-      ['h0, mm', formatNullable(result.effectiveDepthMm)],
-      ['v, MPa', formatNullable(result.shearStressMpa)],
-      ['draft resistance, MPa', formatNullable(result.draftConcreteResistanceMpa)],
-      ['utilization ratio', formatNullable(result.utilizationRatio)],
+      ['N', formatValueWithUnit(result.designShearForceN, 'N')],
+      ['u', formatValueWithUnit(result.controlPerimeterMm, 'mm')],
+      ['h0', formatValueWithUnit(result.effectiveDepthMm, 'mm')],
+      ['v', formatValueWithUnit(result.shearStressMpa, 'MPa', 3)],
+      ['draft resistance', formatValueWithUnit(result.draftConcreteResistanceMpa, 'MPa', 3)],
+      ['utilization ratio', formatUtilization(result.utilizationRatio)],
       ['passed', result.passed === null ? 'not evaluated' : String(result.passed)],
     ]),
+    '',
+    '## Assumptions',
+    '',
+    ...reportAssumptions.map((assumption) => `- ${assumption}`),
+    '',
+    '## Unsupported in this draft',
+    '',
+    ...unsupportedDraftFeatures.map((feature) => `- ${feature}`),
     '',
     '## Warnings',
     '',
@@ -91,6 +112,7 @@ export function buildPunchingShearMarkdownReport(
     '',
     '## Verification Status',
     '',
+    `- Verification source: ${reportMetadata.verificationSource}`,
     '- draft / not verified',
     '- This report can be used to create a verified case only after checking with manual calculation, WebCAD, Excel, or another trusted source.',
     '',
@@ -122,16 +144,6 @@ function table(rows: Array<[string, string]>) {
 
 function uniqueStrings(values: string[]) {
   return Array.from(new Set(values.filter((value) => value.trim().length > 0)))
-}
-
-function formatNullable(value: number | null | undefined) {
-  return value === null || value === undefined || !Number.isFinite(value)
-    ? 'not evaluated'
-    : formatNumber(value)
-}
-
-function formatNumber(value: number) {
-  return Number.isInteger(value) ? String(value) : value.toFixed(3)
 }
 
 function escapeMarkdownCell(value: string) {

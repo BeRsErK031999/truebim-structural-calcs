@@ -1,6 +1,7 @@
 import { getSavedCalculationCount } from '@/entities/calculation/model/calculationStorage'
 import { useCalculationStore } from '@/entities/calculation/model/store'
 import { getAppMetadata } from '@/shared/config/appMetadata'
+import { Badge } from '@/shared/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card'
 
 import { buildDiagnosticsModel, isLocalStorageAvailable } from './diagnostics'
@@ -25,7 +26,16 @@ export function DiagnosticsPage() {
         <CardHeader>
           <CardTitle>Runtime</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="grid gap-4">
+          <div className="flex flex-wrap gap-2">
+            <VerificationBadge label="Draft only" active={diagnostics.verification.draftCases > 0} />
+            <VerificationBadge
+              label="Verification pending"
+              active={diagnostics.verification.verifiedCases === 0}
+            />
+            <VerificationBadge label="Verified" active={diagnostics.verification.verifiedCases > 0} />
+            <VerificationBadge label="Failed" active={diagnostics.verification.failedCases > 0} />
+          </div>
           <dl className="grid gap-3 md:grid-cols-2">
             <DiagnosticItem label="App loaded" value={diagnostics.appLoaded} />
             <DiagnosticItem label="Version" value={diagnostics.version} />
@@ -79,6 +89,14 @@ export function DiagnosticsPage() {
         </CardContent>
       </Card>
     </div>
+  )
+}
+
+function VerificationBadge({ label, active }: { label: string; active: boolean }) {
+  return (
+    <Badge variant={active ? 'default' : 'secondary'} className="rounded-md">
+      {label}
+    </Badge>
   )
 }
 

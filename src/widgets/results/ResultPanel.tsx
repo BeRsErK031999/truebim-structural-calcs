@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { Download } from 'lucide-react'
+import { useMemo, useState } from 'react'
+import { Copy, Download } from 'lucide-react'
 
 import {
   pointsToSvg,
@@ -10,6 +10,8 @@ import {
 } from '@/calculations/punching-shear'
 import { useCalculationStore } from '@/entities/calculation/model/store'
 import {
+  buildReportSummary,
+  createCalculationId,
   exportCurrentCalculationAsHtml,
   exportCurrentCalculationAsMarkdown,
 } from '@/features/report-export'
@@ -23,7 +25,9 @@ export function ResultPanel() {
   const result = useCalculationStore((state) => state.punchingShearResult)
   const report = useCalculationStore((state) => state.punchingShearReport)
   const [exportMessage, setExportMessage] = useState<string | null>(null)
+  const [copyMessage, setCopyMessage] = useState<string | null>(null)
   const canExport = Boolean(result && report)
+  const calculationId = useMemo(() => (result ? createCalculationId() : null), [result])
 
   const handleExportHtml = () => {
     const exportResult = exportCurrentCalculationAsHtml()
@@ -43,6 +47,28 @@ export function ResultPanel() {
         ? `Отчет скачан: ${exportResult.filename}`
         : exportResult.error,
     )
+  }
+
+  const handleCopyCalculationId = () => {
+    if (!calculationId) {
+      return
+    }
+
+    void copyText(calculationId).then((ok) => {
+      setCopyMessage(ok ? `Calculation ID copied: ${calculationId}` : 'Could not copy calculation ID')
+    })
+  }
+
+  const handleCopySummary = () => {
+    if (!result) {
+      return
+    }
+
+    const summary = buildReportSummary(result)
+
+    void copyText(summary).then((ok) => {
+      setCopyMessage(ok ? `Report summary copied: ${summary}` : 'Could not copy report summary')
+    })
   }
 
   return (
@@ -85,9 +111,32 @@ export function ResultPanel() {
               Выгрузить Markdown
             </Button>
           </div>
+          <div className="grid gap-2 sm:grid-cols-2">
+            <Button
+              type="button"
+              variant="outline"
+              className="justify-center"
+              disabled={!calculationId}
+              onClick={handleCopyCalculationId}
+            >
+              <Copy />
+              Copy calculation ID
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              className="justify-center"
+              disabled={!result}
+              onClick={handleCopySummary}
+            >
+              <Copy />
+              Copy summary
+            </Button>
+          </div>
           {exportMessage ? (
             <p className="text-sm font-medium text-slate-700">{exportMessage}</p>
           ) : null}
+          {copyMessage ? <p className="text-sm font-medium text-slate-700">{copyMessage}</p> : null}
         </div>
 
         <div className="grid grid-cols-2 gap-3">
@@ -171,6 +220,17 @@ function EngineeringPreview({ svgModel }: { svgModel?: PunchingSketchModel }) {
         viewBox={viewBoxToString(svgModel.viewBox)}
       >
         <defs>
+          <marker
+            id="dimension-arrow"
+            viewBox="0 0 10 10"
+            refX="5"
+            refY="5"
+            markerWidth="7"
+            markerHeight="7"
+            orient="auto-start-reverse"
+          >
+            <path d="M 0 0 L 10 5 L 0 10 z" className="fill-slate-500" />
+          </marker>
           <pattern id="engineering-grid" width="50" height="50" patternUnits="userSpaceOnUse">
             <path d="M 50 0 L 0 0 0 50" fill="none" stroke="#e2e8f0" strokeWidth="1" />
           </pattern>
@@ -228,6 +288,8 @@ function SketchElement({ element }: { element: SvgSketchElement }) {
           y2={element.end.y}
           className={getElementClassName(element.role)}
           vectorEffect="non-scaling-stroke"
+          markerStart={element.role === 'dimension' ? 'url(#dimension-arrow)' : undefined}
+          markerEnd={element.role === 'dimension' ? 'url(#dimension-arrow)' : undefined}
         />
         {element.label ? (
           <text
@@ -298,4 +360,17 @@ function formatPassed(value?: boolean | null) {
   }
 
   return value ? 'Pass' : 'Fail'
+}
+
+async function copyText(value: string) {
+  if (!navigator.clipboard) {
+    return false
+  }
+
+  try {
+    await navigator.clipboard.writeText(value)
+    return true
+  } catch {
+    return false
+  }
 }

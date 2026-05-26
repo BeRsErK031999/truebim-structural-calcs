@@ -2,6 +2,10 @@
   "id": "verified-center-rect-example",
   "title": "Пример будущего verified case для центральной прямоугольной колонны",
   "source": "TODO: replace with manual/webcad/excel verified source",
+  "verificationSource": "NOT VERIFIED",
+  "checkedBy": null,
+  "checkedAt": null,
+  "comparisonNotes": "TODO: compare u, h0, v, utilization and passed against WebCAD/manual/excel source",
   "standard": "СП63.13330",
   "caseType": "center",
   "input": {

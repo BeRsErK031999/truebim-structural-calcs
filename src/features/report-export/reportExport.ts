@@ -3,6 +3,7 @@ import { useCalculationStore } from '@/entities/calculation/model/store'
 import { downloadTextFile } from './downloadFile'
 import { buildPunchingShearHtmlReport } from './reportHtml'
 import { buildPunchingShearMarkdownReport } from './reportMarkdown'
+import { createReportMetadata } from './reportMetadata'
 import { sanitizeFileName } from './sanitizeFileName'
 
 type ExportCalculationResult =
@@ -17,12 +18,14 @@ export function exportCurrentCalculationAsHtml(): ExportCalculationResult {
   }
 
   try {
+    const reportMetadata = createReportMetadata()
     const content = buildPunchingShearHtmlReport(
       state.draft,
       state.punchingShearResult,
       state.punchingShearReport,
+      reportMetadata,
     )
-    const filename = createReportFilename('html')
+    const filename = createReportFilename(reportMetadata.calculationId, 'html')
 
     downloadTextFile(filename, content, 'text/html')
 
@@ -40,12 +43,14 @@ export function exportCurrentCalculationAsMarkdown(): ExportCalculationResult {
   }
 
   try {
+    const reportMetadata = createReportMetadata()
     const content = buildPunchingShearMarkdownReport(
       state.draft,
       state.punchingShearResult,
       state.punchingShearReport,
+      reportMetadata,
     )
-    const filename = createReportFilename('md')
+    const filename = createReportFilename(reportMetadata.calculationId, 'md')
 
     downloadTextFile(filename, content, 'text/markdown')
 
@@ -55,10 +60,8 @@ export function exportCurrentCalculationAsMarkdown(): ExportCalculationResult {
   }
 }
 
-function createReportFilename(extension: 'html' | 'md') {
-  const date = new Date().toISOString().slice(0, 10)
-
-  return sanitizeFileName(`truebim-punching-shear-report-${date}.${extension}`)
+function createReportFilename(calculationId: string, extension: 'html' | 'md') {
+  return sanitizeFileName(`truebim-punching-shear-report-${calculationId}.${extension}`)
 }
 
 function getDownloadErrorMessage(error: unknown) {

@@ -16,7 +16,7 @@ describe('punching shear verification runner', () => {
       draftCases: 3,
       verifiedCases: 0,
       failedCases: 0,
-      warning: 'Пока нет verified cases по СП63',
+      warning: 'No SP63 verified cases yet',
     })
   })
 
@@ -44,7 +44,7 @@ describe('punching shear verification runner', () => {
     const incorrectlyVerifiedCase: VerificationCase = {
       ...punchingShearVerificationCases[0],
       status: 'verified',
-      source: 'internal draft arithmetic, not СП63 verified',
+      source: 'internal draft arithmetic, not SP63 verified',
     }
 
     const result = runVerificationCase(incorrectlyVerifiedCase)

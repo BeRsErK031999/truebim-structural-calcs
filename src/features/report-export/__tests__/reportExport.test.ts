@@ -7,8 +7,11 @@ import { useCalculationStore } from '@/entities/calculation/model/store'
 
 import { downloadTextFile } from '../downloadFile'
 import {
+  buildReportSummary,
   buildPunchingShearHtmlReport,
   buildPunchingShearMarkdownReport,
+  createCalculationId,
+  formatUtilization,
   exportCurrentCalculationAsHtml,
   sanitizeFileName,
 } from '../index'
@@ -52,11 +55,72 @@ describe('report export', () => {
     const report = buildPunchingShearReport(defaultPunchingShearInput, result)
     const markdown = buildPunchingShearMarkdownReport(defaultPunchingShearInput, result, report)
 
-    expect(markdown).toContain(`| N, kN | ${defaultPunchingShearInput.forces.axialForceKn} |`)
-    expect(markdown).toContain(`| u, mm | ${result.controlPerimeterMm} |`)
-    expect(markdown).toContain(`| h0, mm | ${result.effectiveDepthMm} |`)
-    expect(markdown).toContain(`| v, MPa | ${result.shearStressMpa?.toFixed(3)} |`)
-    expect(markdown).toContain(`| utilization ratio | ${result.utilizationRatio?.toFixed(3)} |`)
+    expect(markdown).toContain(`| N | ${defaultPunchingShearInput.forces.axialForceKn} kN |`)
+    expect(markdown).toContain(`| u | ${result.controlPerimeterMm} mm |`)
+    expect(markdown).toContain(`| h0 | ${result.effectiveDepthMm} mm |`)
+    expect(markdown).toContain(`| v | ${result.shearStressMpa?.toFixed(3)} MPa |`)
+    expect(markdown).toContain(
+      `| utilization ratio | ${result.utilizationRatio?.toFixed(3)} (${(
+        (result.utilizationRatio ?? 0) * 100
+      ).toFixed(1)}%) |`,
+    )
+  })
+
+  it('generates calculation IDs with timestamp and short commit', () => {
+    expect(createCalculationId(new Date(2026, 4, 26, 4, 17, 54))).toMatch(
+      /^ps-center-20260526-041754-[a-zA-Z0-9-]+$/,
+    )
+  })
+
+  it('formats utilization with ratio and percent', () => {
+    expect(formatUtilization(0.8920606601248884)).toBe('0.892 (89.2%)')
+  })
+
+  it('includes assumptions, unsupported features and verification source in reports', () => {
+    const result = calculatePunchingShear(defaultPunchingShearInput)
+    const report = buildPunchingShearReport(defaultPunchingShearInput, result)
+    const metadata = {
+      generatedAt: '2026-05-26T04:17:54.000Z',
+      calculationId: 'ps-center-20260526-041754-d576a71',
+      verificationSource: 'NOT VERIFIED' as const,
+    }
+    const html = buildPunchingShearHtmlReport(defaultPunchingShearInput, result, report, metadata)
+    const markdown = buildPunchingShearMarkdownReport(
+      defaultPunchingShearInput,
+      result,
+      report,
+      metadata,
+    )
+
+    expect(html).toContain('Assumptions')
+    expect(html).toContain('Column located at slab center')
+    expect(html).toContain('Unsupported in this draft')
+    expect(html).toContain('verified SP63 coefficients')
+    expect(html).toContain('Verification source')
+    expect(html).toContain('NOT VERIFIED')
+    expect(markdown).toContain('## Assumptions')
+    expect(markdown).toContain('## Unsupported in this draft')
+    expect(markdown).toContain('- Verification source: NOT VERIFIED')
+  })
+
+  it('renders SVG numeric labels and axes in HTML report', () => {
+    const result = calculatePunchingShear(defaultPunchingShearInput)
+    const report = buildPunchingShearReport(defaultPunchingShearInput, result)
+    const html = buildPunchingShearHtmlReport(defaultPunchingShearInput, result, report)
+
+    expect(html).toContain('400 mm column X')
+    expect(html).toContain('95 mm draft offset')
+    expect(html).toContain('X')
+    expect(html).toContain('Y')
+    expect(html).toContain('Scale: 1 unit = 1 mm, fit-to-view')
+  })
+
+  it('formats copy report summary', () => {
+    const result = calculatePunchingShear(defaultPunchingShearInput)
+
+    expect(buildReportSummary(result)).toBe(
+      'N=420kN | u=2360mm | h0=190mm | v=0.937MPa | util=0.892',
+    )
   })
 
   it('sanitizes unsafe filenames', () => {
@@ -75,7 +139,9 @@ describe('report export', () => {
 
     expect(exportCurrentCalculationAsHtml()).toEqual({
       ok: true,
-      filename: expect.stringMatching(/^truebim-punching-shear-report-\d{4}-\d{2}-\d{2}\.html$/),
+      filename: expect.stringMatching(
+        /^truebim-punching-shear-report-ps-center-\d{8}-\d{6}-[a-zA-Z0-9-]+\.html$/,
+      ),
     })
     expect(mockedDownloadTextFile).toHaveBeenCalledOnce()
   })

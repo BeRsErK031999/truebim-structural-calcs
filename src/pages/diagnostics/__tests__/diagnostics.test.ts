@@ -28,7 +28,7 @@ describe('diagnostics helpers', () => {
         draftCases: 3,
         verifiedCases: 0,
         failedCases: 0,
-        warning: 'Пока нет verified cases по СП63',
+        warning: 'No SP63 verified cases yet',
       },
     })
   })

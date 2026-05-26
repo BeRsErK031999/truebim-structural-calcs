@@ -10,7 +10,13 @@ The app supports loading saved calculations back into the form, deleting history
 
 Current punching shear draft calculations can be downloaded as HTML or Markdown reports for engineering review. The reports remain explicitly marked as draft / not for design use.
 
+Reports include a `calculationId` such as `ps-center-20260526-041754-d576a71`, assumptions, unsupported draft features, verification source, units inside value cells and an inline SVG geometry preview with numeric dimensions, X/Y axes, scale label and dimension arrows.
+
 See `docs/report-export.md` for the workflow and verified case guidance.
+
+## First verified case
+
+The first real SP63 verified case should follow `docs/first-verified-case-checklist.md`. The current example template stays `status: "draft"` with `expected` values set to `null` until WebCAD, manual engineering calculation, verified Excel or a normative example has been used for comparison.
 
 ## Docker deploy
 

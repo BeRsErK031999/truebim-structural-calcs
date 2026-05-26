@@ -86,3 +86,15 @@ npm run verification:validate -- examples/verification/center-verified-case.exam
 ```
 
 Скрипт только валидирует файл и выводит понятный список проблем. Он не добавляет case в `verificationDataset.ts` автоматически. Текущий example намеренно не проходит проверку как verified, потому что содержит `null`, `TODO` и `status: "draft"`.
+
+## Current report and verification-source flow
+
+Engineering exports include a `calculationId` and `Verification source`. Draft exports always start with `NOT VERIFIED`; that label is expected until an engineer compares the report against WebCAD, manual calculation, verified Excel or a normative example.
+
+For the first real verified case, use `docs/first-verified-case-checklist.md`. Keep `status: "draft"` and `expected` values as `null` in the template until the external check is complete. When the check is complete, fill `verificationSource`, `checkedBy`, `checkedAt`, `comparisonNotes` and expected values before running:
+
+```powershell
+npm run verification:validate -- examples/verification/center-verified-case.example.json
+```
+
+Compare `u`, `h0`, `v`, `utilization` and `passed`.

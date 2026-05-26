@@ -19,6 +19,10 @@ export type VerificationCase = {
   id: string
   title: string
   source: string
+  verificationSource?: string
+  checkedBy?: string | null
+  checkedAt?: string | null
+  comparisonNotes?: string
   standard: string
   caseType: PunchingShearCaseType
   input: PunchingShearInput

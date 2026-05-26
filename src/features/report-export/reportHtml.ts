@@ -8,13 +8,24 @@ import {
 } from '@/calculations/punching-shear'
 import { getAppMetadata } from '@/shared/config/appMetadata'
 
+import {
+  formatUtilization,
+  formatValueWithUnit,
+} from './reportFormatting'
+import {
+  createReportMetadata,
+  reportAssumptions,
+  unsupportedDraftFeatures,
+  type ReportMetadata,
+} from './reportMetadata'
+
 export function buildPunchingShearHtmlReport(
   input: PunchingShearInput,
   result: PunchingShearResult,
   report: PunchingShearReportModel,
+  reportMetadata: ReportMetadata = createReportMetadata(),
 ) {
   const metadata = getAppMetadata()
-  const generatedAt = new Date().toISOString()
   const warnings = createReportWarnings(result)
 
   return `<!doctype html>
@@ -46,38 +57,40 @@ export function buildPunchingShearHtmlReport(
 
     <h2>Metadata</h2>
     ${renderTable([
-      ['generatedAt', generatedAt],
+      ['calculationId', reportMetadata.calculationId],
+      ['generatedAt', reportMetadata.generatedAt],
       ['app version', metadata.version],
       ['commit', metadata.commit],
       ['build time', metadata.buildTime],
       ['calculation type', 'punching-shear'],
       ['status', result.status],
+      ['Verification source', reportMetadata.verificationSource],
     ])}
 
     <h2>Input Data</h2>
     ${renderTable([
       ['case type', input.caseType],
-      ['N, kN', formatNumber(input.forces.axialForceKn)],
-      ['Mx, kN*m', formatNumber(input.forces.momentXKnM)],
-      ['My, kN*m', formatNumber(input.forces.momentYKnM)],
-      ['slab thickness, mm', formatNumber(input.slab.thicknessMm)],
-      ['effective depth, mm', formatNumber(input.slab.effectiveDepthMm)],
-      ['concrete cover, mm', formatNumber(input.slab.concreteCoverMm)],
-      ['column width, mm', formatNullable(input.rectColumn?.widthXMm ?? input.roundColumn?.diameterMm)],
-      ['column height, mm', formatNullable(input.rectColumn?.widthYMm ?? input.roundColumn?.diameterMm)],
+      ['N', formatValueWithUnit(input.forces.axialForceKn, 'kN')],
+      ['Mx', formatValueWithUnit(input.forces.momentXKnM, 'kN*m')],
+      ['My', formatValueWithUnit(input.forces.momentYKnM, 'kN*m')],
+      ['slab thickness', formatValueWithUnit(input.slab.thicknessMm, 'mm')],
+      ['effective depth', formatValueWithUnit(input.slab.effectiveDepthMm, 'mm')],
+      ['concrete cover', formatValueWithUnit(input.slab.concreteCoverMm, 'mm')],
+      ['column width', formatValueWithUnit(input.rectColumn?.widthXMm ?? input.roundColumn?.diameterMm, 'mm')],
+      ['column height', formatValueWithUnit(input.rectColumn?.widthYMm ?? input.roundColumn?.diameterMm, 'mm')],
       ['concrete class', input.concrete.className],
       ['shear reinforcement enabled', String(input.shearReinforcement.enabled)],
     ])}
 
     <h2>Geometry</h2>
     ${renderTable([
-      ['control perimeter, mm', formatNullable(result.controlPerimeterMm)],
-      ['effective depth, mm', formatNullable(result.effectiveDepthMm)],
+      ['control perimeter', formatValueWithUnit(result.controlPerimeterMm, 'mm')],
+      ['effective depth', formatValueWithUnit(result.effectiveDepthMm, 'mm')],
       ['segment count', String(result.perimeter.segments.length)],
-      ['bounding box minX, mm', formatNumber(result.perimeter.boundingBox.minX)],
-      ['bounding box minY, mm', formatNumber(result.perimeter.boundingBox.minY)],
-      ['bounding box width, mm', formatNumber(result.perimeter.boundingBox.width)],
-      ['bounding box height, mm', formatNumber(result.perimeter.boundingBox.height)],
+      ['bounding box minX', formatValueWithUnit(result.perimeter.boundingBox.minX, 'mm')],
+      ['bounding box minY', formatValueWithUnit(result.perimeter.boundingBox.minY, 'mm')],
+      ['bounding box width', formatValueWithUnit(result.perimeter.boundingBox.width, 'mm')],
+      ['bounding box height', formatValueWithUnit(result.perimeter.boundingBox.height, 'mm')],
     ])}
     ${renderSegments(result)}
     ${renderSvg(result)}
@@ -85,19 +98,26 @@ export function buildPunchingShearHtmlReport(
     <h2>Calculation Summary</h2>
     ${renderTable([
       ['formula', 'v = N / (u * h0)'],
-      ['N, N', formatNullable(result.designShearForceN)],
-      ['u, mm', formatNullable(result.controlPerimeterMm)],
-      ['h0, mm', formatNullable(result.effectiveDepthMm)],
-      ['v, MPa', formatNullable(result.shearStressMpa)],
-      ['draft resistance, MPa', formatNullable(result.draftConcreteResistanceMpa)],
-      ['utilization ratio', formatNullable(result.utilizationRatio)],
+      ['N', formatValueWithUnit(result.designShearForceN, 'N')],
+      ['u', formatValueWithUnit(result.controlPerimeterMm, 'mm')],
+      ['h0', formatValueWithUnit(result.effectiveDepthMm, 'mm')],
+      ['v', formatValueWithUnit(result.shearStressMpa, 'MPa', 3)],
+      ['draft resistance', formatValueWithUnit(result.draftConcreteResistanceMpa, 'MPa', 3)],
+      ['utilization ratio', formatUtilization(result.utilizationRatio)],
       ['passed', result.passed === null ? 'not evaluated' : String(result.passed)],
     ])}
+
+    <h2>Assumptions</h2>
+    <ul>${reportAssumptions.map((assumption) => `<li>${escapeHtml(assumption)}</li>`).join('')}</ul>
+
+    <h2>Unsupported in this draft</h2>
+    <ul>${unsupportedDraftFeatures.map((feature) => `<li>${escapeHtml(feature)}</li>`).join('')}</ul>
 
     <h2>Warnings</h2>
     <ul>${warnings.map((warning) => `<li>${escapeHtml(warning)}</li>`).join('')}</ul>
 
     <h2>Verification Status</h2>
+    <p class="note">Verification source: ${escapeHtml(reportMetadata.verificationSource)}</p>
     <p class="note">draft / not verified</p>
     <p class="note">This report can be used to create a verified case only after checking with manual calculation, WebCAD, Excel, or another trusted source.</p>
 
@@ -114,10 +134,10 @@ function renderSegments(result: PunchingShearResult) {
   }
 
   return `<h2>Segments</h2>${renderTable([
-    ['id', 'kind | start | end | length, mm'],
+    ['id', 'kind | start | end | length'],
     ...result.perimeter.segments.map((segment) => [
       segment.id,
-      `${segment.kind} | (${formatNumber(segment.start.x)}, ${formatNumber(segment.start.y)}) | (${formatNumber(segment.end.x)}, ${formatNumber(segment.end.y)}) | ${formatNumber(segment.lengthMm)}`,
+      `${segment.kind} | (${formatValueWithUnit(segment.start.x, 'mm')}, ${formatValueWithUnit(segment.start.y, 'mm')}) | (${formatValueWithUnit(segment.end.x, 'mm')}, ${formatValueWithUnit(segment.end.y, 'mm')}) | ${formatValueWithUnit(segment.lengthMm, 'mm')}`,
     ] satisfies [string, string]),
   ])}`
 }
@@ -130,6 +150,11 @@ function renderSvg(result: PunchingShearResult) {
   }
 
   return `<h2>SVG Preview</h2><div class="svg-wrap"><svg role="img" viewBox="${escapeHtml(viewBoxToString(svgModel.viewBox))}" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <marker id="dimension-arrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+        <path d="M 0 0 L 10 5 L 0 10 z" fill="#64748b" />
+      </marker>
+    </defs>
     <rect x="${svgModel.viewBox.minX}" y="${svgModel.viewBox.minY}" width="${svgModel.viewBox.width}" height="${svgModel.viewBox.height}" fill="#f8fafc" />
     ${svgModel.elements.map(renderSvgElement).join('\n')}
   </svg></div>`
@@ -152,7 +177,9 @@ function renderSvgElement(element: SvgSketchElement): string {
       ? `<text x="${(element.start.x + element.end.x) / 2}" y="${(element.start.y + element.end.y) / 2 - 8}" fill="#475569" font-size="18" text-anchor="middle">${escapeHtml(element.label)}</text>`
       : ''
 
-    return `<line x1="${element.start.x}" y1="${element.start.y}" x2="${element.end.x}" y2="${element.end.y}" stroke="${stroke}" stroke-width="2" stroke-dasharray="6 6" vector-effect="non-scaling-stroke" />${label}`
+    const marker = element.role === 'dimension' ? ' marker-start="url(#dimension-arrow)" marker-end="url(#dimension-arrow)"' : ''
+
+    return `<line x1="${element.start.x}" y1="${element.start.y}" x2="${element.end.x}" y2="${element.end.y}" stroke="${stroke}" stroke-width="2" stroke-dasharray="6 6" vector-effect="non-scaling-stroke"${marker} />${label}`
   }
 
   return `<text x="${element.position.x}" y="${element.position.y}" fill="#475569" font-size="18">${escapeHtml(element.text)}</text>`
@@ -175,16 +202,6 @@ function createReportWarnings(result: PunchingShearResult) {
       'Verify against SP63 before design use',
     ]),
   )
-}
-
-function formatNullable(value: number | null | undefined) {
-  return value === null || value === undefined || !Number.isFinite(value)
-    ? 'not evaluated'
-    : formatNumber(value)
-}
-
-function formatNumber(value: number) {
-  return Number.isInteger(value) ? String(value) : value.toFixed(3)
 }
 
 function escapeHtml(value: string) {
