@@ -24,13 +24,29 @@ describe('diagnostics helpers', () => {
       currentCalculationStatus: 'draft_ok',
       warning: 'Client-side diagnostics only',
       verification: {
-        totalCases: 3,
+        totalCases: 4,
         draftCases: 3,
-        verifiedCases: 0,
+        verifiedCases: 1,
         failedCases: 0,
-        warning: 'No SP63 verified cases yet',
+        warning: null,
       },
     })
+  })
+
+  it('reports the verified case count from the verification dataset', () => {
+    const model = buildDiagnosticsModel({
+      metadata: {
+        version: '1.0.0',
+        commit: 'abc1234',
+        buildTime: '2026-05-25T09:00:00.000Z',
+        environment: 'production',
+      },
+      localStorageAvailable: true,
+      savedCalculationsCount: 0,
+    })
+
+    expect(model.verification.verifiedCases).toBeGreaterThan(0)
+    expect(model.verification.warning).toBeNull()
   })
 
   it('detects unavailable localStorage', () => {

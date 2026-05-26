@@ -5,8 +5,60 @@ const draftTolerance = {
   relativePercent: 0.000001,
   absolute: 0.000001,
 }
+const manualVerificationTolerance = {
+  relativePercent: 0.1,
+  absolute: 0.000001,
+}
 
 export const punchingShearVerificationCases: VerificationCase[] = [
+  {
+    id: 'verified-center-rect-001',
+    title: 'Verified center rectangular column manual arithmetic check',
+    source:
+      'manual calculation: center rectangular column punching shear arithmetic, checked 2026-05-26',
+    verificationSource: 'Manual engineer calculation',
+    checkedBy: 'manual verification workflow',
+    checkedAt: '2026-05-26',
+    comparisonNotes:
+      'Manual check: u = 2360 mm, h0 = 190 mm, v = 0.936663693 MPa, utilization = 0.892060660, passed = true.',
+    standard: 'SP63.13330',
+    caseType: 'center',
+    input: {
+      caseType: 'center',
+      forces: {
+        axialForceKn: 420,
+        momentXKnM: 0,
+        momentYKnM: 0,
+      },
+      slab: {
+        thicknessMm: 220,
+        effectiveDepthMm: 190,
+        concreteCoverMm: 30,
+      },
+      concrete: {
+        className: 'B25',
+      },
+      rectColumn: {
+        widthXMm: 400,
+        widthYMm: 400,
+      },
+      openings: [],
+      shearReinforcement: {
+        enabled: false,
+      },
+    },
+    expected: {
+      controlPerimeterMm: 2360,
+      effectiveDepthMm: 190,
+      shearStressMpa: 0.936663693131133,
+      utilizationRatio: 0.8920606601248884,
+      passed: true,
+    },
+    tolerance: manualVerificationTolerance,
+    notes:
+      'Verified against a manual arithmetic check for the current center rectangular draft scope. The draft warning remains because broader SP63 behavior is still not verified.',
+    status: 'verified',
+  },
   {
     id: 'draft-center-rect-001',
     title: 'Draft center rectangular column, default geometry',

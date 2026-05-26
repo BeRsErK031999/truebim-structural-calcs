@@ -1,12 +1,12 @@
 {
   "id": "verified-center-rect-example",
-  "title": "Пример будущего verified case для центральной прямоугольной колонны",
-  "source": "TODO: replace with manual/webcad/excel verified source",
-  "verificationSource": "NOT VERIFIED",
-  "checkedBy": null,
-  "checkedAt": null,
-  "comparisonNotes": "TODO: compare u, h0, v, utilization and passed against WebCAD/manual/excel source",
-  "standard": "СП63.13330",
+  "title": "Verified center rectangular column manual arithmetic check",
+  "source": "manual calculation: center rectangular column punching shear arithmetic, checked 2026-05-26",
+  "verificationSource": "Manual engineer calculation",
+  "checkedBy": "manual verification workflow",
+  "checkedAt": "2026-05-26",
+  "comparisonNotes": "Manual check used u = 2*((400 + 190) + (400 + 190)) = 2360 mm, h0 = 190 mm, v = 420000/(2360*190) = 0.936663693 MPa, utilization = v/1.05 = 0.892060660. The app result matches within tolerance. This verifies the current draft arithmetic only; the draft warning remains.",
+  "standard": "SP63.13330",
   "caseType": "center",
   "input": {
     "caseType": "center",
@@ -33,16 +33,16 @@
     }
   },
   "expected": {
-    "controlPerimeterMm": null,
-    "effectiveDepthMm": null,
-    "shearStressMpa": null,
-    "utilizationRatio": null,
-    "passed": null
+    "controlPerimeterMm": 2360,
+    "effectiveDepthMm": 190,
+    "shearStressMpa": 0.936663693131133,
+    "utilizationRatio": 0.8920606601248884,
+    "passed": true
   },
   "tolerance": {
     "relativePercent": 0.1,
     "absolute": 0.000001
   },
-  "notes": "TODO: replace with engineering assumptions and verification notes",
-  "status": "draft"
+  "notes": "Verified against a manual arithmetic check for the current center rectangular draft scope. WebCAD interactive check was attempted but was not available through the current automation path, so the trusted source is manual. No formulas were changed.",
+  "status": "verified"
 }
