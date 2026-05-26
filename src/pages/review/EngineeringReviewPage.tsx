@@ -31,6 +31,13 @@ import { Button } from '@/shared/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card'
 import { Input } from '@/shared/ui/input'
 
+import {
+  candidateReturnInstructionsCopyText,
+  engineerChecklistCopyText,
+  engineerHandoffLinks,
+  reviewCandidateHandoffHint,
+} from './engineerHandoffHelp'
+
 const expectedFields: Array<{ key: ReviewValueKey; label: string }> = [
   { key: 'controlPerimeterMm', label: 'Control perimeter, mm' },
   { key: 'effectiveDepthMm', label: 'Effective depth, mm' },
@@ -198,6 +205,16 @@ export function EngineeringReviewPage() {
     setMessage('Verification candidate summary copied.')
   }
 
+  const handleCopyEngineerChecklist = async () => {
+    await navigator.clipboard.writeText(engineerChecklistCopyText)
+    setMessage('Engineer checklist copied.')
+  }
+
+  const handleCopyReturnInstructions = async () => {
+    await navigator.clipboard.writeText(candidateReturnInstructionsCopyText)
+    setMessage('Candidate return instructions copied.')
+  }
+
   return (
     <div className="grid gap-6">
       <header className="grid gap-3 rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
@@ -209,6 +226,19 @@ export function EngineeringReviewPage() {
             Manual trusted evidence collection for engineering comparison. Accepted review records
             evidence only; VERIFIED still depends on capability promotion logic.
           </p>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          {engineerHandoffLinks.map((link) => (
+            <a
+              key={link.href}
+              className="rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-800 hover:bg-slate-100"
+              href={link.href}
+              target="_blank"
+              rel="noreferrer"
+            >
+              {link.label}
+            </a>
+          ))}
         </div>
         <div className="flex flex-wrap gap-2">
           <StatusBadge status={session.status} />
@@ -393,6 +423,19 @@ export function EngineeringReviewPage() {
               No frozen snapshot drift detected.
             </div>
           )}
+          <div className="grid gap-3 rounded-lg border border-sky-200 bg-sky-50 p-4">
+            <p className="text-sm font-semibold text-sky-950">{reviewCandidateHandoffHint}</p>
+            <div className="flex flex-wrap gap-3">
+              <Button type="button" variant="outline" onClick={handleCopyEngineerChecklist}>
+                <ClipboardCopy />
+                Copy engineer checklist
+              </Button>
+              <Button type="button" variant="outline" onClick={handleCopyReturnInstructions}>
+                <ClipboardCopy />
+                Copy return instructions
+              </Button>
+            </div>
+          </div>
           <div className="grid gap-4 rounded-lg border border-amber-200 bg-amber-50 p-4">
             <div className="grid gap-2">
               <p className="text-sm font-semibold text-amber-900">

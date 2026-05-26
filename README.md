@@ -94,6 +94,14 @@ npm run verification:candidate -- path/to/candidate.json
 
 Accepted Review != VERIFIED, and Candidate != VERIFIED. Manual dataset import and the verification runner remain required for promotion.
 
+## Engineer handoff
+
+Engineer handoff instructions and templates are available for external trusted evidence collection:
+
+- `docs/engineer-handoff.md`
+- `docs/engineer-review-checklist.md`
+- `docs/evidence-template-pack/README.md`
+
 Процесс подготовки verification pack для продавливания по СП63 описан в `docs/sp63-verification-pack.md`.
 
 ## Windows deploy scripts
