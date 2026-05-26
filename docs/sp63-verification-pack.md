@@ -123,3 +123,5 @@ The dataset includes draft-only geometry cases for the current clean-room perime
 Their expected values come from current draft geometry arithmetic only: slab boundary clipping, opening tangent subtraction and the provisional stress redistribution already used by center moment cases. They are regression fixtures, not SP63 evidence.
 
 See `docs/openings-and-boundaries-draft.md` for the boundary/opening geometry architecture and the future verified workflow.
+
+Draft JSON templates for future trusted edge, corner and opening validation live in `examples/verification/`. Use `docs/verified-edge-opening-workflow.md` before promoting any of those templates to `status: "verified"`.

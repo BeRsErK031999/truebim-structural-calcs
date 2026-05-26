@@ -69,6 +69,18 @@ export function DiagnosticsPage() {
               label="Clipped perimeter support"
               value={diagnostics.clippedPerimeterSupport}
             />
+            <DiagnosticItem
+              label="Geometry verification support"
+              value={diagnostics.geometryVerificationSupport}
+            />
+            <DiagnosticItem
+              label="Clipping verification support"
+              value={diagnostics.clippingVerificationSupport}
+            />
+            <DiagnosticItem
+              label="Opening verification support"
+              value={diagnostics.openingVerificationSupport}
+            />
           </dl>
         </CardContent>
       </Card>
@@ -106,6 +118,14 @@ export function DiagnosticsPage() {
             <DiagnosticItem
               label="Opening draft cases"
               value={diagnostics.openingDraftCasesCount.toString()}
+            />
+            <DiagnosticItem
+              label="Verified edge cases"
+              value={diagnostics.verifiedEdgeCount.toString()}
+            />
+            <DiagnosticItem
+              label="Verified opening cases"
+              value={diagnostics.verifiedOpeningCount.toString()}
             />
           </dl>
           {diagnostics.verification.warning ? (

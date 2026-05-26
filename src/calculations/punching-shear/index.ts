@@ -5,6 +5,12 @@ export { calculateDraftEccentricity } from './moments/eccentricity'
 export { calculateDraftMomentTransfer } from './moments/momentTransfer'
 export { calculateDraftPerimeterInertia } from './moments/polarInertia'
 export { calculateDraftStressDistribution } from './moments/stressDistribution'
+export { compareGeometryVerification } from './verification/geometryComparison'
+export { compareRemovedSegments } from './verification/segmentComparison'
+export { compareOpeningVerification } from './verification/openingComparison'
+export { compareClippingVerification } from './verification/clippingComparison'
+export { buildVerificationSnapshot } from './verification/verificationSnapshot'
+export { buildVerificationSnapshotHtml } from './verification/verificationSnapshotHtml'
 export { buildPunchingShearReport } from './report'
 export {
   concreteInputSchema,

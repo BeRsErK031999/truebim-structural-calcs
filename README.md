@@ -26,6 +26,8 @@ Edge, corner and opening cases now have clean-room draft geometry support for re
 
 This is geometry and verification preparation only, not verified SP63 support. See `docs/openings-and-boundaries-draft.md`.
 
+Edge/opening trusted validation workflow templates and snapshot comparison guidance are documented in `docs/verified-edge-opening-workflow.md`.
+
 ## First verified case
 
 The first real SP63 verified case should follow `docs/first-verified-case-checklist.md`. The current example template stays `status: "draft"` with `expected` values set to `null` until WebCAD, manual engineering calculation, verified Excel or a normative example has been used for comparison.

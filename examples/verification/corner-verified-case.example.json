@@ -1,0 +1,78 @@
+{
+  "id": "verified-corner-rect-example",
+  "title": "Verified corner rectangular column geometry check",
+  "source": "TODO: trusted manual/WebCAD/Excel source",
+  "verificationSource": "NOT VERIFIED",
+  "checkedBy": null,
+  "checkedAt": null,
+  "comparisonNotes": "TODO: document trusted corner clipping geometry comparison.",
+  "standard": "SP63.13330",
+  "caseType": "corner",
+  "input": {
+    "caseType": "corner",
+    "forces": {
+      "axialForceKn": 420,
+      "momentXKnM": 0,
+      "momentYKnM": 0
+    },
+    "slab": {
+      "thicknessMm": 220,
+      "effectiveDepthMm": 190,
+      "concreteCoverMm": 30
+    },
+    "concrete": {
+      "className": "B25"
+    },
+    "rectColumn": {
+      "widthXMm": 400,
+      "widthYMm": 400
+    },
+    "slabEdges": {
+      "leftMm": 0,
+      "topMm": 0
+    },
+    "openings": [],
+    "shearReinforcement": {
+      "enabled": false
+    }
+  },
+  "expected": {
+    "controlPerimeterMm": null,
+    "effectiveDepthMm": null,
+    "shearStressMpa": null,
+    "utilizationRatio": null,
+    "clippedPerimeterMm": null,
+    "removedPerimeterMm": null,
+    "removedSegmentCount": null,
+    "tangentCount": null,
+    "openingAffected": null,
+    "edgeAffected": null,
+    "cornerAffected": null,
+    "passed": null
+  },
+  "tolerance": {
+    "relativePercent": 0.1,
+    "absolute": 0.000001,
+    "geometryToleranceMm": 0.001,
+    "stressTolerancePercent": 0.1
+  },
+  "geometryVerification": {
+    "geometryToleranceMm": 0.001,
+    "stressTolerancePercent": 0.1,
+    "boundaryClassification": "corner",
+    "checkedGeometryItems": [
+      "clippedPerimeterMm",
+      "removedPerimeterMm",
+      "removedSegmentCount",
+      "edgeAffected",
+      "cornerAffected"
+    ],
+    "requiredTrustedValues": [
+      "active perimeter",
+      "removed boundary segments",
+      "two boundary locations"
+    ]
+  },
+  "notes": "Template only. Keep status draft until trusted geometry and stress values are filled.",
+  "status": "draft"
+}

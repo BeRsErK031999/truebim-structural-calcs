@@ -107,6 +107,21 @@ export function buildPunchingShearHtmlReport(
       ['removed segments', String(result.perimeter.removedSegments.filter((segment) => segment.removedBy === 'opening').length)],
       ['tangent geometry', String(result.perimeter.openingTangents.length)],
     ])}
+    <h2>Geometry Verification</h2>
+    ${renderTable([
+      ['clipped perimeter', formatValueWithUnit(result.perimeter.clippedPerimeterMm, 'mm')],
+      ['removed perimeter', formatValueWithUnit(result.perimeter.removedPerimeterMm, 'mm')],
+      ['removed segments', String(result.perimeter.removedSegments.length)],
+      ['tangent count', String(result.perimeter.openingTangents.length)],
+      ['opening affected', String(result.perimeter.openingAffected)],
+      ['boundary classification', result.perimeter.clippingMetadata.boundaryCondition],
+    ])}
+    <h2>Verification Readiness</h2>
+    ${renderTable([
+      ['geometry draft-ready', String(result.perimeter.perimeterMm > 0)],
+      ['stress draft-ready', String(result.shearStressMpa !== null || result.stressDistribution !== null)],
+      ['verified arithmetic available', 'false'],
+    ])}
     ${renderSegments(result)}
     ${renderSvg(result)}
 

@@ -38,7 +38,12 @@ describe('diagnostics helpers', () => {
       cornerSupport: 'draft',
       openingsSupport: 'draft-geometry',
       clippedPerimeterSupport: 'draft',
+      geometryVerificationSupport: 'draft',
+      clippingVerificationSupport: 'draft',
+      openingVerificationSupport: 'draft',
       openingDraftCasesCount: 2,
+      verifiedEdgeCount: 0,
+      verifiedOpeningCount: 0,
     })
   })
 

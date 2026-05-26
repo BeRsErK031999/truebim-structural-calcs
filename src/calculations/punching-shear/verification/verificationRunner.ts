@@ -5,12 +5,16 @@ import type { VerificationCase, VerificationExpected } from './verificationCase'
 import { canUseVerificationStatus } from './verificationCase'
 import { summarizeVerificationResults } from './verificationSummary'
 
-type NumericExpectedField = Exclude<keyof VerificationExpected, 'passed'>
+type NumericExpectedField =
+  | 'controlPerimeterMm'
+  | 'effectiveDepthMm'
+  | 'shearStressMpa'
+  | 'utilizationRatio'
 type ComparedField = keyof VerificationExpected
 
 export type VerificationFieldComparison = {
   field: ComparedField
-  expected: number | boolean
+  expected: number | boolean | null
   actual: number | boolean | null
   passed: boolean
   delta: number | null
@@ -41,13 +45,16 @@ export function runVerificationCase(verificationCase: VerificationCase): Verific
   const actual = extractExpectedFields(calculationResult)
   const fieldResults: VerificationFieldComparison[] = [
     ...numericExpectedFields.map((field) =>
-      compareNumericField(field, actual[field], verificationCase.expected[field], verificationCase),
+      compareNumericField(field, actual[field] ?? Number.NaN, verificationCase.expected[field], verificationCase),
     ),
     {
       field: 'passed',
       expected: verificationCase.expected.passed,
       actual: actual.passed,
-      passed: actual.passed === verificationCase.expected.passed,
+      passed:
+        verificationCase.expected.passed === null
+          ? verificationCase.status === 'draft'
+          : actual.passed === verificationCase.expected.passed,
       delta: null,
       tolerance: null,
     },
@@ -89,11 +96,26 @@ function extractExpectedFields(result: PunchingShearResult): VerificationExpecte
 function compareNumericField(
   field: NumericExpectedField,
   actual: number,
-  expected: number,
+  expected: number | null,
   verificationCase: VerificationCase,
 ): VerificationFieldComparison {
+  if (expected === null) {
+    return {
+      field,
+      expected,
+      actual,
+      passed: verificationCase.status === 'draft',
+      delta: null,
+      tolerance: null,
+    }
+  }
+
   const delta = Math.abs(actual - expected)
-  const relativeTolerance = Math.abs(expected) * (verificationCase.tolerance.relativePercent / 100)
+  const tolerancePercent =
+    field === 'shearStressMpa' || field === 'utilizationRatio'
+      ? verificationCase.tolerance.stressTolerancePercent ?? verificationCase.tolerance.relativePercent
+      : verificationCase.tolerance.relativePercent
+  const relativeTolerance = Math.abs(expected) * (tolerancePercent / 100)
   const tolerance = Math.max(relativeTolerance, verificationCase.tolerance.absolute)
 
   return {

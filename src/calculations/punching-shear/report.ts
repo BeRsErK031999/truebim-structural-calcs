@@ -49,6 +49,14 @@ export function buildPunchingShearReport(
       removedSegments: result.perimeter.removedSegments.filter((segment) => segment.removedBy === 'opening').length,
       openingTangents: result.perimeter.openingTangents.length,
     },
+    geometryVerificationSummary: {
+      clippedPerimeterMm: result.perimeter.clippedPerimeterMm,
+      removedPerimeterMm: result.perimeter.removedPerimeterMm,
+      removedSegments: result.perimeter.removedSegments.length,
+      tangentCount: result.perimeter.openingTangents.length,
+      openingAffected: result.perimeter.openingAffected,
+      boundaryClassification: result.perimeter.clippingMetadata.boundaryCondition,
+    },
     segments: result.perimeter.segments.map((segment) => ({
       id: segment.id,
       kind: segment.kind,

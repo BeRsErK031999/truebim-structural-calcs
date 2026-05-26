@@ -20,7 +20,12 @@ export type DiagnosticsModel = {
   cornerSupport: 'draft'
   openingsSupport: 'draft-geometry'
   clippedPerimeterSupport: 'draft'
+  geometryVerificationSupport: 'draft'
+  clippingVerificationSupport: 'draft'
+  openingVerificationSupport: 'draft'
   openingDraftCasesCount: number
+  verifiedEdgeCount: number
+  verifiedOpeningCount: number
   verifiedMomentCasesCount: number
   draftMomentCasesCount: number
   warning: string
@@ -64,6 +69,16 @@ export function buildDiagnosticsModel({
       verificationCase.status === 'draft' &&
       (verificationCase.caseType === 'opening' || verificationCase.input.openings.length > 0),
   )
+  const verifiedEdgeCases = punchingShearVerificationCases.filter(
+    (verificationCase) =>
+      verificationCase.status === 'verified' &&
+      (verificationCase.caseType === 'edge' || verificationCase.input.slabEdges),
+  )
+  const verifiedOpeningCases = punchingShearVerificationCases.filter(
+    (verificationCase) =>
+      verificationCase.status === 'verified' &&
+      (verificationCase.caseType === 'opening' || verificationCase.input.openings.length > 0),
+  )
 
   return {
     appLoaded: 'yes',
@@ -81,7 +96,12 @@ export function buildDiagnosticsModel({
     cornerSupport: 'draft',
     openingsSupport: 'draft-geometry',
     clippedPerimeterSupport: 'draft',
+    geometryVerificationSupport: 'draft',
+    clippingVerificationSupport: 'draft',
+    openingVerificationSupport: 'draft',
     openingDraftCasesCount: openingDraftCases.length,
+    verifiedEdgeCount: verifiedEdgeCases.length,
+    verifiedOpeningCount: verifiedOpeningCases.length,
     verifiedMomentCasesCount: momentCases.filter((verificationCase) => verificationCase.status === 'verified').length,
     draftMomentCasesCount: momentCases.filter((verificationCase) => verificationCase.status === 'draft').length,
     warning: 'Client-side diagnostics only',

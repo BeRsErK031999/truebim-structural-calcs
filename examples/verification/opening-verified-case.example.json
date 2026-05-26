@@ -1,0 +1,83 @@
+{
+  "id": "verified-opening-rect-example",
+  "title": "Verified opening near rectangular column geometry check",
+  "source": "TODO: trusted manual/WebCAD/Excel source",
+  "verificationSource": "NOT VERIFIED",
+  "checkedBy": null,
+  "checkedAt": null,
+  "comparisonNotes": "TODO: document trusted tangent subtraction geometry comparison.",
+  "standard": "SP63.13330",
+  "caseType": "opening",
+  "input": {
+    "caseType": "opening",
+    "forces": {
+      "axialForceKn": 420,
+      "momentXKnM": 0,
+      "momentYKnM": 0
+    },
+    "slab": {
+      "thicknessMm": 220,
+      "effectiveDepthMm": 190,
+      "concreteCoverMm": 30
+    },
+    "concrete": {
+      "className": "B25"
+    },
+    "rectColumn": {
+      "widthXMm": 400,
+      "widthYMm": 400
+    },
+    "openings": [
+      {
+        "id": "opening-1",
+        "widthXMm": 200,
+        "widthYMm": 300,
+        "centerXMm": 600,
+        "centerYMm": 0
+      }
+    ],
+    "shearReinforcement": {
+      "enabled": false
+    }
+  },
+  "expected": {
+    "controlPerimeterMm": null,
+    "effectiveDepthMm": null,
+    "shearStressMpa": null,
+    "utilizationRatio": null,
+    "clippedPerimeterMm": null,
+    "removedPerimeterMm": null,
+    "removedSegmentCount": null,
+    "tangentCount": null,
+    "openingAffected": null,
+    "edgeAffected": null,
+    "cornerAffected": null,
+    "passed": null
+  },
+  "tolerance": {
+    "relativePercent": 0.1,
+    "absolute": 0.000001,
+    "geometryToleranceMm": 0.001,
+    "stressTolerancePercent": 0.1
+  },
+  "geometryVerification": {
+    "geometryToleranceMm": 0.001,
+    "stressTolerancePercent": 0.1,
+    "boundaryClassification": "center",
+    "checkedGeometryItems": [
+      "clippedPerimeterMm",
+      "removedPerimeterMm",
+      "removedSegmentCount",
+      "tangentCount",
+      "openingAffected"
+    ],
+    "requiredTrustedValues": [
+      "opening influence classification",
+      "tangent endpoints",
+      "removed perimeter segments",
+      "active perimeter after subtraction"
+    ]
+  },
+  "notes": "Template only. Keep status draft until trusted opening geometry and stress values are filled.",
+  "status": "draft"
+}

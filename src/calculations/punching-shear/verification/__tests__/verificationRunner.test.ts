@@ -62,7 +62,7 @@ describe('punching shear verification runner', () => {
       ...punchingShearVerificationCases[0],
       expected: {
         ...punchingShearVerificationCases[0].expected,
-        controlPerimeterMm: punchingShearVerificationCases[0].expected.controlPerimeterMm + 10,
+        controlPerimeterMm: (punchingShearVerificationCases[0].expected.controlPerimeterMm ?? 0) + 10,
       },
     }
 

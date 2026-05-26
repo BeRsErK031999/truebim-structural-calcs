@@ -199,6 +199,7 @@ export type PunchingShearReportModel = {
   geometrySummary: Record<string, string | number>
   boundaryEffectsSummary: Record<string, string | number | boolean>
   openingsSummary: Record<string, string | number | boolean>
+  geometryVerificationSummary: Record<string, string | number | boolean>
   segments: Array<Record<string, string | number>>
   svgMetadata: Record<string, string | number>
   formulaSummary: string[]
