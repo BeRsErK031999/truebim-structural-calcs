@@ -6,6 +6,12 @@ Punching shear calculations can be saved locally in the browser. Saved items inc
 
 The app supports loading saved calculations back into the form, deleting history items, exporting a saved calculation as JSON and importing a previously exported JSON file. This is local browser storage only; there is no backend database or cross-device sync.
 
+## Report export
+
+Current punching shear draft calculations can be downloaded as HTML or Markdown reports for engineering review. The reports remain explicitly marked as draft / not for design use.
+
+See `docs/report-export.md` for the workflow and verified case guidance.
+
 ## Docker deploy
 
 The production image is a multi-stage Docker build: Node builds the Vite app, then nginx serves the static `dist` output. Runtime uses Docker only and exposes the frontend inside the container on port `80`.

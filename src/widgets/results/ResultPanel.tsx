@@ -1,3 +1,6 @@
+import { useState } from 'react'
+import { Download } from 'lucide-react'
+
 import {
   pointsToSvg,
   type PunchingShearCheckStatus,
@@ -6,6 +9,11 @@ import {
   viewBoxToString,
 } from '@/calculations/punching-shear'
 import { useCalculationStore } from '@/entities/calculation/model/store'
+import {
+  exportCurrentCalculationAsHtml,
+  exportCurrentCalculationAsMarkdown,
+} from '@/features/report-export'
+import { Button } from '@/shared/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card'
 
 const draftWarning =
@@ -14,6 +22,28 @@ const draftWarning =
 export function ResultPanel() {
   const result = useCalculationStore((state) => state.punchingShearResult)
   const report = useCalculationStore((state) => state.punchingShearReport)
+  const [exportMessage, setExportMessage] = useState<string | null>(null)
+  const canExport = Boolean(result && report)
+
+  const handleExportHtml = () => {
+    const exportResult = exportCurrentCalculationAsHtml()
+
+    setExportMessage(
+      exportResult.ok
+        ? `Отчет скачан: ${exportResult.filename}`
+        : exportResult.error,
+    )
+  }
+
+  const handleExportMarkdown = () => {
+    const exportResult = exportCurrentCalculationAsMarkdown()
+
+    setExportMessage(
+      exportResult.ok
+        ? `Отчет скачан: ${exportResult.filename}`
+        : exportResult.error,
+    )
+  }
 
   return (
     <Card className="sticky top-6 rounded-lg border border-slate-200 bg-white shadow-sm">
@@ -26,6 +56,38 @@ export function ResultPanel() {
       <CardContent className="grid gap-5">
         <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm font-medium leading-6 text-amber-900">
           {draftWarning}
+        </div>
+
+        <div className="grid gap-3 rounded-lg border border-slate-200 bg-slate-50 p-4">
+          <p className="text-sm leading-6 text-slate-700">
+            Скачайте отчет и отправьте его инженеру/на проверку. После проверки значения можно
+            использовать для verified case.
+          </p>
+          <div className="grid gap-2 sm:grid-cols-2">
+            <Button
+              type="button"
+              variant="outline"
+              className="justify-center"
+              disabled={!canExport}
+              onClick={handleExportHtml}
+            >
+              <Download />
+              Выгрузить HTML
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              className="justify-center"
+              disabled={!canExport}
+              onClick={handleExportMarkdown}
+            >
+              <Download />
+              Выгрузить Markdown
+            </Button>
+          </div>
+          {exportMessage ? (
+            <p className="text-sm font-medium text-slate-700">{exportMessage}</p>
+          ) : null}
         </div>
 
         <div className="grid grid-cols-2 gap-3">
