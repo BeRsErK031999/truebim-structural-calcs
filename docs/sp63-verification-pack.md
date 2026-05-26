@@ -125,3 +125,5 @@ Their expected values come from current draft geometry arithmetic only: slab bou
 See `docs/openings-and-boundaries-draft.md` for the boundary/opening geometry architecture and the future verified workflow.
 
 Draft JSON templates for future trusted edge, corner and opening validation live in `examples/verification/`. Use `docs/verified-edge-opening-workflow.md` before promoting any of those templates to `status: "verified"`.
+
+Draft JSON templates for future trusted moment transfer validation also live in `examples/verification/`. Use `docs/verified-moment-transfer-workflow.md` before promoting Mx/My cases to `status: "verified"`.

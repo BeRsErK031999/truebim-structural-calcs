@@ -62,6 +62,18 @@ export function DiagnosticsPage() {
               label="Moment transfer status"
               value={diagnostics.momentTransferStatus}
             />
+            <DiagnosticItem
+              label="Moment verification support"
+              value={diagnostics.momentVerificationSupport}
+            />
+            <DiagnosticItem
+              label="Stress comparison support"
+              value={diagnostics.stressComparisonSupport}
+            />
+            <DiagnosticItem
+              label="Eccentricity comparison support"
+              value={diagnostics.eccentricityComparisonSupport}
+            />
             <DiagnosticItem label="Edge support" value={diagnostics.edgeSupport} />
             <DiagnosticItem label="Corner support" value={diagnostics.cornerSupport} />
             <DiagnosticItem label="Openings support" value={diagnostics.openingsSupport} />

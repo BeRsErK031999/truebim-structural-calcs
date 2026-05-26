@@ -16,6 +16,9 @@ export type DiagnosticsModel = {
   verification: VerificationSummary
   stressDistributionSupport: 'draft'
   momentTransferStatus: 'draft'
+  momentVerificationSupport: 'draft'
+  stressComparisonSupport: 'draft'
+  eccentricityComparisonSupport: 'draft'
   edgeSupport: 'draft'
   cornerSupport: 'draft'
   openingsSupport: 'draft-geometry'
@@ -92,6 +95,9 @@ export function buildDiagnosticsModel({
     verification,
     stressDistributionSupport: 'draft',
     momentTransferStatus: 'draft',
+    momentVerificationSupport: 'draft',
+    stressComparisonSupport: 'draft',
+    eccentricityComparisonSupport: 'draft',
     edgeSupport: 'draft',
     cornerSupport: 'draft',
     openingsSupport: 'draft-geometry',

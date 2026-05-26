@@ -1,0 +1,65 @@
+{
+  "id": "verified-center-my-example",
+  "title": "Verified center rectangular column with My",
+  "source": "TODO: trusted manual/WebCAD/Excel source",
+  "verificationSource": "NOT VERIFIED",
+  "checkedBy": null,
+  "checkedAt": null,
+  "comparisonNotes": "TODO: document trusted My stress redistribution comparison.",
+  "standard": "SP63.13330",
+  "caseType": "center",
+  "input": {
+    "caseType": "center",
+    "forces": { "axialForceKn": 420, "momentXKnM": 0, "momentYKnM": 12 },
+    "slab": { "thicknessMm": 220, "effectiveDepthMm": 190, "concreteCoverMm": 30 },
+    "concrete": { "className": "B25" },
+    "rectColumn": { "widthXMm": 400, "widthYMm": 400 },
+    "openings": [],
+    "shearReinforcement": { "enabled": false }
+  },
+  "expected": {
+    "controlPerimeterMm": null,
+    "effectiveDepthMm": null,
+    "shearStressMpa": null,
+    "utilizationRatio": null,
+    "maxShearStressMpa": null,
+    "minShearStressMpa": null,
+    "eccentricityX": null,
+    "eccentricityY": null,
+    "stressPointCount": null,
+    "stressDistributionChecksum": null,
+    "transferFactorX": null,
+    "transferFactorY": null,
+    "passed": null
+  },
+  "tolerance": {
+    "relativePercent": 0.1,
+    "absolute": 0.000001,
+    "stressTolerancePercent": 0.1,
+    "eccentricityToleranceMm": 0.001
+  },
+  "momentVerification": {
+    "stressDistribution": "draft-linear-perimeter-redistribution",
+    "stressDiagramMetadata": {
+      "formulasVerified": false,
+      "method": "draft-linear-perimeter-redistribution"
+    },
+    "checkedStressItems": [
+      "eccentricityX",
+      "maxShearStressMpa",
+      "minShearStressMpa",
+      "stressPointCount",
+      "transferFactorX",
+      "transferFactorY",
+      "stressDistributionChecksum"
+    ],
+    "requiredTrustedValues": [
+      "My stress redistribution",
+      "max/min perimeter stress",
+      "stress points",
+      "transfer factors"
+    ]
+  },
+  "notes": "Template only. Keep status draft until trusted My stress values are filled.",
+  "status": "draft"
+}

@@ -11,6 +11,12 @@ export { compareOpeningVerification } from './verification/openingComparison'
 export { compareClippingVerification } from './verification/clippingComparison'
 export { buildVerificationSnapshot } from './verification/verificationSnapshot'
 export { buildVerificationSnapshotHtml } from './verification/verificationSnapshotHtml'
+export { compareMomentStressVerification } from './verification/stressComparison'
+export { compareEccentricityVerification } from './verification/eccentricityComparison'
+export { compareTransferFactors } from './verification/transferFactorComparison'
+export { createStressDistributionChecksum } from './verification/stressDistributionComparison'
+export { buildStressSnapshot } from './verification/stressSnapshot'
+export { buildStressSnapshotHtml } from './verification/stressSnapshotHtml'
 export { buildPunchingShearReport } from './report'
 export {
   concreteInputSchema,

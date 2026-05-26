@@ -121,6 +121,9 @@ export function buildPunchingShearHtmlReport(
       ['geometry draft-ready', String(result.perimeter.perimeterMm > 0)],
       ['stress draft-ready', String(result.shearStressMpa !== null || result.stressDistribution !== null)],
       ['verified arithmetic available', 'false'],
+      ['geometry verified', 'false'],
+      ['stress verified', 'false'],
+      ['moment transfer verified', 'false'],
     ])}
     ${renderSegments(result)}
     ${renderSvg(result)}
@@ -149,6 +152,18 @@ export function buildPunchingShearHtmlReport(
       ['redistribution notes', 'DRAFT provisional linear perimeter redistribution; not SP63 verified'],
     ])}
     <p class="draft">Moment transfer draft-only. Verify against SP63. Stress redistribution is not verified.</p>
+
+    <h2>Moment Verification</h2>
+    ${renderTable([
+      ['eccentricity X', formatValueWithUnit(result.eccentricityX, 'mm', 3)],
+      ['eccentricity Y', formatValueWithUnit(result.eccentricityY, 'mm', 3)],
+      ['transfer factor X', 'draft metadata only'],
+      ['transfer factor Y', 'draft metadata only'],
+      ['max stress', formatValueWithUnit(result.maxShearStressMpa, 'MPa', 3)],
+      ['min stress', formatValueWithUnit(result.minShearStressMpa, 'MPa', 3)],
+      ['stress point count', String(result.stressDistribution?.points.length ?? 0)],
+      ['stress distribution metadata', result.stressDiagramMetadata?.method ?? 'disabled'],
+    ])}
 
     <h2>Stress Distribution</h2>
     ${renderTable([

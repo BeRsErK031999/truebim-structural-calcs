@@ -28,6 +28,8 @@ This is geometry and verification preparation only, not verified SP63 support. S
 
 Edge/opening trusted validation workflow templates and snapshot comparison guidance are documented in `docs/verified-edge-opening-workflow.md`.
 
+Moment transfer trusted validation templates, stress comparison and snapshot review workflow are documented in `docs/verified-moment-transfer-workflow.md`.
+
 ## First verified case
 
 The first real SP63 verified case should follow `docs/first-verified-case-checklist.md`. The current example template stays `status: "draft"` with `expected` values set to `null` until WebCAD, manual engineering calculation, verified Excel or a normative example has been used for comparison.

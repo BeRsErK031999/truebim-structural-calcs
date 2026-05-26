@@ -14,6 +14,14 @@ export type VerificationExpected = {
   openingAffected?: boolean | null
   edgeAffected?: boolean | null
   cornerAffected?: boolean | null
+  maxShearStressMpa?: number | null
+  minShearStressMpa?: number | null
+  eccentricityX?: number | null
+  eccentricityY?: number | null
+  stressPointCount?: number | null
+  stressDistributionChecksum?: string | null
+  transferFactorX?: number | null
+  transferFactorY?: number | null
   passed: boolean | null
 }
 
@@ -22,6 +30,7 @@ export type VerificationTolerance = {
   absolute: number
   geometryToleranceMm?: number
   stressTolerancePercent?: number
+  eccentricityToleranceMm?: number
 }
 
 export type GeometryVerificationMetadata = {
@@ -29,6 +38,13 @@ export type GeometryVerificationMetadata = {
   stressTolerancePercent?: number
   boundaryClassification?: string
   checkedGeometryItems?: string[]
+  requiredTrustedValues?: string[]
+}
+
+export type MomentVerificationMetadata = {
+  stressDistribution?: 'draft-linear-perimeter-redistribution'
+  stressDiagramMetadata?: Record<string, string | number | boolean | null>
+  checkedStressItems?: string[]
   requiredTrustedValues?: string[]
 }
 
@@ -46,6 +62,7 @@ export type VerificationCase = {
   expected: VerificationExpected
   tolerance: VerificationTolerance
   geometryVerification?: GeometryVerificationMetadata
+  momentVerification?: MomentVerificationMetadata
   notes: string
   status: VerificationCaseStatus
 }
