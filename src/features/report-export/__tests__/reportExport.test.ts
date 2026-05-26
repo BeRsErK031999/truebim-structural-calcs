@@ -114,7 +114,7 @@ describe('report export', () => {
     )
 
     expect(html).toContain('Assumptions')
-    expect(html).toContain('Column located at slab center')
+    expect(html).toContain('Openings use draft tangent subtraction geometry')
     expect(html).toContain('Unsupported in this draft')
     expect(html).toContain('verified SP63 coefficients')
     expect(html).toContain('Verification source')

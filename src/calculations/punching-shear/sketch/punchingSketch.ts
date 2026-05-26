@@ -18,6 +18,8 @@ export function buildPunchingSketchModel(
   const allPoints = [
     ...columnVertices,
     ...perimeter.vertices,
+    ...perimeter.removedSegments.flatMap((segment) => [segment.start, segment.end]),
+    ...perimeter.openingTangents.flatMap((tangent) => [tangent.start, tangent.end]),
     ...openingElements.flatMap((element) => rectToPoints(element)),
   ]
   const viewBox = createPaddedViewBox(allPoints, 140)
@@ -30,15 +32,14 @@ export function buildPunchingSketchModel(
       type: 'polygon',
       points: columnVertices,
     },
-    {
-      id: 'control-perimeter',
-      role: 'control-perimeter',
-      type: 'polygon',
-      points: perimeter.vertices,
-    },
+    ...createBoundaryElements(perimeter),
+    ...createControlPerimeterElements(perimeter),
+    ...createRemovedPerimeterElements(perimeter),
     ...openingElements,
+    ...createOpeningTangentElements(perimeter),
     ...createStressElements(perimeter, momentTransfer),
     ...createDimensionElements(columnVertices, perimeter, viewBox),
+    ...createBoundaryLabels(perimeter),
     {
       id: 'label-control-perimeter',
       role: 'label',
@@ -61,6 +62,90 @@ export function buildPunchingSketchModel(
       stressDiagram: momentTransfer?.stressDistribution ? 'draft' : 'disabled',
     },
   }
+}
+
+function createControlPerimeterElements(perimeter: ControlPerimeterResult): SvgSketchElement[] {
+  return perimeter.segments.map((segment) => ({
+    id: `control-perimeter-${segment.id}`,
+    role: 'control-perimeter',
+    type: 'line',
+    start: segment.start,
+    end: segment.end,
+  }))
+}
+
+function createRemovedPerimeterElements(perimeter: ControlPerimeterResult): SvgSketchElement[] {
+  return perimeter.removedSegments.map((segment) => ({
+    id: `removed-perimeter-${segment.id}`,
+    role: 'removed-perimeter',
+    type: 'line',
+    start: segment.start,
+    end: segment.end,
+    label: segment.openingId ? `removed ${segment.openingId}` : 'removed',
+  }))
+}
+
+function createOpeningTangentElements(perimeter: ControlPerimeterResult): SvgSketchElement[] {
+  return perimeter.openingTangents.map((tangent, index) => ({
+    id: `opening-tangent-${tangent.openingId}-${index + 1}`,
+    role: 'opening-tangent',
+    type: 'line',
+    start: tangent.start,
+    end: tangent.end,
+  }))
+}
+
+function createBoundaryElements(perimeter: ControlPerimeterResult): SvgSketchElement[] {
+  const slabBox = perimeter.clippingMetadata.slabBox
+
+  if (!slabBox) {
+    return []
+  }
+
+  const left = Number.isFinite(slabBox.minX) ? slabBox.minX : perimeter.boundingBox.minX - 180
+  const right = Number.isFinite(slabBox.maxX) ? slabBox.maxX : perimeter.boundingBox.maxX + 180
+  const top = Number.isFinite(slabBox.minY) ? slabBox.minY : perimeter.boundingBox.minY - 180
+  const bottom = Number.isFinite(slabBox.maxY) ? slabBox.maxY : perimeter.boundingBox.maxY + 180
+
+  return [
+    {
+      id: 'slab-boundary-box',
+      role: 'slab-boundary',
+      type: 'polygon',
+      points: [
+        { x: left, y: top },
+        { x: right, y: top },
+        { x: right, y: bottom },
+        { x: left, y: bottom },
+      ],
+    },
+  ]
+}
+
+function createBoundaryLabels(perimeter: ControlPerimeterResult): SvgSketchElement[] {
+  const labels: SvgSketchElement[] = []
+
+  if (perimeter.edgeAffected) {
+    labels.push({
+      id: 'label-edge-affected',
+      role: 'label',
+      type: 'text',
+      position: { x: perimeter.boundingBox.minX, y: perimeter.boundingBox.maxY + 36 },
+      text: perimeter.cornerAffected ? 'Corner clipping draft' : 'Edge clipping draft',
+    })
+  }
+
+  if (perimeter.openingAffected) {
+    labels.push({
+      id: 'label-opening-affected',
+      role: 'label',
+      type: 'text',
+      position: { x: perimeter.boundingBox.minX, y: perimeter.boundingBox.maxY + 64 },
+      text: 'Opening subtraction draft',
+    })
+  }
+
+  return labels
 }
 
 function getColumnVertices(input: PunchingShearInput): Point2D[] {

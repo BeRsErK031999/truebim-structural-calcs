@@ -63,15 +63,46 @@ export type ConcreteClassName = 'B15' | 'B20' | 'B25' | 'B30' | 'B35' | 'B40'
 export type ControlPerimeterSegment = Segment2D & {
   kind: 'line' | 'arc'
   lengthMm: number
+  source?: 'base' | 'boundary-clipped' | 'opening-subtracted'
+  removedBy?: 'boundary' | 'opening'
+  openingId?: string
+}
+
+export type OpeningTangent = {
+  openingId: string
+  start: Point2D
+  end: Point2D
+  angleRad: number
+}
+
+export type ClippingMetadata = {
+  caseType: PunchingShearCaseType
+  slabBox: BoundingBox | null
+  originalPerimeterMm: number
+  clippedPerimeterMm: number
+  removedPerimeterMm: number
+  openingAffected: boolean
+  edgeAffected: boolean
+  cornerAffected: boolean
+  affectedOpeningIds: string[]
+  boundaryCondition: 'center' | 'edge' | 'corner' | 'unsupported'
 }
 
 export type ControlPerimeterResult = {
   perimeterMm: number
   effectiveDepthMm: number
   draftOffsetMm: number
+  clippedPerimeterMm: number
+  removedPerimeterMm: number
+  openingAffected: boolean
+  edgeAffected: boolean
+  cornerAffected: boolean
   vertices: Point2D[]
   contour: ContourLoop
   segments: ControlPerimeterSegment[]
+  removedSegments: ControlPerimeterSegment[]
+  openingTangents: OpeningTangent[]
+  clippingMetadata: ClippingMetadata
   boundingBox: BoundingBox
   svgPath: string
   warnings: string[]
@@ -166,6 +197,8 @@ export type PunchingShearReportModel = {
   inputSummary: Record<string, string | number | boolean>
   resultSummary: Record<string, string | number | null>
   geometrySummary: Record<string, string | number>
+  boundaryEffectsSummary: Record<string, string | number | boolean>
+  openingsSummary: Record<string, string | number | boolean>
   segments: Array<Record<string, string | number>>
   svgMetadata: Record<string, string | number>
   formulaSummary: string[]

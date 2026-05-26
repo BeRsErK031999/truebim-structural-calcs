@@ -73,6 +73,24 @@ export function buildPunchingShearMarkdownReport(
       ['bounding box height', formatValueWithUnit(result.perimeter.boundingBox.height, 'mm')],
     ]),
     '',
+    '## Boundary Effects',
+    '',
+    table([
+      ['edge affected', String(result.perimeter.edgeAffected)],
+      ['corner affected', String(result.perimeter.cornerAffected)],
+      ['removed perimeter', formatValueWithUnit(result.perimeter.removedPerimeterMm, 'mm')],
+      ['clipped perimeter', formatValueWithUnit(result.perimeter.clippedPerimeterMm, 'mm')],
+    ]),
+    '',
+    '## Openings',
+    '',
+    table([
+      ['opening count', String(input.openings.length)],
+      ['affected openings', result.perimeter.clippingMetadata.affectedOpeningIds.join(', ') || 'none'],
+      ['removed segments', String(result.perimeter.removedSegments.filter((segment) => segment.removedBy === 'opening').length)],
+      ['tangent geometry', String(result.perimeter.openingTangents.length)],
+    ]),
+    '',
     '### Segments',
     '',
     result.perimeter.segments.length > 0
@@ -156,7 +174,7 @@ function createReportWarnings(result: PunchingShearResult) {
     'DRAFT CALCULATION - NOT FOR DESIGN USE',
     ...result.warnings,
     'Moment transfer is draft-only where Mx/My are provided',
-    'Openings are unsupported in this draft',
+    'Openings and boundary clipping are draft geometry only.',
     'Shear reinforcement is unsupported in this draft',
     'Verify against SP63 before design use',
   ])

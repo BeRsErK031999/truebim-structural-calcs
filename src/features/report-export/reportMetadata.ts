@@ -14,22 +14,22 @@ export type ReportMetadata = {
 }
 
 export const reportAssumptions = [
-  'Column located at slab center',
-  'No openings considered',
-  'No slab edge effects considered',
+  'Center, edge, corner, and opening geometry are draft-only where provided',
+  'Openings use draft tangent subtraction geometry',
+  'Slab edges use draft control perimeter clipping geometry',
   'No shear reinforcement contribution',
-  'Moments ignored',
+  'Moments use draft redistribution where provided',
   'Draft concrete resistance values',
   'Draft perimeter geometry',
 ]
 
 export const unsupportedDraftFeatures = [
-  'openings',
-  'edge columns',
-  'corner columns',
+  'verified openings formulas',
+  'verified edge column formulas',
+  'verified corner column formulas',
   'round columns',
   'shear reinforcement contribution',
-  'moment transfer',
+  'verified moment transfer',
   'verified SP63 coefficients',
 ]
 

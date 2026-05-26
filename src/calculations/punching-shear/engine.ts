@@ -16,7 +16,7 @@ const draftCalculationWarning =
 const draftScopeWarnings = [
   draftCalculationWarning,
   'Moment transfer uses draft-only stress redistribution when Mx/My are provided',
-  'Openings are not supported in this draft',
+  'Openings and boundary clipping are draft geometry only',
   'Shear reinforcement is not included in this draft',
   'Draft formula must be verified before design use',
 ]
@@ -32,7 +32,7 @@ export function calculatePunchingShear(input: PunchingShearInput): PunchingShear
   const perimeter = calculateControlPerimeter(normalizedInput)
   const material = getConcreteClassData(normalizedInput.concrete.className)
 
-  if (!isSupportedDraftCenterCase(normalizedInput)) {
+  if (!isSupportedDraftGeometryCase(normalizedInput)) {
     const momentTransfer = createDisabledMomentTransfer()
     const svgModel = buildPunchingSketchModel(normalizedInput, perimeter, momentTransfer)
 
@@ -42,7 +42,7 @@ export function calculatePunchingShear(input: PunchingShearInput): PunchingShear
       warnings: [
         ...draftScopeWarnings,
         ...perimeter.warnings,
-        'Only center rectangular column without openings, slab edges, or shear reinforcement is implemented',
+        'Only rectangular center, edge, corner, and opening draft geometry cases are implemented',
       ],
     }
   }
@@ -101,12 +101,13 @@ export function calculatePunchingShear(input: PunchingShearInput): PunchingShear
   }
 }
 
-function isSupportedDraftCenterCase(input: PunchingShearInput) {
+function isSupportedDraftGeometryCase(input: PunchingShearInput) {
   return (
-    input.caseType === 'center' &&
+    (input.caseType === 'center' ||
+      input.caseType === 'edge' ||
+      input.caseType === 'corner' ||
+      input.caseType === 'opening') &&
     Boolean(input.rectColumn) &&
-    input.openings.length === 0 &&
-    !input.slabEdges &&
     !input.shearReinforcement.enabled
   )
 }

@@ -16,6 +16,11 @@ export type DiagnosticsModel = {
   verification: VerificationSummary
   stressDistributionSupport: 'draft'
   momentTransferStatus: 'draft'
+  edgeSupport: 'draft'
+  cornerSupport: 'draft'
+  openingsSupport: 'draft-geometry'
+  clippedPerimeterSupport: 'draft'
+  openingDraftCasesCount: number
   verifiedMomentCasesCount: number
   draftMomentCasesCount: number
   warning: string
@@ -54,6 +59,11 @@ export function buildDiagnosticsModel({
       verificationCase.input.forces.momentXKnM > 0 ||
       verificationCase.input.forces.momentYKnM > 0,
   )
+  const openingDraftCases = punchingShearVerificationCases.filter(
+    (verificationCase) =>
+      verificationCase.status === 'draft' &&
+      (verificationCase.caseType === 'opening' || verificationCase.input.openings.length > 0),
+  )
 
   return {
     appLoaded: 'yes',
@@ -67,6 +77,11 @@ export function buildDiagnosticsModel({
     verification,
     stressDistributionSupport: 'draft',
     momentTransferStatus: 'draft',
+    edgeSupport: 'draft',
+    cornerSupport: 'draft',
+    openingsSupport: 'draft-geometry',
+    clippedPerimeterSupport: 'draft',
+    openingDraftCasesCount: openingDraftCases.length,
     verifiedMomentCasesCount: momentCases.filter((verificationCase) => verificationCase.status === 'verified').length,
     draftMomentCasesCount: momentCases.filter((verificationCase) => verificationCase.status === 'draft').length,
     warning: 'Client-side diagnostics only',

@@ -4,9 +4,12 @@ export type SvgElementBase = {
   id: string
   role:
     | 'slab'
+    | 'slab-boundary'
     | 'column'
     | 'control-perimeter'
+    | 'removed-perimeter'
     | 'opening'
+    | 'opening-tangent'
     | 'label'
     | 'dimension'
     | 'stress-segment'

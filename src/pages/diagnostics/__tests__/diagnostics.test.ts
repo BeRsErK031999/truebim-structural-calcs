@@ -24,8 +24,8 @@ describe('diagnostics helpers', () => {
       currentCalculationStatus: 'draft_ok',
       warning: 'Client-side diagnostics only',
       verification: {
-        totalCases: 7,
-        draftCases: 6,
+        totalCases: 11,
+        draftCases: 10,
         verifiedCases: 1,
         failedCases: 0,
         warning: null,
@@ -33,7 +33,12 @@ describe('diagnostics helpers', () => {
       stressDistributionSupport: 'draft',
       momentTransferStatus: 'draft',
       verifiedMomentCasesCount: 0,
-      draftMomentCasesCount: 3,
+      draftMomentCasesCount: 4,
+      edgeSupport: 'draft',
+      cornerSupport: 'draft',
+      openingsSupport: 'draft-geometry',
+      clippedPerimeterSupport: 'draft',
+      openingDraftCasesCount: 2,
     })
   })
 

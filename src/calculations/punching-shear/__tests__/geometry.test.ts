@@ -3,6 +3,11 @@ import { describe, expect, it } from 'vitest'
 import { defaultPunchingShearInput } from '../defaults'
 import { calculateControlPerimeter } from '../geometry/perimeter'
 import { createBoundingBox } from '../domain/point'
+import { classifyEdgeCornerCondition } from '../edge-corner/edgeClassification'
+import { clipSegmentsToSlabBox } from '../edge-corner/perimeterClipping'
+import { classifyOpeningsNearPerimeter } from '../openings/openingClassification'
+import { subtractOpeningsFromContour } from '../openings/contourSubtraction'
+import { constructOpeningTangents } from '../openings/tangentConstruction'
 import {
   isClockwise,
   normalizePolygon,
@@ -59,5 +64,93 @@ describe('geometry primitives', () => {
       width: 100,
       height: 50,
     })
+  })
+
+  it('classifies edge and corner boundary conditions', () => {
+    expect(classifyEdgeCornerCondition('edge', { leftMm: 0 })).toMatchObject({
+      boundaryCondition: 'edge',
+      edgeAffected: true,
+      cornerAffected: false,
+    })
+    expect(classifyEdgeCornerCondition('corner', { leftMm: 0, topMm: 0 })).toMatchObject({
+      boundaryCondition: 'corner',
+      edgeAffected: true,
+      cornerAffected: true,
+    })
+  })
+
+  it('clips rectangular perimeter against slab boundary', () => {
+    const perimeter = calculateControlPerimeter(defaultPunchingShearInput)
+    const clipped = clipSegmentsToSlabBox(perimeter.segments, {
+      minX: 0,
+      maxX: Number.POSITIVE_INFINITY,
+      minY: Number.NEGATIVE_INFINITY,
+      maxY: Number.POSITIVE_INFINITY,
+      width: Number.POSITIVE_INFINITY,
+      height: Number.POSITIVE_INFINITY,
+    })
+
+    expect(clipped.clippedPerimeterMm).toBe(1180)
+    expect(clipped.removedPerimeterMm).toBe(1180)
+  })
+
+  it('subtracts opening tangent affected segments', () => {
+    const perimeter = calculateControlPerimeter(defaultPunchingShearInput)
+    const subtraction = subtractOpeningsFromContour(
+      perimeter.segments,
+      [
+        {
+          id: 'opening-1',
+          widthXMm: 200,
+          widthYMm: 300,
+          centerXMm: 600,
+          centerYMm: 0,
+        },
+      ],
+      1160,
+    )
+
+    expect(subtraction.openingAffected).toBe(true)
+    expect(subtraction.activeSegments).toHaveLength(3)
+    expect(subtraction.removedSegments).toHaveLength(1)
+    expect(subtraction.removedPerimeterMm).toBe(590)
+  })
+
+  it('constructs opening tangent geometry', () => {
+    const tangents = constructOpeningTangents({
+      id: 'opening-1',
+      widthXMm: 200,
+      widthYMm: 300,
+      centerXMm: 600,
+      centerYMm: 0,
+    })
+
+    expect(tangents.tangents).toHaveLength(2)
+    expect(tangents.tangents.every((tangent) => tangent.openingId === 'opening-1')).toBe(true)
+  })
+
+  it('classifies openings near the perimeter', () => {
+    const [opening] = classifyOpeningsNearPerimeter(
+      [
+        {
+          id: 'opening-1',
+          widthXMm: 200,
+          widthYMm: 300,
+          centerXMm: 600,
+          centerYMm: 0,
+        },
+      ],
+      1160,
+    )
+
+    expect(opening.affected).toBe(true)
+  })
+
+  it('keeps verified center perimeter arithmetic unchanged', () => {
+    const perimeter = calculateControlPerimeter(defaultPunchingShearInput)
+
+    expect(perimeter.perimeterMm).toBe(2360)
+    expect(perimeter.removedPerimeterMm).toBe(0)
+    expect(perimeter.segments).toHaveLength(4)
   })
 })

@@ -93,6 +93,20 @@ export function buildPunchingShearHtmlReport(
       ['bounding box width', formatValueWithUnit(result.perimeter.boundingBox.width, 'mm')],
       ['bounding box height', formatValueWithUnit(result.perimeter.boundingBox.height, 'mm')],
     ])}
+    <h2>Boundary Effects</h2>
+    ${renderTable([
+      ['edge affected', String(result.perimeter.edgeAffected)],
+      ['corner affected', String(result.perimeter.cornerAffected)],
+      ['removed perimeter', formatValueWithUnit(result.perimeter.removedPerimeterMm, 'mm')],
+      ['clipped perimeter', formatValueWithUnit(result.perimeter.clippedPerimeterMm, 'mm')],
+    ])}
+    <h2>Openings</h2>
+    ${renderTable([
+      ['opening count', String(input.openings.length)],
+      ['affected openings', result.perimeter.clippingMetadata.affectedOpeningIds.join(', ') || 'none'],
+      ['removed segments', String(result.perimeter.removedSegments.filter((segment) => segment.removedBy === 'opening').length)],
+      ['tangent geometry', String(result.perimeter.openingTangents.length)],
+    ])}
     ${renderSegments(result)}
     ${renderSvg(result)}
 
@@ -210,7 +224,8 @@ function renderSvgElement(element: SvgSketchElement): string {
         ? ' marker-start="url(#dimension-arrow)" marker-end="url(#dimension-arrow)"'
         : ''
     const strokeWidth = element.role === 'stress-segment' ? 7 : 2
-    const dashArray = element.role === 'stress-segment' ? '0' : '6 6'
+    const dashArray =
+      element.role === 'control-perimeter' || element.role === 'stress-segment' ? '0' : '6 6'
 
     return `<line x1="${element.start.x}" y1="${element.start.y}" x2="${element.end.x}" y2="${element.end.y}" stroke="${stressColor}" stroke-width="${strokeWidth}" stroke-dasharray="${dashArray}" vector-effect="non-scaling-stroke"${marker} />${label}`
   }
@@ -237,7 +252,7 @@ function createReportWarnings(result: PunchingShearResult) {
       'DRAFT CALCULATION - NOT FOR DESIGN USE',
       ...result.warnings,
       'Moment transfer is draft-only where Mx/My are provided',
-      'Openings are unsupported in this draft',
+      'Openings and boundary clipping are draft geometry only.',
       'Shear reinforcement is unsupported in this draft',
       'Verify against SP63 before design use',
     ]),
@@ -256,9 +271,12 @@ function escapeHtml(value: string) {
 function getStroke(role: SvgSketchElement['role']) {
   const colors: Record<SvgSketchElement['role'], string> = {
     slab: '#cbd5e1',
+    'slab-boundary': '#64748b',
     column: '#020617',
     'control-perimeter': '#0f766e',
-    opening: '#d97706',
+    'removed-perimeter': '#dc2626',
+    opening: '#ef4444',
+    'opening-tangent': '#94a3b8',
     label: '#475569',
     dimension: '#64748b',
     'stress-segment': '#dc2626',
@@ -273,9 +291,12 @@ function getStroke(role: SvgSketchElement['role']) {
 function getFill(role: SvgSketchElement['role']) {
   const colors: Record<SvgSketchElement['role'], string> = {
     slab: '#f1f5f9',
+    'slab-boundary': 'none',
     column: '#1e293b',
-    'control-perimeter': '#ccfbf1',
-    opening: '#fef3c7',
+    'control-perimeter': 'none',
+    'removed-perimeter': 'none',
+    opening: '#ffedd5',
+    'opening-tangent': 'none',
     label: 'none',
     dimension: 'none',
     'stress-segment': 'none',

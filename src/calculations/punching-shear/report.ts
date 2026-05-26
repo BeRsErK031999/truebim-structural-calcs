@@ -36,6 +36,19 @@ export function buildPunchingShearReport(
       boundingBoxWidthMm: result.perimeter.boundingBox.width,
       boundingBoxHeightMm: result.perimeter.boundingBox.height,
     },
+    boundaryEffectsSummary: {
+      edgeAffected: result.perimeter.edgeAffected,
+      cornerAffected: result.perimeter.cornerAffected,
+      removedPerimeterMm: result.perimeter.removedPerimeterMm,
+      clippedPerimeterMm: result.perimeter.clippedPerimeterMm,
+    },
+    openingsSummary: {
+      openingCount: input.openings.length,
+      openingAffected: result.perimeter.openingAffected,
+      affectedOpeningCount: result.perimeter.clippingMetadata.affectedOpeningIds.length,
+      removedSegments: result.perimeter.removedSegments.filter((segment) => segment.removedBy === 'opening').length,
+      openingTangents: result.perimeter.openingTangents.length,
+    },
     segments: result.perimeter.segments.map((segment) => ({
       id: segment.id,
       kind: segment.kind,
@@ -98,8 +111,9 @@ export function buildPunchingShearReport(
       'Control perimeter draft geometry generated.',
       'SVG sketch model generated from geometry DTOs.',
       'Draft moment-transfer stress distribution generated where Mx/My are present.',
-      'Draft center force-only check evaluated where supported.',
-      'Openings, slab edges, and shear reinforcement intentionally skipped.',
+      'Draft rectangular force-only check evaluated where supported.',
+      'Draft openings and slab edge clipping geometry generated where provided.',
+      'Shear reinforcement intentionally skipped.',
     ],
   }
 }

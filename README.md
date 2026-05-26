@@ -20,6 +20,12 @@ Center rectangular cases now include draft Mx/My plumbing: eccentricity values, 
 
 This is not verified SP63 support. The implementation is architecture and verification workflow preparation only; see `docs/moment-transfer-draft.md`.
 
+## Draft openings and boundaries
+
+Edge, corner and opening cases now have clean-room draft geometry support for rectangular columns. The engine clips the draft control perimeter against slab boundaries, subtracts opening-affected segments using tangent geometry, and exposes removed segments/tangents in SVG previews and reports.
+
+This is geometry and verification preparation only, not verified SP63 support. See `docs/openings-and-boundaries-draft.md`.
+
 ## First verified case
 
 The first real SP63 verified case should follow `docs/first-verified-case-checklist.md`. The current example template stays `status: "draft"` with `expected` values set to `null` until WebCAD, manual engineering calculation, verified Excel or a normative example has been used for comparison.

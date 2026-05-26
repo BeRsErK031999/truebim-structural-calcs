@@ -110,3 +110,16 @@ The dataset also includes draft-only moment cases:
 These cases use current internal draft arithmetic for eccentricity and linear stress redistribution only. They must stay `status: "draft"` until checked against a trusted SP63 source. Their expected values are useful for regression testing the current architecture, SVG metadata, report export and diagnostics, but they are not evidence of verified moment-transfer support.
 
 See `docs/moment-transfer-draft.md` for the moment architecture and validation requirements.
+
+## Draft edge, corner and opening cases
+
+The dataset includes draft-only geometry cases for the current clean-room perimeter architecture:
+
+- `draft-edge-rectangular`;
+- `draft-corner-rectangular`;
+- `draft-opening-near-column`;
+- `draft-opening-with-moment`.
+
+Their expected values come from current draft geometry arithmetic only: slab boundary clipping, opening tangent subtraction and the provisional stress redistribution already used by center moment cases. They are regression fixtures, not SP63 evidence.
+
+See `docs/openings-and-boundaries-draft.md` for the boundary/opening geometry architecture and the future verified workflow.

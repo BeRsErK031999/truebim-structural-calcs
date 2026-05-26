@@ -62,6 +62,13 @@ export function DiagnosticsPage() {
               label="Moment transfer status"
               value={diagnostics.momentTransferStatus}
             />
+            <DiagnosticItem label="Edge support" value={diagnostics.edgeSupport} />
+            <DiagnosticItem label="Corner support" value={diagnostics.cornerSupport} />
+            <DiagnosticItem label="Openings support" value={diagnostics.openingsSupport} />
+            <DiagnosticItem
+              label="Clipped perimeter support"
+              value={diagnostics.clippedPerimeterSupport}
+            />
           </dl>
         </CardContent>
       </Card>
@@ -95,6 +102,10 @@ export function DiagnosticsPage() {
             <DiagnosticItem
               label="Draft moment cases"
               value={diagnostics.draftMomentCasesCount.toString()}
+            />
+            <DiagnosticItem
+              label="Opening draft cases"
+              value={diagnostics.openingDraftCasesCount.toString()}
             />
           </dl>
           {diagnostics.verification.warning ? (

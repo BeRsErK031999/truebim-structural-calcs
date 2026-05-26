@@ -115,7 +115,7 @@ describe('punching shear draft center check', () => {
     expect(typeof result.passed).toBe('boolean')
   })
 
-  it('returns not_implemented for openings', () => {
+  it('returns draft geometry for openings', () => {
     const input: PunchingShearInput = {
       ...defaultPunchingShearInput,
       openings: [
@@ -129,22 +129,63 @@ describe('punching shear draft center check', () => {
       ],
     }
 
-    expect(calculatePunchingShear(input).status).toBe('not_implemented')
+    const result = calculatePunchingShear(input)
+
+    expect(['draft_ok', 'draft_failed']).toContain(result.status)
+    expect(result.perimeter.openingAffected).toBe(true)
+    expect(result.perimeter.removedSegments.length).toBeGreaterThan(0)
   })
 
-  it.each(['edge', 'corner', 'round'] as const)(
+  it('renders SVG metadata for removed segments and opening tangents', () => {
+    const result = calculatePunchingShear({
+      ...defaultPunchingShearInput,
+      openings: [
+        {
+          id: 'opening-1',
+          widthXMm: 300,
+          widthYMm: 200,
+          centerXMm: 600,
+          centerYMm: 0,
+        },
+      ],
+    })
+
+    expect(result.svgModel.elements.some((element) => element.role === 'removed-perimeter')).toBe(true)
+    expect(result.svgModel.elements.some((element) => element.role === 'opening-tangent')).toBe(true)
+  })
+
+  it.each(['edge', 'corner'] as const)(
+    'returns draft geometry for %s cases',
+    (caseType) => {
+      const input: PunchingShearInput = {
+        ...defaultPunchingShearInput,
+        caseType,
+        slabEdges:
+          caseType === 'edge'
+            ? {
+                leftMm: 0,
+              }
+            : {
+                leftMm: 0,
+                topMm: 0,
+              },
+      }
+      const result = calculatePunchingShear(input)
+
+      expect(['draft_ok', 'draft_failed']).toContain(result.status)
+      expect(result.perimeter.edgeAffected).toBe(true)
+      expect(result.perimeter.cornerAffected).toBe(caseType === 'corner')
+    },
+  )
+
+  it.each(['round'] as const)(
     'returns not_implemented for %s cases',
     (caseType) => {
       const input: PunchingShearInput = {
         ...defaultPunchingShearInput,
         caseType,
-        roundColumn: caseType === 'round' ? { diameterMm: 400 } : undefined,
-        slabEdges:
-          caseType === 'edge' || caseType === 'corner'
-            ? {
-                leftMm: 0,
-              }
-            : undefined,
+        roundColumn: { diameterMm: 400 },
+        slabEdges: undefined,
       }
 
       expect(calculatePunchingShear(input).status).toBe('not_implemented')

@@ -342,9 +342,12 @@ function SketchElement({ element }: { element: SvgSketchElement }) {
 function getElementClassName(role: SvgSketchElement['role']) {
   const classes: Record<SvgSketchElement['role'], string> = {
     slab: 'fill-slate-100 stroke-slate-300 stroke-2',
+    'slab-boundary': 'fill-transparent stroke-slate-500 stroke-2 stroke-dasharray-[10_8]',
     column: 'fill-slate-800 stroke-slate-950 stroke-2',
-    'control-perimeter': 'fill-teal-100/60 stroke-teal-700 stroke-3',
-    opening: 'fill-amber-100 stroke-amber-600 stroke-2 stroke-dasharray-[8_6]',
+    'control-perimeter': 'fill-none stroke-teal-700 stroke-4',
+    'removed-perimeter': 'fill-none stroke-red-600 stroke-3 stroke-dasharray-[10_7]',
+    opening: 'fill-orange-100 stroke-red-500 stroke-2 stroke-dasharray-[8_6]',
+    'opening-tangent': 'stroke-slate-400 stroke-2 stroke-dasharray-[8_8]',
     label: 'fill-slate-600',
     dimension: 'stroke-slate-500 stroke-2 stroke-dasharray-[6_6]',
     'stress-segment': 'stroke-red-600 stroke-[7]',
