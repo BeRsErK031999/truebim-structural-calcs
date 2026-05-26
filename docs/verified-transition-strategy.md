@@ -55,6 +55,14 @@ The stress regression runner counts `passed`, `failed`, `drifted` and `draft-pla
 
 See `docs/stress-regression-workflow.md`.
 
+## Engineering Review Mode
+
+Engineering Review mode (`/review`) is the trusted evidence collection layer before capability promotion. It stores manual/WebCAD/Excel expected values, reviewer metadata, axis convention notes, mismatch explanations, attachment references, and frozen review snapshots.
+
+Accepted review status is not the same as `verified`. Accepted review records can feed future verification cases, but `verificationLevel`, `verifiedFeatures`, and the capability matrix change only through the existing verification runner and promotion workflow.
+
+See `docs/engineering-review-workflow.md`.
+
 ## Why Edge And Openings Stay Draft
 
 Edge, corner, and opening cases currently exercise geometry generation and report plumbing. They do not yet have trusted SP63 arithmetic evidence, so they remain `draft` even when the calculation runs and produces stable regression output.

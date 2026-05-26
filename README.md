@@ -26,6 +26,12 @@ Punching shear results now expose granular verification status: `verifiedMode`, 
 
 Edge, corner, openings, shear reinforcement and round columns remain draft. See `docs/verified-transition-strategy.md`.
 
+## Engineering review mode
+
+Engineering Review mode is available at `/review`. It provides local-only manual evidence input, side-by-side comparison against trusted/WebCAD/Excel values, mismatch highlighting, JSON/HTML review snapshot export, session import/export, and frozen snapshot drift detection.
+
+Accepted review status does not automatically promote VERIFIED. Review evidence feeds the verification lifecycle, but capability promotion still requires verified fixtures and passing verification logic. See `docs/engineering-review-workflow.md`.
+
 ## Draft openings and boundaries
 
 Edge, corner and opening cases now have clean-room draft geometry support for rectangular columns. The engine clips the draft control perimeter against slab boundaries, subtracts opening-affected segments using tangent geometry, and exposes removed segments/tangents in SVG previews and reports.

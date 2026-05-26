@@ -64,6 +64,12 @@ Use the Stress Distribution Snapshot to review:
 
 The snapshot is review evidence only. Expected values must come from the trusted source.
 
+## 5a. Engineering Review Mode
+
+Use `/review` to enter trusted moment evidence before changing verification fixtures. Fill max/min stress, eccentricity, transfer factors, stress checksum, source, reviewer, checked date and axis convention notes. Freeze the snapshot after review so future draft runs can be checked for regression drift.
+
+An `accepted` review is still manual evidence only. It does not promote `center-moment-transfer` to VERIFIED.
+
 ## 6. Promote To Verified
 
 Before setting `status: "verified"`:

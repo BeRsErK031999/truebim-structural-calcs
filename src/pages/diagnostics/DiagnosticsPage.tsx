@@ -125,6 +125,23 @@ export function DiagnosticsPage() {
               label="Verified moment evidence templates"
               value={diagnostics.verifiedMomentEvidenceCount.toString()}
             />
+            <DiagnosticItem label="Review mode support" value={diagnostics.reviewModeSupport} />
+            <DiagnosticItem
+              label="Frozen review snapshots"
+              value={diagnostics.frozenReviewSnapshotsCount.toString()}
+            />
+            <DiagnosticItem
+              label="Pending reviews"
+              value={diagnostics.pendingReviewsCount.toString()}
+            />
+            <DiagnosticItem
+              label="Accepted reviews"
+              value={diagnostics.acceptedReviewsCount.toString()}
+            />
+            <DiagnosticItem
+              label="Rejected reviews"
+              value={diagnostics.rejectedReviewsCount.toString()}
+            />
           </dl>
         </CardContent>
       </Card>

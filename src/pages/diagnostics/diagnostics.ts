@@ -3,6 +3,7 @@ import { getVerifiedCapabilityMatrix } from '@/calculations/punching-shear/verif
 import { punchingShearVerificationCases } from '@/calculations/punching-shear/verification/verificationDataset'
 import { runVerificationCases } from '@/calculations/punching-shear/verification/verificationRunner'
 import type { VerificationSummary } from '@/calculations/punching-shear/verification/verificationSummary'
+import { getReviewDiagnostics } from '@/features/review-mode'
 import type { AppMetadata } from '@/shared/config/appMetadata'
 
 export type DiagnosticsModel = {
@@ -41,6 +42,11 @@ export type DiagnosticsModel = {
   verifiedMomentCasesCount: number
   draftMomentCasesCount: number
   verifiedMomentEvidenceCount: number
+  reviewModeSupport: 'local-only'
+  frozenReviewSnapshotsCount: number
+  pendingReviewsCount: number
+  acceptedReviewsCount: number
+  rejectedReviewsCount: number
   warning: string
 }
 
@@ -72,6 +78,7 @@ export function buildDiagnosticsModel({
   currentCalculationStatus?: PunchingShearCheckStatus
 }): DiagnosticsModel {
   const verification = runVerificationCases(punchingShearVerificationCases).summary
+  const reviewDiagnostics = getReviewDiagnostics()
   const verifiedCapabilityMatrix = getVerifiedCapabilityMatrix()
   const momentCases = punchingShearVerificationCases.filter(
     (verificationCase) =>
@@ -132,6 +139,7 @@ export function buildDiagnosticsModel({
     verifiedMomentCasesCount: momentCases.filter((verificationCase) => verificationCase.status === 'verified').length,
     draftMomentCasesCount: momentCases.filter((verificationCase) => verificationCase.status === 'draft').length,
     verifiedMomentEvidenceCount: momentCases.filter((verificationCase) => verificationCase.status === 'verified').length,
+    ...reviewDiagnostics,
     warning: 'Client-side diagnostics only',
   }
 }

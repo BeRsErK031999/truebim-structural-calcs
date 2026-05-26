@@ -14,6 +14,7 @@ export { buildVerificationSnapshotHtml } from './verification/verificationSnapsh
 export { compareMomentStressVerification } from './verification/stressComparison'
 export { compareEccentricityVerification } from './verification/eccentricityComparison'
 export { compareTransferFactors } from './verification/transferFactorComparison'
+export { calculateVerificationTransferFactors } from './verification/transferFactorComparison'
 export { createStressDistributionChecksum } from './verification/stressDistributionComparison'
 export { buildStressSnapshot } from './verification/stressSnapshot'
 export { buildStressSnapshotHtml } from './verification/stressSnapshotHtml'

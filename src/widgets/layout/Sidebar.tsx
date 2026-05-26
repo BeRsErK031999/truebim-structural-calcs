@@ -1,4 +1,4 @@
-import { Activity, Building2, Columns3, DraftingCompass, Layers3 } from 'lucide-react'
+import { Activity, Building2, ClipboardCheck, Columns3, DraftingCompass, Layers3 } from 'lucide-react'
 import { NavLink } from 'react-router-dom'
 
 import { getAppMetadata } from '@/shared/config/appMetadata'
@@ -11,6 +11,7 @@ const sections: CalculationSection[] = [
   { title: 'Поперечная сила', path: '/shear', icon: Layers3, status: 'planned' },
   { title: 'Балки', path: '/beams', icon: Building2, status: 'planned' },
   { title: 'Колонны', path: '/columns', icon: Columns3, status: 'planned' },
+  { title: 'Engineering Review', path: '/review', icon: ClipboardCheck, status: 'active' },
   { title: 'Diagnostics', path: '/diagnostics', icon: Activity, status: 'active' },
 ]
 
