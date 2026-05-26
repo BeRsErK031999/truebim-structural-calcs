@@ -7,6 +7,7 @@ cd /opt/apps
 ./scripts/load-image.sh /opt/apps/images/truebim-structural-calcs.tar
 ./scripts/deploy-project.sh truebim-structural-calcs
 '@
+$DeployCommands = $DeployCommands -replace "`r`n", "`n"
 
 $DeployHost = $env:TRUEBIM_DEPLOY_HOST
 if (-not $DeployHost) {
@@ -54,5 +55,6 @@ finally:
     client.close()
 '@ | python -
 } else {
-  $DeployCommands | ssh "${DeployUser}@${DeployHost}" 'bash -s'
+  $SshDeployCommand = 'set -e; cd /opt/apps; ./scripts/load-image.sh /opt/apps/images/truebim-structural-calcs.tar; ./scripts/deploy-project.sh truebim-structural-calcs'
+  ssh "${DeployUser}@${DeployHost}" "bash -lc '$SshDeployCommand'"
 }

@@ -232,6 +232,185 @@ Safety notes:
 - The server has an existing apps platform default server. The TrueBIM hostname/IP server block is installed separately in `/etc/nginx/conf.d/`.
 - Rollback to a previous application version requires a previously saved Docker image archive. This first deploy has no earlier TrueBIM image on the server.
 
+## Report export deploy recovery
+
+- Recovery date: 2026-05-26
+- Deployed source commit: `d576a71`
+- Server IP: `192.168.22.37`
+- SSH user: `admin_devops`
+- Container name: `truebim-structural-calcs`
+
+### Root cause
+
+The first report export deploy did not complete because SSH/SCP authentication failed:
+
+```text
+Permission denied (publickey,password)
+```
+
+After SSH was restored, `deploy.ps1` still failed at the remote deploy stage with:
+
+```text
+Project directory not found: /opt/apps/projects/truebim-structural-calcs
+```
+
+The project directory existed. The actual cause was Windows CRLF/stdin handling in the PowerShell-to-SSH deploy command: the project argument reached bash with a carriage return, so the server script looked for a path with an invalid trailing character.
+
+### Initial symptoms
+
+Before recovery, Windows checks reported:
+
+```text
+http://192.168.22.37/            connection closed while receiving
+http://192.168.22.37/diagnostics 502 Bad Gateway
+```
+
+### Diagnostics run
+
+Server diagnostics were run with SSH key authentication:
+
+```bash
+docker ps -a | grep truebim-structural-calcs
+docker logs --tail 100 truebim-structural-calcs || true
+curl -I http://127.0.0.1:3000 || true
+curl http://127.0.0.1:3000 | head -20 || true
+systemctl status nginx --no-pager || true
+tail -100 /opt/apps/shared/logs/nginx-error.log || true
+```
+
+`sudo nginx -t`, `sudo systemctl status nginx --no-pager`, and `sudo tail -100 /var/log/nginx/error.log` were attempted, but the deploy user required a sudo password and no TTY was available.
+
+### Findings
+
+The application container was already running and healthy:
+
+```text
+truebim-structural-calcs   truebim-structural-calcs:latest   Up ... (healthy)   127.0.0.1:3000->80/tcp
+```
+
+The container-bound endpoint responded successfully:
+
+```text
+curl -I http://127.0.0.1:3000
+
+HTTP/1.1 200 OK
+Server: nginx/1.29.8
+Content-Type: text/html
+Content-Length: 474
+```
+
+Host nginx was active:
+
+```text
+nginx.service - A high performance web server and a reverse proxy server
+Active: active (running)
+```
+
+After direct `curl.exe` checks from Windows, both public routes returned 200:
+
+```text
+curl.exe -I http://192.168.22.37/
+curl.exe -I http://192.168.22.37/diagnostics
+
+HTTP/1.1 200 OK
+Server: nginx/1.24.0 (Ubuntu)
+Content-Type: text/html
+Content-Length: 474
+```
+
+### Recovery actions
+
+SSH access was restored locally by configuring Windows OpenSSH to use the existing key:
+
+```text
+%USERPROFILE%\.ssh\chat-service-staging
+```
+
+The local SSH config was restricted to the current Windows user and verified with:
+
+```bash
+ssh admin_devops@192.168.22.37 "hostname && whoami"
+
+vm-messenger-test
+admin_devops
+```
+
+`scripts/deploy.ps1` was hardened so the key-based SSH path sends one quoted remote `bash -lc` command instead of piping a CRLF PowerShell here-string into `ssh`.
+
+Then the full deploy was rerun:
+
+```powershell
+.\scripts\full-deploy.ps1
+```
+
+It completed successfully and recreated only the `truebim-structural-calcs` container.
+
+### Post-recovery checks
+
+Server:
+
+```text
+docker ps | grep truebim-structural-calcs
+
+truebim-structural-calcs   truebim-structural-calcs:latest   Up ... (healthy)   127.0.0.1:3000->80/tcp
+```
+
+```text
+curl -I http://127.0.0.1:3000
+
+HTTP/1.1 200 OK
+Server: nginx/1.29.8
+Content-Type: text/html
+Content-Length: 474
+```
+
+```text
+curl -I http://192.168.22.37/
+curl -I http://192.168.22.37/diagnostics
+
+HTTP/1.1 200 OK
+Server: nginx/1.24.0 (Ubuntu)
+Content-Type: text/html
+Content-Length: 474
+```
+
+Windows:
+
+```text
+curl.exe -I http://192.168.22.37/
+curl.exe -I http://192.168.22.37/diagnostics
+
+HTTP/1.1 200 OK
+Server: nginx/1.24.0 (Ubuntu)
+Content-Type: text/html
+Content-Length: 474
+```
+
+### Report export smoke
+
+Smoke was run against `http://192.168.22.37/` in a fresh Edge profile with direct proxy settings. Steps:
+
+1. Open the app.
+2. Click `Рассчитать draft`.
+3. Click `Выгрузить HTML`.
+4. Click `Выгрузить Markdown`.
+
+Downloaded files:
+
+```text
+truebim-punching-shear-report-2026-05-26.html
+truebim-punching-shear-report-2026-05-26.md
+```
+
+Both files contained:
+
+```text
+DRAFT CALCULATION - NOT FOR DESIGN USE
+v = N / (u * h0)
+```
+
+The downloaded reports also contained the expected calculation values, including the default input force value `420`.
+
 ## Rollback
 
 Stop only this project:
