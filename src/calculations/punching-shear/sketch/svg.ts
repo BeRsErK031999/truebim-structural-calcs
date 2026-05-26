@@ -2,7 +2,17 @@ import type { BoundingBox, Point2D } from '../domain/point'
 
 export type SvgElementBase = {
   id: string
-  role: 'slab' | 'column' | 'control-perimeter' | 'opening' | 'label' | 'dimension'
+  role:
+    | 'slab'
+    | 'column'
+    | 'control-perimeter'
+    | 'opening'
+    | 'label'
+    | 'dimension'
+    | 'stress-segment'
+    | 'stress-marker'
+    | 'moment-arrow'
+    | 'eccentricity'
 }
 
 export type SvgPolygonElement = SvgElementBase & {
@@ -29,9 +39,23 @@ export type SvgLineElement = SvgElementBase & {
   start: Point2D
   end: Point2D
   label?: string
+  stressRatio?: number
 }
 
-export type SvgSketchElement = SvgPolygonElement | SvgRectElement | SvgTextElement | SvgLineElement
+export type SvgCircleElement = SvgElementBase & {
+  type: 'circle'
+  center: Point2D
+  radius: number
+  label?: string
+  stressRatio?: number
+}
+
+export type SvgSketchElement =
+  | SvgPolygonElement
+  | SvgRectElement
+  | SvgTextElement
+  | SvgLineElement
+  | SvgCircleElement
 
 export type PunchingSketchModel = {
   id: string
@@ -43,6 +67,7 @@ export type PunchingSketchModel = {
     unit: 'mm'
     scaleMode: 'fit'
     formulas: 'disabled'
+    stressDiagram: 'draft' | 'disabled'
   }
 }
 

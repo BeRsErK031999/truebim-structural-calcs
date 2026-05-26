@@ -101,6 +101,129 @@ export const punchingShearVerificationCases: VerificationCase[] = [
     status: 'draft',
   },
   {
+    id: 'draft-center-with-mx',
+    title: 'Draft center rectangular column with Mx',
+    source: draftSource,
+    standard: 'РЎРџ63 pending verification',
+    caseType: 'center',
+    input: {
+      caseType: 'center',
+      forces: {
+        axialForceKn: 420,
+        momentXKnM: 12,
+        momentYKnM: 0,
+      },
+      slab: {
+        thicknessMm: 220,
+        effectiveDepthMm: 190,
+        concreteCoverMm: 30,
+      },
+      concrete: {
+        className: 'B25',
+      },
+      rectColumn: {
+        widthXMm: 400,
+        widthYMm: 400,
+      },
+      openings: [],
+      shearReinforcement: {
+        enabled: false,
+      },
+    },
+    expected: {
+      controlPerimeterMm: 2360,
+      effectiveDepthMm: 190,
+      shearStressMpa: 0.936663693131133,
+      utilizationRatio: 1.0648569139021067,
+      passed: false,
+    },
+    tolerance: draftTolerance,
+    notes: 'Draft moment case generated from current provisional linear stress redistribution.',
+    status: 'draft',
+  },
+  {
+    id: 'draft-center-with-my',
+    title: 'Draft center rectangular column with My',
+    source: draftSource,
+    standard: 'РЎРџ63 pending verification',
+    caseType: 'center',
+    input: {
+      caseType: 'center',
+      forces: {
+        axialForceKn: 420,
+        momentXKnM: 0,
+        momentYKnM: 12,
+      },
+      slab: {
+        thicknessMm: 220,
+        effectiveDepthMm: 190,
+        concreteCoverMm: 30,
+      },
+      concrete: {
+        className: 'B25',
+      },
+      rectColumn: {
+        widthXMm: 400,
+        widthYMm: 400,
+      },
+      openings: [],
+      shearReinforcement: {
+        enabled: false,
+      },
+    },
+    expected: {
+      controlPerimeterMm: 2360,
+      effectiveDepthMm: 190,
+      shearStressMpa: 0.936663693131133,
+      utilizationRatio: 1.0648569139021067,
+      passed: false,
+    },
+    tolerance: draftTolerance,
+    notes: 'Draft moment case generated from current provisional linear stress redistribution.',
+    status: 'draft',
+  },
+  {
+    id: 'draft-center-with-mx-my',
+    title: 'Draft center rectangular column with Mx and My',
+    source: draftSource,
+    standard: 'РЎРџ63 pending verification',
+    caseType: 'center',
+    input: {
+      caseType: 'center',
+      forces: {
+        axialForceKn: 420,
+        momentXKnM: 12,
+        momentYKnM: 8,
+      },
+      slab: {
+        thicknessMm: 220,
+        effectiveDepthMm: 190,
+        concreteCoverMm: 30,
+      },
+      concrete: {
+        className: 'B25',
+      },
+      rectColumn: {
+        widthXMm: 400,
+        widthYMm: 400,
+      },
+      openings: [],
+      shearReinforcement: {
+        enabled: false,
+      },
+    },
+    expected: {
+      controlPerimeterMm: 2360,
+      effectiveDepthMm: 190,
+      shearStressMpa: 0.936663693131133,
+      utilizationRatio: 1.180054416420252,
+      passed: false,
+    },
+    tolerance: draftTolerance,
+    notes: 'Draft combined-moment case generated from current provisional linear stress redistribution.',
+    status: 'draft',
+  },
+  {
     id: 'draft-center-rect-002',
     title: 'Draft center rectangular column, higher load',
     source: draftSource,

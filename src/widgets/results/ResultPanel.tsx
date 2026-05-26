@@ -144,6 +144,8 @@ export function ResultPanel() {
           <Metric label="Контур" value={formatNumber(result?.controlPerimeterMm)} unit="мм" />
           <Metric label="h0" value={formatNumber(result?.effectiveDepthMm)} unit="мм" />
           <Metric label="v" value={formatDecimal(result?.shearStressMpa)} unit="МПа" />
+          <Metric label="v max" value={formatDecimal(result?.maxShearStressMpa)} unit="МПа" />
+          <Metric label="v min" value={formatDecimal(result?.minShearStressMpa)} unit="МПа" />
           <Metric label="R draft" value={formatDecimal(result?.draftConcreteResistanceMpa)} unit="МПа" />
           <Metric label="Utilization" value={formatDecimal(result?.utilizationRatio)} unit="η" />
           <Metric label="Pass/fail" value={formatPassed(result?.passed)} unit="" />
@@ -248,7 +250,7 @@ function EngineeringPreview({ svgModel }: { svgModel?: PunchingSketchModel }) {
       </svg>
       <div className="mt-3 flex items-center justify-between text-xs text-slate-500">
         <span>Geometry preview: mm, fit-to-view</span>
-        <span>Draft force-only check</span>
+        <span>{svgModel.metadata.stressDiagram === 'draft' ? 'Draft stress diagram' : 'Draft check'}</span>
       </div>
     </div>
   )
@@ -279,6 +281,9 @@ function SketchElement({ element }: { element: SvgSketchElement }) {
   }
 
   if (element.type === 'line') {
+    const stressColor =
+      element.role === 'stress-segment' ? getStressColor(element.stressRatio ?? 0) : undefined
+
     return (
       <g>
         <line
@@ -286,10 +291,12 @@ function SketchElement({ element }: { element: SvgSketchElement }) {
           y1={element.start.y}
           x2={element.end.x}
           y2={element.end.y}
-          className={getElementClassName(element.role)}
+          className={stressColor ? undefined : getElementClassName(element.role)}
+          stroke={stressColor}
+          strokeWidth={element.role === 'stress-segment' ? 7 : undefined}
           vectorEffect="non-scaling-stroke"
-          markerStart={element.role === 'dimension' ? 'url(#dimension-arrow)' : undefined}
-          markerEnd={element.role === 'dimension' ? 'url(#dimension-arrow)' : undefined}
+          markerStart={hasArrowMarker(element.role) ? 'url(#dimension-arrow)' : undefined}
+          markerEnd={hasArrowMarker(element.role) ? 'url(#dimension-arrow)' : undefined}
         />
         {element.label ? (
           <text
@@ -302,6 +309,22 @@ function SketchElement({ element }: { element: SvgSketchElement }) {
           </text>
         ) : null}
       </g>
+    )
+  }
+
+  if (element.type === 'circle') {
+    const stressColor =
+      element.role === 'stress-marker' ? getStressColor(element.stressRatio ?? 0) : undefined
+
+    return (
+      <circle
+        cx={element.center.x}
+        cy={element.center.y}
+        r={element.radius}
+        className={stressColor ? undefined : getElementClassName(element.role)}
+        fill={stressColor}
+        vectorEffect="non-scaling-stroke"
+      />
     )
   }
 
@@ -324,9 +347,24 @@ function getElementClassName(role: SvgSketchElement['role']) {
     opening: 'fill-amber-100 stroke-amber-600 stroke-2 stroke-dasharray-[8_6]',
     label: 'fill-slate-600',
     dimension: 'stroke-slate-500 stroke-2 stroke-dasharray-[6_6]',
+    'stress-segment': 'stroke-red-600 stroke-[7]',
+    'stress-marker': 'fill-red-600 stroke-white stroke-2',
+    'moment-arrow': 'stroke-violet-600 stroke-2 stroke-dasharray-[8_6]',
+    eccentricity: 'fill-cyan-100 stroke-cyan-600 stroke-2 stroke-dasharray-[5_5]',
   }
 
   return classes[role]
+}
+
+function hasArrowMarker(role: SvgSketchElement['role']) {
+  return role === 'dimension' || role === 'moment-arrow' || role === 'eccentricity'
+}
+
+function getStressColor(ratio: number) {
+  const normalized = Math.max(0, Math.min(1, ratio))
+  const hue = 200 - normalized * 200
+
+  return `hsl(${hue.toFixed(0)} 82% 48%)`
 }
 
 function Metric({ label, value, unit }: { label: string; value: string; unit: string }) {

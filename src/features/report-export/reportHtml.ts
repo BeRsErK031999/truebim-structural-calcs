@@ -44,6 +44,7 @@ export function buildPunchingShearHtmlReport(
     th { background: #e2e8f0; }
     .warning { margin: 18px 0; padding: 18px; border: 2px solid #b45309; background: #fffbeb; color: #78350f; font-size: 20px; font-weight: 700; }
     .note { color: #475569; line-height: 1.55; }
+    .draft { color: #b45309; font-weight: 700; }
     .svg-wrap { background: #fff; border: 1px solid #cbd5e1; padding: 12px; overflow: auto; }
     svg { max-width: 100%; height: auto; background: #fff; }
     code { background: #e2e8f0; padding: 2px 5px; border-radius: 4px; }
@@ -105,6 +106,29 @@ export function buildPunchingShearHtmlReport(
       ['draft resistance', formatValueWithUnit(result.draftConcreteResistanceMpa, 'MPa', 3)],
       ['utilization ratio', formatUtilization(result.utilizationRatio)],
       ['passed', result.passed === null ? 'not evaluated' : String(result.passed)],
+    ])}
+
+    <h2>Moment Transfer</h2>
+    ${renderTable([
+      ['status', result.momentTransfer.status],
+      ['Mx', formatValueWithUnit(input.forces.momentXKnM, 'kN*m')],
+      ['My', formatValueWithUnit(input.forces.momentYKnM, 'kN*m')],
+      ['eccentricity X', formatValueWithUnit(result.eccentricityX, 'mm', 3)],
+      ['eccentricity Y', formatValueWithUnit(result.eccentricityY, 'mm', 3)],
+      ['max stress', formatValueWithUnit(result.maxShearStressMpa, 'MPa', 3)],
+      ['min stress', formatValueWithUnit(result.minShearStressMpa, 'MPa', 3)],
+      ['redistribution notes', 'DRAFT provisional linear perimeter redistribution; not SP63 verified'],
+    ])}
+    <p class="draft">Moment transfer draft-only. Verify against SP63. Stress redistribution is not verified.</p>
+
+    <h2>Stress Distribution</h2>
+    ${renderTable([
+      ['status', result.stressDistribution?.status ?? 'disabled'],
+      ['point count', String(result.stressDistribution?.points.length ?? 0)],
+      ['segment count', String(result.stressDistribution?.segmentStresses.length ?? 0)],
+      ['base stress', formatValueWithUnit(result.stressDistribution?.baseStressMpa ?? result.shearStressMpa, 'MPa', 3)],
+      ['method', result.stressDiagramMetadata?.method ?? 'draft-linear-perimeter-redistribution'],
+      ['formulas verified', String(result.stressDiagramMetadata?.formulasVerified ?? false)],
     ])}
 
     <h2>Assumptions</h2>
@@ -173,13 +197,29 @@ function renderSvgElement(element: SvgSketchElement): string {
   }
 
   if (element.type === 'line') {
+    const stressColor =
+      element.role === 'stress-segment' ? getStressColor(element.stressRatio ?? 0) : stroke
     const label = element.label
       ? `<text x="${(element.start.x + element.end.x) / 2}" y="${(element.start.y + element.end.y) / 2 - 8}" fill="#475569" font-size="18" text-anchor="middle">${escapeHtml(element.label)}</text>`
       : ''
 
-    const marker = element.role === 'dimension' ? ' marker-start="url(#dimension-arrow)" marker-end="url(#dimension-arrow)"' : ''
+    const marker =
+      element.role === 'dimension' ||
+      element.role === 'moment-arrow' ||
+      element.role === 'eccentricity'
+        ? ' marker-start="url(#dimension-arrow)" marker-end="url(#dimension-arrow)"'
+        : ''
+    const strokeWidth = element.role === 'stress-segment' ? 7 : 2
+    const dashArray = element.role === 'stress-segment' ? '0' : '6 6'
 
-    return `<line x1="${element.start.x}" y1="${element.start.y}" x2="${element.end.x}" y2="${element.end.y}" stroke="${stroke}" stroke-width="2" stroke-dasharray="6 6" vector-effect="non-scaling-stroke"${marker} />${label}`
+    return `<line x1="${element.start.x}" y1="${element.start.y}" x2="${element.end.x}" y2="${element.end.y}" stroke="${stressColor}" stroke-width="${strokeWidth}" stroke-dasharray="${dashArray}" vector-effect="non-scaling-stroke"${marker} />${label}`
+  }
+
+  if (element.type === 'circle') {
+    const fillColor =
+      element.role === 'stress-marker' ? getStressColor(element.stressRatio ?? 0) : fill
+
+    return `<circle cx="${element.center.x}" cy="${element.center.y}" r="${element.radius}" fill="${fillColor}" stroke="${stroke}" stroke-width="2" vector-effect="non-scaling-stroke" />`
   }
 
   return `<text x="${element.position.x}" y="${element.position.y}" fill="#475569" font-size="18">${escapeHtml(element.text)}</text>`
@@ -196,7 +236,7 @@ function createReportWarnings(result: PunchingShearResult) {
     new Set([
       'DRAFT CALCULATION - NOT FOR DESIGN USE',
       ...result.warnings,
-      'Moments are ignored in this draft',
+      'Moment transfer is draft-only where Mx/My are provided',
       'Openings are unsupported in this draft',
       'Shear reinforcement is unsupported in this draft',
       'Verify against SP63 before design use',
@@ -221,6 +261,10 @@ function getStroke(role: SvgSketchElement['role']) {
     opening: '#d97706',
     label: '#475569',
     dimension: '#64748b',
+    'stress-segment': '#dc2626',
+    'stress-marker': '#dc2626',
+    'moment-arrow': '#7c3aed',
+    eccentricity: '#0891b2',
   }
 
   return colors[role]
@@ -234,7 +278,18 @@ function getFill(role: SvgSketchElement['role']) {
     opening: '#fef3c7',
     label: 'none',
     dimension: 'none',
+    'stress-segment': 'none',
+    'stress-marker': '#dc2626',
+    'moment-arrow': 'none',
+    eccentricity: '#cffafe',
   }
 
   return colors[role]
+}
+
+function getStressColor(ratio: number) {
+  const normalized = Math.max(0, Math.min(1, ratio))
+  const hue = 200 - normalized * 200
+
+  return `hsl(${hue.toFixed(0)} 82% 48%)`
 }

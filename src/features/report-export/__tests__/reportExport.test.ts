@@ -50,6 +50,27 @@ describe('report export', () => {
     expect(markdown).toContain('v = N / (u * h0)')
   })
 
+  it('includes moment transfer and stress distribution sections', () => {
+    const input = {
+      ...defaultPunchingShearInput,
+      forces: {
+        axialForceKn: 420,
+        momentXKnM: 12,
+        momentYKnM: 8,
+      },
+    }
+    const result = calculatePunchingShear(input)
+    const report = buildPunchingShearReport(input, result)
+    const html = buildPunchingShearHtmlReport(input, result, report)
+    const markdown = buildPunchingShearMarkdownReport(input, result, report)
+
+    expect(html).toContain('Moment Transfer')
+    expect(html).toContain('Stress Distribution')
+    expect(html).toContain('Moment transfer draft-only')
+    expect(markdown).toContain('## Moment Transfer')
+    expect(markdown).toContain('## Stress Distribution')
+  })
+
   it('includes input N and calculated u, h0, v and utilization values', () => {
     const result = calculatePunchingShear(defaultPunchingShearInput)
     const report = buildPunchingShearReport(defaultPunchingShearInput, result)

@@ -24,12 +24,16 @@ describe('diagnostics helpers', () => {
       currentCalculationStatus: 'draft_ok',
       warning: 'Client-side diagnostics only',
       verification: {
-        totalCases: 4,
-        draftCases: 3,
+        totalCases: 7,
+        draftCases: 6,
         verifiedCases: 1,
         failedCases: 0,
         warning: null,
       },
+      stressDistributionSupport: 'draft',
+      momentTransferStatus: 'draft',
+      verifiedMomentCasesCount: 0,
+      draftMomentCasesCount: 3,
     })
   })
 

@@ -14,6 +14,10 @@ export type DiagnosticsModel = {
   savedCalculationsCount: number
   currentCalculationStatus: PunchingShearCheckStatus | 'none'
   verification: VerificationSummary
+  stressDistributionSupport: 'draft'
+  momentTransferStatus: 'draft'
+  verifiedMomentCasesCount: number
+  draftMomentCasesCount: number
   warning: string
 }
 
@@ -45,6 +49,11 @@ export function buildDiagnosticsModel({
   currentCalculationStatus?: PunchingShearCheckStatus
 }): DiagnosticsModel {
   const verification = runVerificationCases(punchingShearVerificationCases).summary
+  const momentCases = punchingShearVerificationCases.filter(
+    (verificationCase) =>
+      verificationCase.input.forces.momentXKnM > 0 ||
+      verificationCase.input.forces.momentYKnM > 0,
+  )
 
   return {
     appLoaded: 'yes',
@@ -56,6 +65,10 @@ export function buildDiagnosticsModel({
     savedCalculationsCount,
     currentCalculationStatus: currentCalculationStatus ?? 'none',
     verification,
+    stressDistributionSupport: 'draft',
+    momentTransferStatus: 'draft',
+    verifiedMomentCasesCount: momentCases.filter((verificationCase) => verificationCase.status === 'verified').length,
+    draftMomentCasesCount: momentCases.filter((verificationCase) => verificationCase.status === 'draft').length,
     warning: 'Client-side diagnostics only',
   }
 }

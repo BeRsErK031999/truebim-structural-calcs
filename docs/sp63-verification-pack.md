@@ -98,3 +98,15 @@ npm run verification:validate -- examples/verification/center-verified-case.exam
 ```
 
 Compare `u`, `h0`, `v`, `utilization` and `passed`.
+
+## Draft moment-transfer cases
+
+The dataset also includes draft-only moment cases:
+
+- `draft-center-with-mx`;
+- `draft-center-with-my`;
+- `draft-center-with-mx-my`.
+
+These cases use current internal draft arithmetic for eccentricity and linear stress redistribution only. They must stay `status: "draft"` until checked against a trusted SP63 source. Their expected values are useful for regression testing the current architecture, SVG metadata, report export and diagnostics, but they are not evidence of verified moment-transfer support.
+
+See `docs/moment-transfer-draft.md` for the moment architecture and validation requirements.

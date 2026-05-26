@@ -1,6 +1,10 @@
 export { defaultPunchingShearInput } from './defaults'
 export { calculatePunchingShear } from './engine'
 export { draftConcreteClassData, getConcreteClassData } from './materials'
+export { calculateDraftEccentricity } from './moments/eccentricity'
+export { calculateDraftMomentTransfer } from './moments/momentTransfer'
+export { calculateDraftPerimeterInertia } from './moments/polarInertia'
+export { calculateDraftStressDistribution } from './moments/stressDistribution'
 export { buildPunchingShearReport } from './report'
 export {
   concreteInputSchema,
@@ -39,6 +43,9 @@ export type {
   ShearReinforcementInput,
   SlabEdgesInput,
   SlabGeometryInput,
+  StressDistribution,
+  StressPoint,
+  MomentTransferResult,
 } from './types'
 export type { ContourLoop } from './domain/contour'
 export type { BoundingBox, Point2D } from './domain/point'

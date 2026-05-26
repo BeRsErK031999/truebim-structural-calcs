@@ -77,6 +77,47 @@ export type ControlPerimeterResult = {
   warnings: string[]
 }
 
+export type StressPoint = {
+  id: string
+  position: Point2D
+  stressMpa: number
+  normalizedStress: number
+  sourceSegmentId: string
+}
+
+export type StressDistribution = {
+  status: 'draft'
+  points: StressPoint[]
+  segmentStresses: Array<{
+    segmentId: string
+    startStressMpa: number
+    endStressMpa: number
+    averageStressMpa: number
+    normalizedStress: number
+  }>
+  maxStressMpa: number
+  minStressMpa: number
+  baseStressMpa: number
+  notes: string[]
+}
+
+export type MomentTransferResult = {
+  status: 'draft' | 'disabled'
+  enabled: boolean
+  eccentricityX: number
+  eccentricityY: number
+  momentXKnM: number
+  momentYKnM: number
+  stressDistribution: StressDistribution | null
+  warnings: string[]
+  metadata: {
+    method: 'draft-linear-perimeter-redistribution'
+    formulasVerified: false
+    pointCount: number
+    segmentCount: number
+  }
+}
+
 export type PunchingShearInput = {
   caseType: PunchingShearCaseType
   forces: ForceInput
@@ -97,6 +138,13 @@ export type PunchingShearResult = {
   controlPerimeterMm: number | null
   effectiveDepthMm: number | null
   shearStressMpa: number | null
+  eccentricityX: number | null
+  eccentricityY: number | null
+  maxShearStressMpa: number | null
+  minShearStressMpa: number | null
+  stressDistribution: StressDistribution | null
+  momentTransferEnabled: boolean
+  stressDiagramMetadata: MomentTransferResult['metadata'] | null
   draftConcreteResistanceMpa: number | null
   utilizationRatio: number | null
   passed: boolean | null
@@ -106,6 +154,7 @@ export type PunchingShearResult = {
   }
   perimeter: ControlPerimeterResult
   svgModel: PunchingSketchModel
+  momentTransfer: MomentTransferResult
   warnings: string[]
   placeholders: string[]
 }
@@ -121,6 +170,8 @@ export type PunchingShearReportModel = {
   svgMetadata: Record<string, string | number>
   formulaSummary: string[]
   calculationValues: Record<string, string | number | boolean | null>
+  momentTransferSummary: Record<string, string | number | boolean | null>
+  stressDistributionSummary: Record<string, string | number | boolean | null>
   warnings: string[]
   calculationSteps: string[]
 }

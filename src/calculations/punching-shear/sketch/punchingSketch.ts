@@ -1,4 +1,9 @@
-import type { ControlPerimeterResult, OpeningInput, PunchingShearInput } from '../types'
+import type {
+  ControlPerimeterResult,
+  MomentTransferResult,
+  OpeningInput,
+  PunchingShearInput,
+} from '../types'
 import type { Point2D } from '../domain/point'
 import { createPaddedViewBox } from './viewport'
 import type { PunchingSketchModel, SvgSketchElement } from './svg'
@@ -6,6 +11,7 @@ import type { PunchingSketchModel, SvgSketchElement } from './svg'
 export function buildPunchingSketchModel(
   input: PunchingShearInput,
   perimeter: ControlPerimeterResult,
+  momentTransfer?: MomentTransferResult,
 ): PunchingSketchModel {
   const columnVertices = getColumnVertices(input)
   const openingElements = input.openings.map((opening) => createOpeningElement(opening))
@@ -31,6 +37,7 @@ export function buildPunchingSketchModel(
       points: perimeter.vertices,
     },
     ...openingElements,
+    ...createStressElements(perimeter, momentTransfer),
     ...createDimensionElements(columnVertices, perimeter, viewBox),
     {
       id: 'label-control-perimeter',
@@ -51,6 +58,7 @@ export function buildPunchingSketchModel(
       unit: 'mm',
       scaleMode: 'fit',
       formulas: 'disabled',
+      stressDiagram: momentTransfer?.stressDistribution ? 'draft' : 'disabled',
     },
   }
 }
@@ -186,8 +194,138 @@ function createDimensionElements(
   ]
 }
 
+function createStressElements(
+  perimeter: ControlPerimeterResult,
+  momentTransfer?: MomentTransferResult,
+): SvgSketchElement[] {
+  const distribution = momentTransfer?.stressDistribution
+
+  if (!distribution) {
+    return []
+  }
+
+  const maxPoint = distribution.points.reduce((current, point) =>
+    point.stressMpa > current.stressMpa ? point : current,
+  )
+  const minPoint = distribution.points.reduce((current, point) =>
+    point.stressMpa < current.stressMpa ? point : current,
+  )
+  const momentArrows = createMomentArrowElements(perimeter, momentTransfer)
+  const eccentricityMarker = createEccentricityElements(momentTransfer)
+
+  return [
+    ...perimeter.segments.map((segment) => {
+      const segmentStress = distribution.segmentStresses.find(
+        (stress) => stress.segmentId === segment.id,
+      )
+
+      return {
+        id: `stress-segment-${segment.id}`,
+        role: 'stress-segment',
+        type: 'line',
+        start: segment.start,
+        end: segment.end,
+        stressRatio: segmentStress?.normalizedStress ?? 0,
+      } satisfies SvgSketchElement
+    }),
+    ...distribution.points.map(
+      (point) =>
+        ({
+          id: `stress-marker-${point.id}`,
+          role: 'stress-marker',
+          type: 'circle',
+          center: point.position,
+          radius: 9,
+          stressRatio: point.normalizedStress,
+        }) satisfies SvgSketchElement,
+    ),
+    {
+      id: 'label-max-stress',
+      role: 'label',
+      type: 'text',
+      position: { x: maxPoint.position.x + 18, y: maxPoint.position.y - 18 },
+      text: `max ${formatMpa(distribution.maxStressMpa)}`,
+    },
+    {
+      id: 'label-min-stress',
+      role: 'label',
+      type: 'text',
+      position: { x: minPoint.position.x + 18, y: minPoint.position.y + 28 },
+      text: `min ${formatMpa(distribution.minStressMpa)}`,
+    },
+    ...momentArrows,
+    ...eccentricityMarker,
+  ]
+}
+
+function createMomentArrowElements(
+  perimeter: ControlPerimeterResult,
+  momentTransfer: MomentTransferResult,
+): SvgSketchElement[] {
+  const arrows: SvgSketchElement[] = []
+  const topY = perimeter.boundingBox.minY - 54
+  const rightX = perimeter.boundingBox.maxX + 54
+
+  if (momentTransfer.momentXKnM > 0) {
+    arrows.push({
+      id: 'moment-arrow-mx',
+      role: 'moment-arrow',
+      type: 'line',
+      start: { x: perimeter.boundingBox.minX, y: topY },
+      end: { x: perimeter.boundingBox.maxX, y: topY },
+      label: 'Mx draft',
+    })
+  }
+
+  if (momentTransfer.momentYKnM > 0) {
+    arrows.push({
+      id: 'moment-arrow-my',
+      role: 'moment-arrow',
+      type: 'line',
+      start: { x: rightX, y: perimeter.boundingBox.minY },
+      end: { x: rightX, y: perimeter.boundingBox.maxY },
+      label: 'My draft',
+    })
+  }
+
+  return arrows
+}
+
+function createEccentricityElements(momentTransfer: MomentTransferResult): SvgSketchElement[] {
+  if (!momentTransfer.enabled) {
+    return []
+  }
+
+  const center = {
+    x: momentTransfer.eccentricityX,
+    y: momentTransfer.eccentricityY,
+  }
+
+  return [
+    {
+      id: 'eccentricity-vector',
+      role: 'eccentricity',
+      type: 'line',
+      start: { x: 0, y: 0 },
+      end: center,
+      label: 'e draft',
+    },
+    {
+      id: 'eccentricity-marker',
+      role: 'eccentricity',
+      type: 'circle',
+      center,
+      radius: 10,
+    },
+  ]
+}
+
 function formatMm(value: number) {
   return `${Number.isInteger(value) ? value : value.toFixed(1)} mm`
+}
+
+function formatMpa(value: number) {
+  return `${value.toFixed(3)} MPa`
 }
 
 function rectToPoints(element: SvgSketchElement): Point2D[] {

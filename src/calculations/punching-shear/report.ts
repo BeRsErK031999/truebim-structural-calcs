@@ -11,6 +11,8 @@ export function buildPunchingShearReport(
     inputSummary: {
       caseType: input.caseType,
       axialForceKn: input.forces.axialForceKn,
+      momentXKnM: input.forces.momentXKnM,
+      momentYKnM: input.forces.momentYKnM,
       concreteClass: input.concrete.className,
       slabThicknessMm: input.slab.thicknessMm,
       openingsCount: input.openings.length,
@@ -22,6 +24,8 @@ export function buildPunchingShearReport(
       perimeterMm: result.controlPerimeterMm,
       effectiveDepthMm: result.effectiveDepthMm,
       passed: result.passed === null ? 'not evaluated' : String(result.passed),
+      maxShearStressMpa: result.maxShearStressMpa,
+      minShearStressMpa: result.minShearStressMpa,
     },
     geometrySummary: {
       perimeterMm: result.perimeter.perimeterMm,
@@ -46,6 +50,7 @@ export function buildPunchingShearReport(
       viewBoxHeight: result.svgModel.viewBox.height,
       elementCount: result.svgModel.elements.length,
       scaleMode: result.svgModel.metadata.scaleMode,
+      stressDiagram: result.svgModel.metadata.stressDiagram,
     },
     formulaSummary: [
       'DRAFT / NOT FOR DESIGN USE',
@@ -53,15 +58,36 @@ export function buildPunchingShearReport(
       'N = design shear force',
       'u = control perimeter',
       'h0 = effective depth',
+      'DRAFT moment redistribution: v(point) = vbase * (1 + ex*x/rx^2 + ey*y/ry^2)',
     ],
     calculationValues: {
       N: result.designShearForceN,
       u: result.controlPerimeterMm,
       h0: result.effectiveDepthMm,
       v: result.shearStressMpa,
+      vmax: result.maxShearStressMpa,
+      vmin: result.minShearStressMpa,
       R: result.draftConcreteResistanceMpa,
       utilization: result.utilizationRatio,
       passed: result.passed,
+    },
+    momentTransferSummary: {
+      enabled: result.momentTransferEnabled,
+      status: result.momentTransfer.status,
+      Mx: result.momentTransfer.momentXKnM,
+      My: result.momentTransfer.momentYKnM,
+      eccentricityX: result.eccentricityX,
+      eccentricityY: result.eccentricityY,
+      maxStressMpa: result.maxShearStressMpa,
+      minStressMpa: result.minShearStressMpa,
+      formulasVerified: result.stressDiagramMetadata?.formulasVerified ?? false,
+    },
+    stressDistributionSummary: {
+      status: result.stressDistribution?.status ?? 'disabled',
+      pointCount: result.stressDistribution?.points.length ?? 0,
+      segmentCount: result.stressDistribution?.segmentStresses.length ?? 0,
+      baseStressMpa: result.stressDistribution?.baseStressMpa ?? result.shearStressMpa,
+      method: result.stressDiagramMetadata?.method ?? 'draft-linear-perimeter-redistribution',
     },
     warnings: result.warnings,
     calculationSteps: [
@@ -71,8 +97,9 @@ export function buildPunchingShearReport(
       'Draft material resistance selected.',
       'Control perimeter draft geometry generated.',
       'SVG sketch model generated from geometry DTOs.',
+      'Draft moment-transfer stress distribution generated where Mx/My are present.',
       'Draft center force-only check evaluated where supported.',
-      'Moments, openings, slab edges, and shear reinforcement intentionally skipped.',
+      'Openings, slab edges, and shear reinforcement intentionally skipped.',
     ],
   }
 }

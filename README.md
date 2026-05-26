@@ -14,6 +14,12 @@ Reports include a `calculationId` such as `ps-center-20260526-041754-d576a71`, a
 
 See `docs/report-export.md` for the workflow and verified case guidance.
 
+## Draft moment transfer
+
+Center rectangular cases now include draft Mx/My plumbing: eccentricity values, provisional linear stress redistribution, max/min perimeter stress, SVG stress markers and Moment Transfer / Stress Distribution report sections.
+
+This is not verified SP63 support. The implementation is architecture and verification workflow preparation only; see `docs/moment-transfer-draft.md`.
+
 ## First verified case
 
 The first real SP63 verified case should follow `docs/first-verified-case-checklist.md`. The current example template stays `status: "draft"` with `expected` values set to `null` until WebCAD, manual engineering calculation, verified Excel or a normative example has been used for comparison.

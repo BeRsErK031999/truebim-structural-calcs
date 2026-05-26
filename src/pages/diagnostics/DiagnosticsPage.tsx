@@ -54,6 +54,14 @@ export function DiagnosticsPage() {
               label="Current calculation status"
               value={diagnostics.currentCalculationStatus}
             />
+            <DiagnosticItem
+              label="Stress distribution support"
+              value={diagnostics.stressDistributionSupport}
+            />
+            <DiagnosticItem
+              label="Moment transfer status"
+              value={diagnostics.momentTransferStatus}
+            />
           </dl>
         </CardContent>
       </Card>
@@ -79,6 +87,14 @@ export function DiagnosticsPage() {
             <DiagnosticItem
               label="Проваленные случаи"
               value={diagnostics.verification.failedCases.toString()}
+            />
+            <DiagnosticItem
+              label="Verified moment cases"
+              value={diagnostics.verifiedMomentCasesCount.toString()}
+            />
+            <DiagnosticItem
+              label="Draft moment cases"
+              value={diagnostics.draftMomentCasesCount.toString()}
             />
           </dl>
           {diagnostics.verification.warning ? (

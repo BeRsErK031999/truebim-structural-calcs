@@ -9,11 +9,11 @@ describe('punching shear verification runner', () => {
   it('passes all verification cases against current arithmetic', () => {
     const { results, summary } = runVerificationCases(punchingShearVerificationCases)
 
-    expect(results).toHaveLength(4)
+    expect(results).toHaveLength(7)
     expect(results.every((result) => result.passed)).toBe(true)
     expect(summary).toMatchObject({
-      totalCases: 4,
-      draftCases: 3,
+      totalCases: 7,
+      draftCases: 6,
       verifiedCases: 1,
       failedCases: 0,
       warning: null,
