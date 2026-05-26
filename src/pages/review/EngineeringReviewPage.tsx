@@ -460,7 +460,7 @@ export function EngineeringReviewPage() {
               <Button
                 type="button"
                 variant="outline"
-                disabled={session.status !== 'accepted'}
+                disabled={!candidatePreview.validation.valid}
                 onClick={handleCreateCandidate}
               >
                 <FileJson />
