@@ -9,7 +9,11 @@ import { calculatePunchingShear } from '../../engine'
 import {
   createStressDistributionChecksum,
 } from '../stressDistributionComparison'
-import { runStressRegressionCase, type StressRegressionCase } from '../stressRegressionRunner'
+import {
+  canPromoteCenterMomentTransferEvidence,
+  runStressRegressionCase,
+  type StressRegressionCase,
+} from '../stressRegressionRunner'
 import { summarizeStressRegressionResults } from '../stressRegressionSummary'
 import { validateAxisConvention } from '../axisConventionValidation'
 import { buildStressRegressionSnapshot } from '../stressRegressionSnapshot'
@@ -39,6 +43,57 @@ describe('stress regression workflow', () => {
       driftDetected: true,
       regressionStatus: 'drifted',
     })
+  })
+
+  it('allows trusted moment evidence to promote verification when all guards pass', () => {
+    const regressionResult = runStressRegressionCase(createBaselineStressRegressionCase())
+
+    expect(regressionResult).toMatchObject({
+      sourceStatus: 'verified',
+      sourceTrusted: true,
+      driftDetected: false,
+      draftPlaceholder: false,
+      regressionStatus: 'passed',
+      axisWarnings: [],
+    })
+    expect(canPromoteCenterMomentTransferEvidence(regressionResult)).toBe(true)
+  })
+
+  it('prevents promotion when trusted moment evidence mismatches actual arithmetic', () => {
+    const regressionResult = runStressRegressionCase(createBaselineStressRegressionCase({
+      maxStressMpa: 999,
+    }))
+
+    expect(regressionResult.regressionStatus).toBe('failed')
+    expect(canPromoteCenterMomentTransferEvidence(regressionResult)).toBe(false)
+  })
+
+  it('blocks verified promotion when checksum drift is detected', () => {
+    const result = calculatePunchingShear(momentInput())
+    const regressionResult = runStressRegressionCase(createBaselineStressRegressionCase({
+      stressDistributionChecksum: `${createStressDistributionChecksum(result.stressDistribution)}-drift`,
+    }))
+
+    expect(regressionResult).toMatchObject({
+      driftDetected: true,
+      regressionStatus: 'drifted',
+    })
+    expect(canPromoteCenterMomentTransferEvidence(regressionResult)).toBe(false)
+  })
+
+  it('blocks verified promotion when axis convention validation fails', () => {
+    const regressionResult = runStressRegressionCase({
+      ...createBaselineStressRegressionCase(),
+      axisConvention: {
+        traversal: 'clockwise',
+      },
+    })
+
+    expect(regressionResult.regressionStatus).toBe('failed')
+    expect(regressionResult.axisWarnings).toEqual([
+      expect.stringContaining('perimeter traversal'),
+    ])
+    expect(canPromoteCenterMomentTransferEvidence(regressionResult)).toBe(false)
   })
 
   it('keeps draft evidence placeholders separate from failures', () => {

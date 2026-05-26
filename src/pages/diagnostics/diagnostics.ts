@@ -131,7 +131,7 @@ export function buildDiagnosticsModel({
     verifiedOpeningCount: verifiedOpeningCases.length,
     verifiedMomentCasesCount: momentCases.filter((verificationCase) => verificationCase.status === 'verified').length,
     draftMomentCasesCount: momentCases.filter((verificationCase) => verificationCase.status === 'draft').length,
-    verifiedMomentEvidenceCount: 5,
+    verifiedMomentEvidenceCount: momentCases.filter((verificationCase) => verificationCase.status === 'verified').length,
     warning: 'Client-side diagnostics only',
   }
 }

@@ -41,7 +41,7 @@ describe('diagnostics helpers', () => {
       eccentricityComparisonSupport: 'draft',
       verifiedMomentCasesCount: 0,
       draftMomentCasesCount: 4,
-      verifiedMomentEvidenceCount: 5,
+      verifiedMomentEvidenceCount: 0,
       edgeSupport: 'draft',
       cornerSupport: 'draft',
       openingsSupport: 'draft-geometry',

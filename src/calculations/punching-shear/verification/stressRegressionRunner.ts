@@ -8,7 +8,11 @@ import {
 import { summarizeStressRegressionResults, type StressRegressionCaseStatus } from './stressRegressionSummary'
 import { validateAxisConvention } from './axisConventionValidation'
 import type { AxisConvention } from './axisConvention'
-import type { VerificationCaseStatus, VerificationTolerance } from './verificationCase'
+import {
+  canUseVerificationStatus,
+  type VerificationCaseStatus,
+  type VerificationTolerance,
+} from './verificationCase'
 
 export type StressRegressionExpected = {
   maxStressMpa: number | null
@@ -52,6 +56,7 @@ export type StressRegressionCaseResult = {
   comparisons: StressRegressionComparison[]
   driftDetected: boolean
   draftPlaceholder: boolean
+  sourceTrusted: boolean
   axisWarnings: string[]
   warnings: string[]
 }
@@ -77,6 +82,7 @@ export function runStressRegressionCase(regressionCase: StressRegressionCase): S
   })
   const axisValidation = validateAxisConvention(regressionCase.axisConvention)
   const draftPlaceholder = hasDraftPlaceholders(regressionCase)
+  const sourceTrusted = canUseVerificationStatus(regressionCase.status, regressionCase.source)
   const driftDetected =
     regressionCase.expected.stressDistributionChecksum !== null && !checksumComparison.passed
   const failed = comparisons.some((comparison) => !comparison.passed) || !axisValidation.passed
@@ -97,12 +103,24 @@ export function runStressRegressionCase(regressionCase: StressRegressionCase): S
     comparisons,
     driftDetected,
     draftPlaceholder,
+    sourceTrusted,
     axisWarnings: axisValidation.warnings,
     warnings: [
       ...axisValidation.warnings,
       ...checksumComparison.diffSummary.filter((message) => !message.includes('comparison passed')),
     ],
   }
+}
+
+export function canPromoteCenterMomentTransferEvidence(result: StressRegressionCaseResult) {
+  return (
+    result.sourceStatus === 'verified' &&
+    result.sourceTrusted &&
+    result.regressionStatus === 'passed' &&
+    !result.driftDetected &&
+    !result.draftPlaceholder &&
+    result.axisWarnings.length === 0
+  )
 }
 
 export function runStressRegressionCases(regressionCases: StressRegressionCase[]) {
