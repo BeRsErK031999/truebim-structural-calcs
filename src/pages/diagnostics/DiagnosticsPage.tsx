@@ -139,6 +139,26 @@ export function DiagnosticsPage() {
               value={diagnostics.manualDatasetImportRequired}
             />
             <DiagnosticItem
+              label="Validation session support"
+              value={diagnostics.validationSessionSupport}
+            />
+            <DiagnosticItem
+              label="Validation package export support"
+              value={diagnostics.validationPackageExportSupport}
+            />
+            <DiagnosticItem
+              label="Checklist progress support"
+              value={diagnostics.checklistProgressSupport}
+            />
+            <DiagnosticItem
+              label="Engineer package ready"
+              value={diagnostics.engineerPackageReady}
+            />
+            <DiagnosticItem
+              label="Validation sessions"
+              value={diagnostics.validationSessionsCount.toString()}
+            />
+            <DiagnosticItem
               label="Frozen review snapshots"
               value={diagnostics.frozenReviewSnapshotsCount.toString()}
             />

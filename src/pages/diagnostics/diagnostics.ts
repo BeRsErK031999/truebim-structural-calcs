@@ -4,6 +4,7 @@ import { punchingShearVerificationCases } from '@/calculations/punching-shear/ve
 import { runVerificationCases } from '@/calculations/punching-shear/verification/verificationRunner'
 import type { VerificationSummary } from '@/calculations/punching-shear/verification/verificationSummary'
 import { getReviewDiagnostics } from '@/features/review-mode'
+import { getValidationSessionDiagnostics } from '@/features/validation-session'
 import type { AppMetadata } from '@/shared/config/appMetadata'
 
 export type DiagnosticsModel = {
@@ -46,6 +47,11 @@ export type DiagnosticsModel = {
   verificationCandidateSupport: 'yes'
   candidateAutoPromotion: 'no'
   manualDatasetImportRequired: 'yes'
+  validationSessionSupport: 'local-only'
+  validationPackageExportSupport: 'manifest'
+  checklistProgressSupport: 'yes'
+  engineerPackageReady: 'yes' | 'no'
+  validationSessionsCount: number
   frozenReviewSnapshotsCount: number
   pendingReviewsCount: number
   acceptedReviewsCount: number
@@ -82,6 +88,7 @@ export function buildDiagnosticsModel({
 }): DiagnosticsModel {
   const verification = runVerificationCases(punchingShearVerificationCases).summary
   const reviewDiagnostics = getReviewDiagnostics()
+  const validationSessionDiagnostics = getValidationSessionDiagnostics()
   const verifiedCapabilityMatrix = getVerifiedCapabilityMatrix()
   const momentCases = punchingShearVerificationCases.filter(
     (verificationCase) =>
@@ -145,6 +152,7 @@ export function buildDiagnosticsModel({
     verificationCandidateSupport: 'yes',
     candidateAutoPromotion: 'no',
     manualDatasetImportRequired: 'yes',
+    ...validationSessionDiagnostics,
     ...reviewDiagnostics,
     warning: 'Client-side diagnostics only',
   }

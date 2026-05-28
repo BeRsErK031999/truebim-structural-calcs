@@ -43,6 +43,12 @@ npm run verification:candidate -- path/to/candidate.json
 
 The CLI prints PASS or FAIL and never imports the file into the verification dataset.
 
+## Validation Session
+
+The `/validation-session` route packages the report exports, review snapshot, candidate JSON, regression snapshot, engineer notes, checklist progress and reviewer summary into one deterministic manifest for external engineering validation.
+
+The validation session is a handoff package only. It does not import the candidate, does not modify the verification dataset and does not auto-promote VERIFIED.
+
 ## Verified Case
 
 A verified case is a manually imported dataset entry that passes the verification runner and is intentionally included in the capability promotion workflow.

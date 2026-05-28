@@ -94,12 +94,15 @@ npm run verification:candidate -- path/to/candidate.json
 
 Accepted Review != VERIFIED, and Candidate != VERIFIED. Manual dataset import and the verification runner remain required for promotion.
 
+Validation Session mode is available at `/validation-session`. It combines the active report exports, review snapshot, candidate JSON, regression snapshot, engineer notes, checklist progress and metadata summary into a deterministic engineer package manifest. See `docs/validation-session-workflow.md`.
+
 ## Engineer handoff
 
 Engineer handoff instructions and templates are available for external trusted evidence collection:
 
 - `docs/engineer-handoff.md`
 - `docs/engineer-review-checklist.md`
+- `docs/validation-session-workflow.md`
 - `docs/evidence-template-pack/README.md`
 
 Процесс подготовки verification pack для продавливания по СП63 описан в `docs/sp63-verification-pack.md`.

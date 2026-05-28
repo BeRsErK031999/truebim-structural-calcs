@@ -143,3 +143,19 @@ Verification candidate - JSON, подготовленный из accepted review
 Verified case - запись в verification dataset, которая прошла verification runner и участвует в capability promotion.
 
 Report != Review Snapshot != Verification Candidate != Verified Case.
+
+## 15. Validation Session Package
+
+Use `/validation-session` after the calculation and `/review` evidence are ready. The validation session combines:
+
+- HTML report;
+- Markdown report;
+- review snapshot;
+- verification candidate JSON;
+- regression snapshot;
+- engineer notes and trusted source references;
+- checklist and metadata summary.
+
+The package is still evidence collection only. It does not change formulas, does not change verification logic, and does not promote any partial calculation to VERIFIED.
+
+See `docs/validation-session-workflow.md` for the step-by-step package workflow.
