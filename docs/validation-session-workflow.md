@@ -2,6 +2,8 @@
 
 Validation Session is the handoff layer for real engineering validation. It packages the current calculation, engineering review, verification candidate, regression snapshot, and engineer notes without changing formulas or verification status.
 
+Start from `/engineer` when guiding an engineer through the office deployment. The Engineer Portal links `/`, `/validation-session`, `/review`, `/release-evidence` and `/diagnostics`, and provides copy buttons for the handoff instructions, return checklist and current app links.
+
 ## Prepare a Validation Session
 
 1. Run the calculation in the main app.

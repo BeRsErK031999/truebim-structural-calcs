@@ -20,6 +20,7 @@ const sections: CalculationSection[] = [
   { title: 'Поперечная сила', path: '/shear', icon: Layers3, status: 'planned' },
   { title: 'Балки', path: '/beams', icon: Building2, status: 'planned' },
   { title: 'Колонны', path: '/columns', icon: Columns3, status: 'planned' },
+  { title: 'Engineer Portal', path: '/engineer', icon: ClipboardCheck, status: 'active' },
   { title: 'Engineering Review', path: '/review', icon: ClipboardCheck, status: 'active' },
   { title: 'Validation Session', path: '/validation-session', icon: PackageCheck, status: 'active' },
   { title: 'Diagnostics', path: '/diagnostics', icon: Activity, status: 'active' },

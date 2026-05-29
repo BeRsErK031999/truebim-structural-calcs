@@ -28,6 +28,8 @@ Edge, corner, openings, shear reinforcement and round columns remain draft. See 
 
 ## Engineering review mode
 
+Engineer Portal is available at `/engineer`. It is the start page for engineers and links the calculation, validation session, Engineering Review, Release Evidence and diagnostics workflows. It also includes copy buttons for engineer instructions, the return checklist and the current office app URLs. See `docs/engineer-portal.md`.
+
 Engineering Review mode is available at `/review`. It provides local-only manual evidence input, side-by-side comparison against trusted/WebCAD/Excel values, mismatch highlighting, JSON/HTML review snapshot export, session import/export, and frozen snapshot drift detection.
 
 Accepted review status does not automatically promote VERIFIED. Review evidence feeds the verification lifecycle, but capability promotion still requires verified fixtures and passing verification logic. See `docs/engineering-review-workflow.md`.
@@ -109,6 +111,7 @@ Validation Session mode is available at `/validation-session`. It combines the a
 Engineer handoff instructions and templates are available for external trusted evidence collection:
 
 - `docs/engineer-handoff.md`
+- `docs/engineer-portal.md`
 - `docs/engineer-review-checklist.md`
 - `docs/validation-session-workflow.md`
 - `docs/evidence-template-pack/README.md`

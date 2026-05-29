@@ -1,5 +1,17 @@
 # Engineer Handoff
 
+## Engineer Portal
+
+Open the engineer start page first:
+
+```text
+http://192.168.22.37/engineer
+```
+
+The portal links the calculation page, Validation Session, Engineering Review, Release Evidence and diagnostics. It also provides copy buttons for engineer instructions, the return checklist and current office app links.
+
+The portal is navigation and handoff documentation only. It does not change formulas, does not change verification logic and does not promote draft or partial features to VERIFIED.
+
 Дата: 2026-05-26
 
 Этот документ предназначен для инженера-конструктора, который проверяет расчет продавливания и возвращает trusted evidence разработчику.

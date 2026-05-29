@@ -1,6 +1,7 @@
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
 
 import { DiagnosticsPage } from '@/pages/diagnostics/DiagnosticsPage'
+import { EngineerPortalPage } from '@/pages/engineer/EngineerPortalPage'
 import { HomePage } from '@/pages/home/HomePage'
 import { ReleaseEvidencePage } from '@/pages/release-evidence/ReleaseEvidencePage'
 import { EngineeringReviewPage } from '@/pages/review/EngineeringReviewPage'
@@ -13,6 +14,7 @@ export function App() {
       <Routes>
         <Route element={<AppLayout />}>
           <Route index element={<HomePage />} />
+          <Route path="engineer" element={<EngineerPortalPage />} />
           <Route path="review" element={<EngineeringReviewPage />} />
           <Route path="validation-session" element={<ValidationSessionPage />} />
           <Route path="diagnostics" element={<DiagnosticsPage />} />
