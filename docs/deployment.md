@@ -14,7 +14,23 @@ This project is deployed as a static Vite frontend served by an nginx Docker con
 
 Run commands from the project root.
 
-1. Build the production image:
+1. Run the deploy precheck:
+
+```powershell
+.\scripts\deploy-precheck.ps1
+```
+
+Equivalent npm alias:
+
+```powershell
+npm run deploy:precheck
+```
+
+The precheck verifies local Docker Desktop, SSH access, `/opt/apps`, remote Docker, the project directory, nginx, the office routes, and whether the office server already appears to serve the current commit.
+
+If Docker Desktop is unavailable, do not run full deploy. Start Docker Desktop, confirm `docker info`, and rerun the precheck. See `docs/docker-desktop-recovery.md`.
+
+2. Build the production image:
 
 ```powershell
 .\scripts\build-image.ps1
@@ -26,7 +42,7 @@ Equivalent command:
 docker build -t truebim-structural-calcs:latest .
 ```
 
-2. Export the image as a tar archive:
+3. Export the image as a tar archive:
 
 ```powershell
 .\scripts\export-image.ps1
@@ -38,7 +54,7 @@ Equivalent command:
 docker save truebim-structural-calcs:latest -o truebim-structural-calcs.tar
 ```
 
-3. Upload the tar archive to the office server:
+4. Upload the tar archive to the office server:
 
 ```powershell
 .\scripts\upload-image.ps1
@@ -50,7 +66,7 @@ Equivalent command:
 scp .\truebim-structural-calcs.tar admin_devops@192.168.22.37:/opt/apps/images/
 ```
 
-4. Deploy on the server through SSH:
+5. Deploy on the server through SSH:
 
 ```powershell
 .\scripts\deploy.ps1
@@ -64,11 +80,13 @@ cd /opt/apps
 ./scripts/deploy-project.sh truebim-structural-calcs
 ```
 
-5. Full one-command flow:
+6. Full one-command flow:
 
 ```powershell
 .\scripts\full-deploy.ps1
 ```
+
+`full-deploy.ps1` runs the deploy precheck before build. If Docker Desktop engine is not reachable, it stops before build/export/upload and prints a recovery hint.
 
 NPM aliases are also available:
 
@@ -76,6 +94,7 @@ NPM aliases are also available:
 npm run deploy:build
 npm run deploy:export
 npm run deploy:package
+npm run deploy:precheck
 ```
 
 ## First Server Setup
@@ -186,6 +205,14 @@ curl -I http://192.168.22.37
 curl -I -H 'Host: truebim-calc.local' http://127.0.0.1/diagnostics
 ```
 
+Check whether the office server already serves the current local commit:
+
+```powershell
+.\scripts\deploy-precheck.ps1
+```
+
+Look for `Remote serves current commit`. If it passes, the office JavaScript bundle contains the current short commit hash.
+
 Restart only this project:
 
 ```bash
@@ -201,6 +228,18 @@ sudo systemctl reload nginx
 ```
 
 ## Troubleshooting
+
+### Docker Desktop Unreachable Before Deploy
+
+If `docker info` fails locally or the error mentions `dockerDesktopLinuxEngine`, do not run full deploy. The image build and export will fail and upload will not have a valid archive.
+
+Run:
+
+```powershell
+.\scripts\deploy-precheck.ps1
+```
+
+Then follow `docs/docker-desktop-recovery.md`: restart Docker Desktop, run `wsl --shutdown` if needed, restart the terminal, and rerun the precheck.
 
 ### Container Not Starting
 
