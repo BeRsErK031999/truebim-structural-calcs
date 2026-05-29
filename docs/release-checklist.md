@@ -8,6 +8,7 @@
 - Run `npm run typecheck`.
 - Run `npm run test`.
 - Run `npm run build`.
+- Run `npm run release:evidence`.
 - Confirm no SSH password, private key or `.env` secret is staged.
 
 If Docker Desktop is unavailable, stop before full deploy. Start Docker Desktop, confirm `docker info`, follow `docs/docker-desktop-recovery.md` if needed, then rerun `npm run deploy:precheck`.
@@ -85,6 +86,7 @@ sudo systemctl status nginx --no-pager -l
 - Open `/review`.
 - Open `/validation-session`.
 - Open `/diagnostics`.
+- Open `/release-evidence`.
 - Run a default draft calculation.
 - Save a calculation locally.
 - Reload the page and confirm local history still appears.
@@ -123,5 +125,7 @@ cd /opt/apps
 ## Evidence Update
 
 - Update `docs/deployment-evidence.md`.
+- Generate release evidence with `npm run release:evidence`.
+- Attach `release-evidence-{commit}-{date}.json`, `.md` and `.html` to the release notes or audit record.
 - Record date, commit hash, image tag, container status, curl results and nginx status.
 - Commit documentation changes separately when the deploy has already succeeded.

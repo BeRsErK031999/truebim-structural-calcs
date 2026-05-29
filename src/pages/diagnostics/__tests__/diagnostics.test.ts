@@ -57,6 +57,8 @@ describe('diagnostics helpers', () => {
       validationSessionSupport: 'local-only',
       validationPackageExportSupport: 'manifest',
       checklistProgressSupport: 'yes',
+      releaseEvidenceSupport: 'yes',
+      releaseEvidenceExportFormats: 'html/md/json',
       engineerPackageReady: 'no',
       validationSessionsCount: 0,
       verifiedEvidenceCount: 1,

@@ -13,6 +13,7 @@
     "verification:validate": "node scripts/create-verified-case.mjs",
     "verification:candidate": "node scripts/validate-verification-candidate.mjs",
     "verification:stress": "node scripts/run-stress-regression.mjs",
+    "release:evidence": "node scripts/generate-release-evidence.mjs",
     "deploy:precheck": "powershell -ExecutionPolicy Bypass -File scripts/deploy-precheck.ps1",
     "deploy:build": "powershell -ExecutionPolicy Bypass -File scripts/build-image.ps1",
     "deploy:export": "powershell -ExecutionPolicy Bypass -File scripts/export-image.ps1",

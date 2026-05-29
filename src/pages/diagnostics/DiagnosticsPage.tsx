@@ -1,7 +1,10 @@
+import { Link } from 'react-router-dom'
+
 import { getSavedCalculationCount } from '@/entities/calculation/model/calculationStorage'
 import { useCalculationStore } from '@/entities/calculation/model/store'
 import { getAppMetadata } from '@/shared/config/appMetadata'
 import { Badge } from '@/shared/ui/badge'
+import { Button } from '@/shared/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card'
 
 import { buildDiagnosticsModel, isLocalStorageAvailable } from './diagnostics'
@@ -151,6 +154,14 @@ export function DiagnosticsPage() {
               value={diagnostics.checklistProgressSupport}
             />
             <DiagnosticItem
+              label="Release evidence support"
+              value={diagnostics.releaseEvidenceSupport}
+            />
+            <DiagnosticItem
+              label="Release evidence export formats"
+              value={diagnostics.releaseEvidenceExportFormats}
+            />
+            <DiagnosticItem
               label="Engineer package ready"
               value={diagnostics.engineerPackageReady}
             />
@@ -180,7 +191,12 @@ export function DiagnosticsPage() {
 
       <Card className="rounded-lg border border-slate-200 bg-white shadow-sm">
         <CardHeader>
-          <CardTitle>Verified Capability Matrix</CardTitle>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <CardTitle>Verified Capability Matrix</CardTitle>
+            <Button asChild variant="outline">
+              <Link to="/release-evidence">Release Evidence</Link>
+            </Button>
+          </div>
         </CardHeader>
         <CardContent>
           <dl className="grid gap-3 md:grid-cols-2">

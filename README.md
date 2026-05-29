@@ -86,6 +86,14 @@ Release hardening checks are documented in `docs/release-checklist.md`.
 
 Client-side runtime diagnostics are available at `/diagnostics`.
 
+Release Evidence is available at `/release-evidence`. It exports HTML, Markdown and JSON bundles for audit and reproducibility without changing formulas, verification logic or candidate promotion rules. The local CLI writes bundle files to `release-evidence/`:
+
+```powershell
+npm run release:evidence
+```
+
+See `docs/release-evidence-workflow.md`.
+
 Engineering review can export verification candidate JSON from `/review`. The candidate CLI checks the exported JSON without importing it:
 
 ```powershell

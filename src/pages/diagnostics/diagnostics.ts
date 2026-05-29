@@ -50,6 +50,8 @@ export type DiagnosticsModel = {
   validationSessionSupport: 'local-only'
   validationPackageExportSupport: 'manifest'
   checklistProgressSupport: 'yes'
+  releaseEvidenceSupport: 'yes'
+  releaseEvidenceExportFormats: 'html/md/json'
   engineerPackageReady: 'yes' | 'no'
   validationSessionsCount: number
   frozenReviewSnapshotsCount: number
@@ -152,6 +154,8 @@ export function buildDiagnosticsModel({
     verificationCandidateSupport: 'yes',
     candidateAutoPromotion: 'no',
     manualDatasetImportRequired: 'yes',
+    releaseEvidenceSupport: 'yes',
+    releaseEvidenceExportFormats: 'html/md/json',
     ...validationSessionDiagnostics,
     ...reviewDiagnostics,
     warning: 'Client-side diagnostics only',
