@@ -1,3 +1,4 @@
+import type { ControlContour } from '../contours/controlContour'
 import type {
   ControlPerimeterResult,
   MomentTransferResult,
@@ -13,6 +14,8 @@ export function buildPunchingSketchModel(
   input: PunchingShearInput,
   perimeter: ControlPerimeterResult,
   momentTransfer?: MomentTransferResult,
+  controlContours: ControlContour[] = [],
+  selectedContourId: string | null = null,
 ): PunchingSketchModel {
   const columnVertices = getColumnVertices(input)
   const wallVertices = getWallVertices(input)
@@ -21,6 +24,7 @@ export function buildPunchingSketchModel(
     ...columnVertices,
     ...wallVertices,
     ...perimeter.vertices,
+    ...controlContours.flatMap((contour) => contour.vertices),
     ...perimeter.removedSegments.flatMap((segment) => [segment.start, segment.end]),
     ...perimeter.openingTangents.flatMap((tangent) => [tangent.start, tangent.end]),
     ...openingElements.flatMap((element) => rectToPoints(element)),
@@ -31,6 +35,7 @@ export function buildPunchingSketchModel(
     slabElement,
     ...createSupportElements(columnVertices, wallVertices),
     ...createBoundaryElements(perimeter),
+    ...createMultiContourElements(controlContours, selectedContourId),
     ...createControlPerimeterElements(perimeter),
     ...createRemovedPerimeterElements(perimeter),
     ...openingElements,
@@ -38,6 +43,7 @@ export function buildPunchingSketchModel(
     ...createStressElements(perimeter, momentTransfer),
     ...createDimensionElements(input, columnVertices, wallVertices, perimeter, viewBox),
     ...createBoundaryLabels(perimeter),
+    ...createMultiContourLabels(controlContours, selectedContourId),
     {
       id: 'label-control-perimeter',
       role: 'label',
@@ -65,6 +71,42 @@ export function buildPunchingSketchModel(
       stressDiagram: momentTransfer?.stressDistribution ? 'draft' : 'disabled',
     },
   }
+}
+
+function createMultiContourElements(
+  contours: ControlContour[],
+  selectedContourId: string | null,
+): SvgSketchElement[] {
+  return contours.flatMap((contour) =>
+    contour.segments.map((segment) => ({
+      id: `multi-contour-${contour.index}-${segment.id}`,
+      role:
+        contour.id === selectedContourId ? 'selected-control-contour' : 'control-contour',
+      type: 'line',
+      start: segment.start,
+      end: segment.end,
+      label: contour.id === selectedContourId ? 'selected draft critical contour' : undefined,
+    })),
+  )
+}
+
+function createMultiContourLabels(
+  contours: ControlContour[],
+  selectedContourId: string | null,
+): SvgSketchElement[] {
+  return contours.map((contour) => ({
+    id: `label-${contour.id}`,
+    role: 'label',
+    type: 'text',
+    position: {
+      x: contour.boundingBox.minX,
+      y: contour.boundingBox.minY - 18 - contour.index * 20,
+    },
+    text:
+      contour.id === selectedContourId
+        ? `contour ${contour.index} - selected draft critical contour`
+        : `contour ${contour.index}`,
+  }))
 }
 
 function createSupportElements(

@@ -14,17 +14,24 @@ import type { ControlPerimeterResult, ControlPerimeterSegment, PunchingShearInpu
 import { calculateWallCornerControlPerimeter } from '../wall/wallCornerPerimeter'
 import { calculateWallEndControlPerimeter } from '../wall/wallPerimeter'
 
-export function calculateControlPerimeter(input: PunchingShearInput): ControlPerimeterResult {
+export type ControlPerimeterOptions = {
+  draftOffsetMm?: number
+}
+
+export function calculateControlPerimeter(
+  input: PunchingShearInput,
+  options: ControlPerimeterOptions = {},
+): ControlPerimeterResult {
   if (input.caseType === 'wall-end') {
-    return calculateWallEndControlPerimeter(input)
+    return calculateWallEndControlPerimeter(input, options)
   }
 
   if (input.caseType === 'wall-corner') {
-    return calculateWallCornerControlPerimeter(input)
+    return calculateWallCornerControlPerimeter(input, options)
   }
 
   if (isRectangularDraftGeometryCase(input)) {
-    return calculateRectangularControlPerimeter(input)
+    return calculateRectangularControlPerimeter(input, options)
   }
 
   const contour = createContourLoop('unsupported-control-perimeter', [])
@@ -61,14 +68,17 @@ export function calculateControlPerimeter(input: PunchingShearInput): ControlPer
   }
 }
 
-function calculateRectangularControlPerimeter(input: PunchingShearInput): ControlPerimeterResult {
+function calculateRectangularControlPerimeter(
+  input: PunchingShearInput,
+  options: ControlPerimeterOptions,
+): ControlPerimeterResult {
   const rectColumn = input.rectColumn
 
   if (!rectColumn) {
     throw new Error('Rectangular column input is required for rectangular perimeter')
   }
 
-  const draftOffsetMm = input.slab.effectiveDepthMm / 2
+  const draftOffsetMm = options.draftOffsetMm ?? input.slab.effectiveDepthMm / 2
   const halfWidth = rectColumn.widthXMm / 2 + draftOffsetMm
   const halfHeight = rectColumn.widthYMm / 2 + draftOffsetMm
   const polygon = normalizePolygon({
@@ -130,7 +140,7 @@ function calculateRectangularControlPerimeter(input: PunchingShearInput): Contro
     svgPath: polygonToPath(vertices),
     warnings: [
       'Control perimeter geometry is draft-only; engineering formulas are intentionally disabled',
-      'Draft offset uses effectiveDepthMm / 2 as a geometry placeholder pending SP63 verification',
+      'Draft offset uses geometry placeholder values pending SP63 verification',
       ...createBoundaryWarnings(classification),
       ...createOpeningWarnings(openingSubtraction.openingAffected),
     ],

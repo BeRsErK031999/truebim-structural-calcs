@@ -12,6 +12,11 @@ import type { BoundingBox, Point2D } from './domain/point'
 import type { Segment2D } from './domain/segment'
 import type { PunchingSketchModel } from './sketch/svg'
 import type { VerificationEvidence, VerificationLevel, VerifiedFeatureId } from './verified/verifiedMode'
+import type {
+  ContourComparisonRow,
+  ControlContour,
+  ControlContourSelectionResult,
+} from './contours/controlContour'
 
 export type PunchingShearCheckStatus =
   | 'draft_ok'
@@ -85,6 +90,13 @@ export type ShearReinforcementInput = {
   barDiameterMm?: number
   barSpacingMm?: number
   rows?: number
+}
+
+export type MultipleControlContoursInput = {
+  enabled: boolean
+  count: number
+  offsetStep: 'h0/2' | 'h0' | 'custom'
+  customOffsetStepMm?: number
 }
 
 export type ConcreteClassName = 'B15' | 'B20' | 'B25' | 'B30' | 'B35' | 'B40'
@@ -190,6 +202,7 @@ export type PunchingShearInput = {
   slabEdges?: SlabEdgesInput
   openings: OpeningInput[]
   shearReinforcement: ShearReinforcementInput
+  multipleContours?: MultipleControlContoursInput
 }
 
 export type PunchingShearResult = {
@@ -215,6 +228,11 @@ export type PunchingShearResult = {
     draftConcreteResistanceMpa: number
   }
   perimeter: ControlPerimeterResult
+  controlContours: ControlContour[]
+  selectedContourId: string | null
+  draftCriticalContour: ControlContourSelectionResult | null
+  contourComparison: ContourComparisonRow[]
+  contourWarnings: string[]
   svgModel: PunchingSketchModel
   momentTransfer: MomentTransferResult
   verifiedMode: VerificationLevel
@@ -239,6 +257,7 @@ export type PunchingShearReportModel = {
   boundaryEffectsSummary: Record<string, string | number | boolean>
   openingsSummary: Record<string, string | number | boolean>
   geometryVerificationSummary: Record<string, string | number | boolean>
+  multipleControlPerimetersSummary: Array<Record<string, string | number | boolean | null>>
   segments: Array<Record<string, string | number>>
   svgMetadata: Record<string, string | number>
   formulaSummary: string[]

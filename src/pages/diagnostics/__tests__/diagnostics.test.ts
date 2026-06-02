@@ -47,6 +47,8 @@ describe('diagnostics helpers', () => {
       openingsSupport: 'draft-geometry',
       wallPunchingSupport: 'draft',
       wallCornerSupport: 'draft',
+      multipleContourSupport: 'draft',
+      contourSelectionSupport: 'draft',
       clippedPerimeterSupport: 'draft',
       geometryVerificationSupport: 'draft',
       clippingVerificationSupport: 'draft',

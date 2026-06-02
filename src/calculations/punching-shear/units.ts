@@ -43,5 +43,12 @@ export function normalizePunchingShearInput(input: PunchingShearInput): Punching
     slabEdges: input.slabEdges ? { ...input.slabEdges } : undefined,
     openings: input.openings.map((opening) => ({ ...opening })),
     shearReinforcement: { ...input.shearReinforcement },
+    multipleContours: input.multipleContours
+      ? { ...input.multipleContours }
+      : {
+          enabled: false,
+          count: 4,
+          offsetStep: 'h0/2',
+        },
   }
 }

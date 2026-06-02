@@ -94,6 +94,13 @@ export const shearReinforcementInputSchema = z.object({
   rows: z.number().int().positive().optional(),
 })
 
+export const multipleControlContoursInputSchema = z.object({
+  enabled: z.boolean(),
+  count: z.number().int().min(1).max(12),
+  offsetStep: z.enum(['h0/2', 'h0', 'custom']),
+  customOffsetStepMm: positiveNumber.optional(),
+}).optional()
+
 export const punchingShearInputSchema = z.object({
   caseType: punchingShearCaseTypeSchema,
   forces: forceInputSchema,
@@ -106,4 +113,5 @@ export const punchingShearInputSchema = z.object({
   slabEdges: slabEdgesInputSchema.optional(),
   openings: z.array(openingInputSchema),
   shearReinforcement: shearReinforcementInputSchema,
+  multipleContours: multipleControlContoursInputSchema,
 }) satisfies z.ZodType<PunchingShearInput>

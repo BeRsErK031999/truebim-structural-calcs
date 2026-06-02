@@ -105,6 +105,14 @@ export function DiagnosticsPage() {
               value={formatDiagnosticValue(diagnostics.wallCornerSupport)}
             />
             <DiagnosticItem
+              label="multiple contour support"
+              value={formatDiagnosticValue(diagnostics.multipleContourSupport)}
+            />
+            <DiagnosticItem
+              label="contour selection support"
+              value={formatDiagnosticValue(diagnostics.contourSelectionSupport)}
+            />
+            <DiagnosticItem
               label="Contour clipping"
               value={formatDiagnosticValue(diagnostics.clippedPerimeterSupport)}
             />

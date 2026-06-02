@@ -1,0 +1,46 @@
+{
+  "id": "multi-contour-wall-end-example",
+  "title": "Draft multiple control perimeter wall-end preparation case",
+  "source": "TODO",
+  "verificationSource": "NOT VERIFIED",
+  "checkedBy": null,
+  "checkedAt": null,
+  "comparisonNotes": "TODO: document trusted SP63 wall-end multiple contour comparison.",
+  "standard": "SP63.13330",
+  "caseType": "wall-end",
+  "input": {
+    "caseType": "wall-end",
+    "forces": {
+      "axialForceKn": 420,
+      "momentXKnM": 0,
+      "momentYKnM": 0
+    },
+    "slab": {
+      "thicknessMm": 220,
+      "effectiveDepthMm": 190,
+      "concreteCoverMm": 30
+    },
+    "concrete": {
+      "className": "B25"
+    },
+    "wall": {
+      "wallLength": 1200,
+      "wallThickness": 200,
+      "slabThickness": 220,
+      "effectiveDepth": 190,
+      "cover": 30
+    },
+    "openings": [],
+    "shearReinforcement": {
+      "enabled": false
+    },
+    "multipleContours": {
+      "enabled": true,
+      "count": 4,
+      "offsetStep": "h0/2"
+    }
+  },
+  "expected": null,
+  "notes": "Template only. Multiple wall-end contours remain draft until trusted SP63 values are filled.",
+  "status": "draft"
+}

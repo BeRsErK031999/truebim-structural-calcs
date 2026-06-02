@@ -60,6 +60,8 @@ export function CalculationForm() {
   const caseType = useWatch({ control, name: 'caseType' })
   const concreteClass = useWatch({ control, name: 'concrete.className' })
   const wallCornerOrientation = useWatch({ control, name: 'wallCorner.orientation' })
+  const multipleContoursEnabled = useWatch({ control, name: 'multipleContours.enabled' })
+  const multipleContoursOffsetStep = useWatch({ control, name: 'multipleContours.offsetStep' })
   const shearReinforcementEnabled = useWatch({
     control,
     name: 'shearReinforcement.enabled',
@@ -292,6 +294,58 @@ export function CalculationForm() {
             })
           }
         />
+      </FormSection>
+
+      <FormSection
+        title="Multiple Control Perimeters"
+        helperText="Draft-only geometry trace for several control contours. Disabled by default to preserve the current verified center behavior."
+      >
+        <ToggleField
+          checked={multipleContoursEnabled ?? false}
+          label="Enable multiple contours"
+          helperText="Generates draft contour offsets and selects a draftCriticalContour by maximum draft utilization."
+          onCheckedChange={(checked) =>
+            setValue('multipleContours.enabled', checked, {
+              shouldDirty: true,
+              shouldValidate: true,
+            })
+          }
+        />
+        <NumberField
+          label="Number of contours"
+          min={1}
+          step={1}
+          unit="count"
+          registration={register('multipleContours.count', { valueAsNumber: true })}
+          error={errors.multipleContours?.count?.message}
+        />
+        <SelectField
+          label="Offset step"
+          placeholder="Select offset step"
+          value={multipleContoursOffsetStep ?? 'h0/2'}
+          options={[
+            { value: 'h0/2', label: 'h0/2' },
+            { value: 'h0', label: 'h0' },
+            { value: 'custom', label: 'custom mm' },
+          ]}
+          error={errors.multipleContours?.offsetStep?.message}
+          onValueChange={(value) =>
+            setValue('multipleContours.offsetStep', value as NonNullable<PunchingShearInput['multipleContours']>['offsetStep'], {
+              shouldDirty: true,
+              shouldValidate: true,
+            })
+          }
+        />
+        {multipleContoursOffsetStep === 'custom' ? (
+          <NumberField
+            label="Custom offset step"
+            min={1}
+            step={1}
+            unit="mm"
+            registration={register('multipleContours.customOffsetStepMm', { valueAsNumber: true })}
+            error={errors.multipleContours?.customOffsetStepMm?.message}
+          />
+        ) : null}
       </FormSection>
 
       <FormSection

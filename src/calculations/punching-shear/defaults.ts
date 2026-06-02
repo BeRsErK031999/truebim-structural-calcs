@@ -40,4 +40,9 @@ export const defaultPunchingShearInput: PunchingShearInput = {
   shearReinforcement: {
     enabled: false,
   },
+  multipleContours: {
+    enabled: false,
+    count: 4,
+    offsetStep: 'h0/2',
+  },
 }

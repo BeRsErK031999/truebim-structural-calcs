@@ -31,6 +31,7 @@ export { buildPunchingShearReport } from './report'
 export {
   concreteInputSchema,
   forceInputSchema,
+  multipleControlContoursInputSchema,
   openingInputSchema,
   punchingShearCaseTypeSchema,
   punchingShearInputSchema,
@@ -73,6 +74,7 @@ export type {
   RectColumnInput,
   RoundColumnInput,
   ShearReinforcementInput,
+  MultipleControlContoursInput,
   SlabEdgesInput,
   SlabGeometryInput,
   WallInput,
@@ -82,6 +84,13 @@ export type {
   StressPoint,
   MomentTransferResult,
 } from './types'
+export type {
+  ContourComparisonRow,
+  ControlContour,
+  ControlContourGenerationOptions,
+  ControlContourKind,
+  ControlContourSelectionResult,
+} from './contours/controlContour'
 export type {
   VerificationEvidence,
   VerificationLevel,

@@ -48,6 +48,8 @@ Wall-end and wall-corner cases now have draft geometry foundations for pilot rev
 
 This is geometry and verification preparation only, not verified SP63 support. See `docs/wall-punching-draft.md` and `docs/wall-corner-punching-draft.md`.
 
+Multiple control perimeters now have a draft foundation behind an explicit form toggle. When enabled, the app generates draft offsets, selects a `draftCriticalContour` by maximum draft utilization, labels the contours in SVG, and adds a report table. This is not verified SP63 contour selection. See `docs/multiple-control-contours-draft.md`.
+
 Moment transfer trusted validation templates, stress comparison and snapshot review workflow are documented in `docs/verified-moment-transfer-workflow.md`.
 
 Stress regression evidence collection is documented in `docs/stress-regression-workflow.md`. Draft templates for trusted moment stress evidence live in `examples/verification/moments/` and cover low/high Mx, low/high My and combined Mx/My cases.

@@ -80,6 +80,15 @@ export function buildPunchingShearReport(
       openingAffected: result.perimeter.openingAffected,
       boundaryClassification: result.perimeter.clippingMetadata.boundaryCondition,
     },
+    multipleControlPerimetersSummary: result.contourComparison.map((contour) => ({
+      contourId: contour.contourId,
+      offsetMm: contour.offsetMm,
+      perimeterMm: contour.perimeterMm,
+      draftStressMpa: contour.draftStressMpa,
+      utilization: contour.utilization,
+      selected: contour.selected,
+      warnings: contour.warnings.join('; ') || 'none',
+    })),
     segments: result.perimeter.segments.map((segment) => ({
       id: segment.id,
       kind: segment.kind,
@@ -103,6 +112,7 @@ export function buildPunchingShearReport(
       'u = control perimeter',
       'h0 = effective depth',
       'DRAFT moment redistribution: v(point) = vbase * (1 + ex*x/rx^2 + ey*y/ry^2)',
+      'DRAFT multiple contour selection: evaluate v = N / (u * h0) per contour and select max utilization',
     ],
     calculationValues: {
       N: result.designShearForceN,
@@ -152,7 +162,10 @@ export function buildPunchingShearReport(
       draft: result.draftFeatures,
     },
     verificationEvidence: result.verificationEvidence,
-    warnings: result.warnings,
+    warnings: [
+      ...result.warnings,
+      ...result.contourWarnings,
+    ],
     calculationSteps: [
       'DRAFT / NOT FOR DESIGN USE.',
       'Input schema validation completed.',
@@ -168,6 +181,9 @@ export function buildPunchingShearReport(
       'SVG sketch model generated from geometry DTOs.',
       'Draft moment-transfer stress distribution generated where Mx/My are present.',
       'Draft rectangular force-only check evaluated where supported.',
+      result.controlContours.length > 0
+        ? 'Multiple draft control perimeters generated and draftCriticalContour selected by maximum utilization.'
+        : 'Multiple draft control perimeters disabled.',
       'Draft openings and slab edge clipping geometry generated where provided.',
       'Shear reinforcement intentionally skipped.',
     ],

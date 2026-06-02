@@ -403,6 +403,8 @@ function getElementClassName(role: SvgSketchElement['role']) {
     column: 'fill-slate-800 stroke-slate-950 stroke-2',
     wall: 'fill-slate-700 stroke-slate-950 stroke-2',
     'control-perimeter': 'fill-none stroke-teal-700 stroke-4',
+    'control-contour': 'fill-none stroke-teal-500 stroke-2 opacity-60',
+    'selected-control-contour': 'fill-none stroke-teal-800 stroke-5',
     'removed-perimeter': 'fill-none stroke-red-600 stroke-3 stroke-dasharray-[10_7]',
     opening: 'fill-orange-100 stroke-red-500 stroke-2 stroke-dasharray-[8_6]',
     'opening-tangent': 'stroke-slate-400 stroke-2 stroke-dasharray-[8_8]',

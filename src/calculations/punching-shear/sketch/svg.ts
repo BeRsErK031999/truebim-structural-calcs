@@ -8,6 +8,8 @@ export type SvgElementBase = {
     | 'column'
     | 'wall'
     | 'control-perimeter'
+    | 'control-contour'
+    | 'selected-control-contour'
     | 'removed-perimeter'
     | 'opening'
     | 'opening-tangent'

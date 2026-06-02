@@ -416,4 +416,94 @@ describe('punching shear draft center check', () => {
     expect(result.verifiedFeatures).toContain('center-force-only')
     expect(result.draftFeatures).toEqual([])
   })
+
+  it('creates draft multiple control contours with expected offsets', () => {
+    const input: PunchingShearInput = {
+      ...defaultPunchingShearInput,
+      multipleContours: {
+        enabled: true,
+        count: 4,
+        offsetStep: 'h0/2',
+      },
+    }
+    const result = calculatePunchingShear(input)
+
+    expect(result.controlContours).toHaveLength(4)
+    expect(result.controlContours.map((contour) => contour.offsetMm)).toEqual([95, 190, 285, 380])
+    expect(result.contourWarnings).toContain(
+      'Multiple contour selection is draft-only and requires SP63 verification.',
+    )
+  })
+
+  it('selects an existing draft critical contour', () => {
+    const result = calculatePunchingShear({
+      ...defaultPunchingShearInput,
+      multipleContours: {
+        enabled: true,
+        count: 3,
+        offsetStep: 'h0',
+      },
+    })
+
+    expect(result.selectedContourId).toBeTruthy()
+    expect(result.draftCriticalContour?.criterion).toBe('max-utilization')
+    expect(result.controlContours.some((contour) => contour.id === result.selectedContourId)).toBe(true)
+    expect(result.contourComparison.some((contour) => contour.selected)).toBe(true)
+  })
+
+  it('adds multiple contour rows to the report model', () => {
+    const input: PunchingShearInput = {
+      ...defaultPunchingShearInput,
+      multipleContours: {
+        enabled: true,
+        count: 2,
+        offsetStep: 'h0/2',
+      },
+    }
+    const result = calculatePunchingShear(input)
+    const report = buildPunchingShearReport(input, result)
+
+    expect(report.multipleControlPerimetersSummary).toHaveLength(2)
+    expect(report.warnings).toContain(
+      'Multiple contour selection is draft-only and requires SP63 verification.',
+    )
+  })
+
+  it('labels contours in the SVG model', () => {
+    const result = calculatePunchingShear({
+      ...defaultPunchingShearInput,
+      multipleContours: {
+        enabled: true,
+        count: 2,
+        offsetStep: 'h0/2',
+      },
+    })
+
+    expect(result.svgModel.elements).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ role: 'label', type: 'text', text: 'contour 2' }),
+        expect.objectContaining({
+          role: 'label',
+          type: 'text',
+          text: 'contour 1 - selected draft critical contour',
+        }),
+      ]),
+    )
+    expect(result.svgModel.elements.some((element) => element.role === 'selected-control-contour')).toBe(true)
+  })
+
+  it('keeps existing verified center force-only behavior when multiple contours are disabled', () => {
+    const result = calculatePunchingShear({
+      ...defaultPunchingShearInput,
+      multipleContours: {
+        enabled: false,
+        count: 4,
+        offsetStep: 'h0/2',
+      },
+    })
+
+    expect(result.verificationLevel).toBe('verified')
+    expect(result.controlContours).toEqual([])
+    expect(result.controlPerimeterMm).toBe(2360)
+  })
 })

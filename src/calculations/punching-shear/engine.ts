@@ -1,4 +1,8 @@
 import { defaultPunchingShearInput } from './defaults'
+import { compareControlContours } from './contours/contourComparison'
+import { generateControlContours } from './contours/contourGeneration'
+import { selectDraftCriticalContour } from './contours/contourSelection'
+import { createContourWarnings } from './contours/contourWarnings'
 import { calculateControlPerimeter } from './geometry/perimeter'
 import { getConcreteClassData } from './materials'
 import {
@@ -33,14 +37,30 @@ export function calculatePunchingShear(input: PunchingShearInput): PunchingShear
 
   const normalizedInput = normalizePunchingShearInput(parsedInput.data)
   const perimeter = calculateControlPerimeter(normalizedInput)
+  const contourBundle = buildContourBundle(normalizedInput)
+  const selectedPerimeter =
+    contourBundle.draftCriticalContour === null
+      ? perimeter
+      : calculateControlPerimeter(normalizedInput, {
+          draftOffsetMm:
+            contourBundle.controlContours[contourBundle.draftCriticalContour.selectedIndex - 1]
+              ?.offsetMm,
+        })
   const material = getConcreteClassData(normalizedInput.concrete.className)
 
   if (!isSupportedDraftGeometryCase(normalizedInput)) {
     const momentTransfer = createDisabledMomentTransfer()
-    const svgModel = buildPunchingSketchModel(normalizedInput, perimeter, momentTransfer)
+    const svgModel = buildPunchingSketchModel(
+      normalizedInput,
+      perimeter,
+      momentTransfer,
+      contourBundle.controlContours,
+      contourBundle.selectedContourId,
+    )
 
     return withVerifiedStatus(normalizedInput, {
       ...createBaseResult(normalizedInput, perimeter, svgModel, momentTransfer),
+      ...contourBundle,
       status: 'not_implemented',
       warnings: [
         ...draftScopeWarnings,
@@ -50,25 +70,38 @@ export function calculatePunchingShear(input: PunchingShearInput): PunchingShear
     })
   }
 
-  if (perimeter.perimeterMm <= 0 || perimeter.effectiveDepthMm <= 0) {
+  if (selectedPerimeter.perimeterMm <= 0 || selectedPerimeter.effectiveDepthMm <= 0) {
     const momentTransfer = createDisabledMomentTransfer()
-    const svgModel = buildPunchingSketchModel(normalizedInput, perimeter, momentTransfer)
+    const svgModel = buildPunchingSketchModel(
+      normalizedInput,
+      selectedPerimeter,
+      momentTransfer,
+      contourBundle.controlContours,
+      contourBundle.selectedContourId,
+    )
 
     return withVerifiedStatus(normalizedInput, {
-      ...createBaseResult(normalizedInput, perimeter, svgModel, momentTransfer),
+      ...createBaseResult(normalizedInput, selectedPerimeter, svgModel, momentTransfer),
+      ...contourBundle,
       status: 'invalid_input',
       warnings: [...draftScopeWarnings, ...perimeter.warnings, 'Invalid perimeter geometry'],
     })
   }
 
   const designShearForceN = knToN(normalizedInput.forces.axialForceKn)
-  const shearStressMpa = designShearForceN / (perimeter.perimeterMm * perimeter.effectiveDepthMm)
+  const shearStressMpa = designShearForceN / (selectedPerimeter.perimeterMm * selectedPerimeter.effectiveDepthMm)
   const momentTransfer = calculateDraftMomentTransfer({
     forces: normalizedInput.forces,
-    perimeter,
+    perimeter: selectedPerimeter,
     baseStressMpa: shearStressMpa,
   })
-  const svgModel = buildPunchingSketchModel(normalizedInput, perimeter, momentTransfer)
+  const svgModel = buildPunchingSketchModel(
+    normalizedInput,
+    selectedPerimeter,
+    momentTransfer,
+    contourBundle.controlContours,
+    contourBundle.selectedContourId,
+  )
   const draftConcreteResistanceMpa = material.draftConcreteResistanceMpa
   const maxShearStressMpa = momentTransfer.stressDistribution?.maxStressMpa ?? shearStressMpa
   const minShearStressMpa = momentTransfer.stressDistribution?.minStressMpa ?? shearStressMpa
@@ -77,12 +110,13 @@ export function calculatePunchingShear(input: PunchingShearInput): PunchingShear
   const passed = utilizationRatio <= 1
 
   return withVerifiedStatus(normalizedInput, {
-    ...createBaseResult(normalizedInput, perimeter, svgModel, momentTransfer),
+    ...createBaseResult(normalizedInput, selectedPerimeter, svgModel, momentTransfer),
+    ...contourBundle,
     status: passed ? 'draft_ok' : 'draft_failed',
     utilization: utilizationRatio,
     designShearForceN,
-    controlPerimeterMm: perimeter.perimeterMm,
-    effectiveDepthMm: perimeter.effectiveDepthMm,
+    controlPerimeterMm: selectedPerimeter.perimeterMm,
+    effectiveDepthMm: selectedPerimeter.effectiveDepthMm,
     shearStressMpa,
     eccentricityX: momentTransfer.eccentricityX,
     eccentricityY: momentTransfer.eccentricityY,
@@ -94,7 +128,12 @@ export function calculatePunchingShear(input: PunchingShearInput): PunchingShear
     draftConcreteResistanceMpa,
     utilizationRatio,
     passed,
-    warnings: [...draftScopeWarnings, ...perimeter.warnings, ...momentTransfer.warnings],
+    warnings: [
+      ...draftScopeWarnings,
+      ...selectedPerimeter.warnings,
+      ...momentTransfer.warnings,
+      ...contourBundle.contourWarnings,
+    ],
     placeholders: [
       'moment contribution',
       'shear reinforcement contribution',
@@ -102,6 +141,29 @@ export function calculatePunchingShear(input: PunchingShearInput): PunchingShear
       'edge and corner behavior',
     ],
   })
+}
+
+function buildContourBundle(input: PunchingShearInput) {
+  const controlContours = generateControlContours(
+    input,
+    input.multipleContours ?? {
+      enabled: false,
+      count: 4,
+      offsetStep: 'h0/2',
+    },
+  )
+  const draftCriticalContour = selectDraftCriticalContour(controlContours)
+  const selectedContourId = draftCriticalContour?.selectedContourId ?? null
+  const contourComparison = compareControlContours(controlContours, selectedContourId)
+  const contourWarnings = createContourWarnings(controlContours)
+
+  return {
+    controlContours,
+    selectedContourId,
+    draftCriticalContour,
+    contourComparison,
+    contourWarnings,
+  }
 }
 
 function isSupportedDraftGeometryCase(input: PunchingShearInput) {
@@ -127,10 +189,18 @@ function createInvalidInputResult(input: PunchingShearInput, validationWarnings:
   }
   const perimeter = calculateControlPerimeter(fallbackInput)
   const momentTransfer = createDisabledMomentTransfer()
-  const svgModel = buildPunchingSketchModel(fallbackInput, perimeter, momentTransfer)
+  const contourBundle = buildContourBundle(fallbackInput)
+  const svgModel = buildPunchingSketchModel(
+    fallbackInput,
+    perimeter,
+    momentTransfer,
+    contourBundle.controlContours,
+    contourBundle.selectedContourId,
+  )
 
   return withVerifiedStatus(fallbackInput, {
     ...createBaseResult(fallbackInput, perimeter, svgModel, momentTransfer),
+    ...contourBundle,
     status: 'invalid_input',
     warnings: [...draftScopeWarnings, ...validationWarnings],
   } satisfies PunchingShearResult)
@@ -167,6 +237,11 @@ function createBaseResult(
       draftConcreteResistanceMpa: material.draftConcreteResistanceMpa,
     },
     perimeter,
+    controlContours: [],
+    selectedContourId: null,
+    draftCriticalContour: null,
+    contourComparison: [],
+    contourWarnings: [],
     svgModel,
     momentTransfer,
     verifiedMode: 'draft',

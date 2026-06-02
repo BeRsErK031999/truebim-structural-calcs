@@ -145,6 +145,9 @@ export function buildPunchingShearHtmlReport(
       ['opening affected', String(result.perimeter.openingAffected)],
       ['boundary classification', result.perimeter.clippingMetadata.boundaryCondition],
     ])}
+    <h2>Multiple Control Perimeters</h2>
+    <p class="draft">Multiple contour selection is draft-only and requires SP63 verification.</p>
+    ${renderMultipleControlPerimeters(result)}
     <h2>Verification Readiness</h2>
     ${renderTable([
       ['geometry draft-ready', String(result.perimeter.perimeterMm > 0)],
@@ -259,6 +262,20 @@ export function buildPunchingShearHtmlReport(
 </html>`
 }
 
+function renderMultipleControlPerimeters(result: PunchingShearResult) {
+  if (result.contourComparison.length === 0) {
+    return '<p class="note">Multiple control perimeters disabled.</p>'
+  }
+
+  return renderTable([
+    ['contour id', 'offset | perimeter | draft stress | utilization | selected | warnings'],
+    ...result.contourComparison.map((contour) => [
+      contour.contourId,
+      `${formatValueWithUnit(contour.offsetMm, 'mm')} | ${formatValueWithUnit(contour.perimeterMm, 'mm')} | ${formatValueWithUnit(contour.draftStressMpa, 'MPa', 3)} | ${formatUtilization(contour.utilization)} | ${contour.selected ? 'yes' : 'no'} | ${contour.warnings.join('; ') || 'none'}`,
+    ] satisfies [string, string]),
+  ])
+}
+
 function renderFeatureList(features: string[]) {
   return `<ul>${(features.length > 0 ? features : ['none'])
     .map((feature) => `<li>${escapeHtml(feature)}</li>`)
@@ -344,9 +361,20 @@ function renderSvgElement(element: SvgSketchElement): string {
       element.role === 'eccentricity'
         ? ' marker-start="url(#dimension-arrow)" marker-end="url(#dimension-arrow)"'
         : ''
-    const strokeWidth = element.role === 'stress-segment' ? 7 : 2
+    const strokeWidth =
+      element.role === 'stress-segment'
+        ? 7
+        : element.role === 'selected-control-contour'
+          ? 5
+          : element.role === 'control-contour'
+            ? 1.5
+            : 2
     const dashArray =
-      element.role === 'control-perimeter' || element.role === 'stress-segment' ? '0' : '6 6'
+      element.role === 'control-perimeter' ||
+      element.role === 'selected-control-contour' ||
+      element.role === 'stress-segment'
+        ? '0'
+        : '6 6'
 
     return `<line x1="${element.start.x}" y1="${element.start.y}" x2="${element.end.x}" y2="${element.end.y}" stroke="${stressColor}" stroke-width="${strokeWidth}" stroke-dasharray="${dashArray}" vector-effect="non-scaling-stroke"${marker} />${label}`
   }
@@ -376,6 +404,7 @@ function createReportWarnings(result: PunchingShearResult) {
       'Openings and boundary clipping are draft geometry only.',
       'Wall-end punching support is draft geometry only.',
       'Wall-corner punching support is draft geometry only.',
+      'Multiple contour selection is draft-only and requires SP63 verification.',
       'Shear reinforcement is unsupported in this draft',
       'Verify against SP63 before design use',
     ]),
@@ -398,6 +427,8 @@ function getStroke(role: SvgSketchElement['role']) {
     column: '#020617',
     wall: '#020617',
     'control-perimeter': '#0f766e',
+    'control-contour': '#14b8a6',
+    'selected-control-contour': '#115e59',
     'removed-perimeter': '#dc2626',
     opening: '#ef4444',
     'opening-tangent': '#94a3b8',
@@ -419,6 +450,8 @@ function getFill(role: SvgSketchElement['role']) {
     column: '#1e293b',
     wall: '#334155',
     'control-perimeter': 'none',
+    'control-contour': 'none',
+    'selected-control-contour': 'none',
     'removed-perimeter': 'none',
     opening: '#ffedd5',
     'opening-tangent': 'none',

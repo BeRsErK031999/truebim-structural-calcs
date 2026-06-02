@@ -135,6 +135,20 @@ export function buildPunchingShearMarkdownReport(
       ['boundary classification', result.perimeter.clippingMetadata.boundaryCondition],
     ]),
     '',
+    '## Multiple Control Perimeters',
+    '',
+    'Multiple contour selection is draft-only and requires SP63 verification.',
+    '',
+    result.contourComparison.length > 0
+      ? table([
+          ['contour id', 'offset | perimeter | draft stress | utilization | selected | warnings'],
+          ...result.contourComparison.map((contour) => [
+            contour.contourId,
+            `${formatValueWithUnit(contour.offsetMm, 'mm')} | ${formatValueWithUnit(contour.perimeterMm, 'mm')} | ${formatValueWithUnit(contour.draftStressMpa, 'MPa', 3)} | ${formatUtilization(contour.utilization)} | ${contour.selected ? 'yes' : 'no'} | ${contour.warnings.join('; ') || 'none'}`,
+          ] satisfies [string, string]),
+        ])
+      : 'Multiple control perimeters disabled.',
+    '',
     '## Verification Readiness',
     '',
     table([
@@ -307,6 +321,7 @@ function createReportWarnings(result: PunchingShearResult) {
     'Openings and boundary clipping are draft geometry only.',
     'Wall-end punching support is draft geometry only.',
     'Wall-corner punching support is draft geometry only.',
+    'Multiple contour selection is draft-only and requires SP63 verification.',
     'Shear reinforcement is unsupported in this draft',
     'Verify against SP63 before design use',
   ])

@@ -1,0 +1,43 @@
+{
+  "id": "multi-contour-center-example",
+  "title": "Draft multiple control perimeter center preparation case",
+  "source": "TODO",
+  "verificationSource": "NOT VERIFIED",
+  "checkedBy": null,
+  "checkedAt": null,
+  "comparisonNotes": "TODO: document trusted SP63 multiple contour comparison.",
+  "standard": "SP63.13330",
+  "caseType": "center",
+  "input": {
+    "caseType": "center",
+    "forces": {
+      "axialForceKn": 420,
+      "momentXKnM": 0,
+      "momentYKnM": 0
+    },
+    "slab": {
+      "thicknessMm": 220,
+      "effectiveDepthMm": 190,
+      "concreteCoverMm": 30
+    },
+    "concrete": {
+      "className": "B25"
+    },
+    "rectColumn": {
+      "widthXMm": 400,
+      "widthYMm": 400
+    },
+    "openings": [],
+    "shearReinforcement": {
+      "enabled": false
+    },
+    "multipleContours": {
+      "enabled": true,
+      "count": 4,
+      "offsetStep": "h0/2"
+    }
+  },
+  "expected": null,
+  "notes": "Template only. Multiple contour generation and selection remain draft until trusted SP63 values are filled.",
+  "status": "draft"
+}

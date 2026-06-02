@@ -215,6 +215,26 @@ describe('report export', () => {
     expect(markdown).toContain('Wall-corner punching support is draft geometry only.')
   })
 
+  it('includes multiple control perimeter section in exported reports', () => {
+    const input = {
+      ...defaultPunchingShearInput,
+      multipleContours: {
+        enabled: true,
+        count: 2,
+        offsetStep: 'h0/2' as const,
+      },
+    }
+    const result = calculatePunchingShear(input)
+    const report = buildPunchingShearReport(input, result)
+    const html = buildPunchingShearHtmlReport(input, result, report)
+    const markdown = buildPunchingShearMarkdownReport(input, result, report)
+
+    expect(html).toContain('Multiple Control Perimeters')
+    expect(html).toContain('Multiple contour selection is draft-only and requires SP63 verification.')
+    expect(markdown).toContain('## Multiple Control Perimeters')
+    expect(markdown).toContain('draft-contour-1')
+  })
+
   it('formats copy report summary', () => {
     const result = calculatePunchingShear(defaultPunchingShearInput)
 

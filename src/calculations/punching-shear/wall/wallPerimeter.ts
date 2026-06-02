@@ -8,7 +8,14 @@ import { classifyWallPunching } from './wallClassification'
 import { resolveWallDimensions } from './wallDimensions'
 import { createWallGeometry, createWallInputFromPunchingShearInput } from './wallGeometry'
 
-export function calculateWallEndControlPerimeter(input: PunchingShearInput): ControlPerimeterResult {
+type ControlPerimeterOptions = {
+  draftOffsetMm?: number
+}
+
+export function calculateWallEndControlPerimeter(
+  input: PunchingShearInput,
+  options: ControlPerimeterOptions = {},
+): ControlPerimeterResult {
   const wallInput = createWallInputFromPunchingShearInput(input)
   const classification = classifyWallPunching(input)
 
@@ -49,7 +56,7 @@ export function calculateWallEndControlPerimeter(input: PunchingShearInput): Con
 
   const wall = createWallGeometry(wallInput)
   const dimensions = resolveWallDimensions(wallInput)
-  const offset = dimensions.draftOffsetMm
+  const offset = options.draftOffsetMm ?? dimensions.draftOffsetMm
   const halfThickness = dimensions.wallThicknessMm / 2
   const endZoneDepth = Math.min(dimensions.wallLengthMm, offset)
   const vertices: Point2D[] = [
@@ -93,7 +100,7 @@ export function calculateWallEndControlPerimeter(input: PunchingShearInput): Con
     svgPath: polygonToPath(vertices),
     warnings: [
       ...classification.warnings,
-      'Wall-end draft offset uses effectiveDepth / 2 only for geometry preparation',
+      'Wall-end draft offset uses geometry placeholder values only for geometry preparation',
       'No SP63 wall punching coefficients or verified resistance formulas are applied',
     ],
   }

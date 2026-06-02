@@ -11,8 +11,13 @@ import {
   transformByOrientation,
 } from './wallCornerGeometry'
 
+type ControlPerimeterOptions = {
+  draftOffsetMm?: number
+}
+
 export function calculateWallCornerControlPerimeter(
   input: PunchingShearInput,
+  options: ControlPerimeterOptions = {},
 ): ControlPerimeterResult {
   const wallCornerInput = createWallCornerInputFromPunchingShearInput(input)
   const classification = classifyWallCornerPunching(input)
@@ -53,7 +58,7 @@ export function calculateWallCornerControlPerimeter(
   }
 
   const wallCorner = createWallCornerGeometry(wallCornerInput)
-  const offset = wallCornerInput.effectiveDepth / 2
+  const offset = options.draftOffsetMm ?? wallCornerInput.effectiveDepth / 2
   const baseVertices: Point2D[] = [
     { x: -offset, y: -offset },
     { x: wallCornerInput.wallLengthX + offset, y: -offset },
@@ -98,7 +103,7 @@ export function calculateWallCornerControlPerimeter(
     svgPath: polygonToPath(vertices),
     warnings: [
       ...classification.warnings,
-      'Wall-corner draft offset uses effectiveDepth / 2 only for geometry preparation',
+      'Wall-corner draft offset uses geometry placeholder values only for geometry preparation',
       'No SP63 wall-corner punching coefficients or verified resistance formulas are applied',
     ],
   }
