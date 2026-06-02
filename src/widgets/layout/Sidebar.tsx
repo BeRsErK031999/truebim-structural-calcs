@@ -21,12 +21,12 @@ const sections: CalculationSection[] = [
   { title: 'Поперечная сила', path: '/shear', icon: Layers3, status: 'planned' },
   { title: 'Балки', path: '/beams', icon: Building2, status: 'planned' },
   { title: 'Колонны', path: '/columns', icon: Columns3, status: 'planned' },
-  { title: 'Engineer Portal', path: '/engineer', icon: ClipboardCheck, status: 'active' },
-  { title: 'Pilot MVP', path: '/pilot', icon: ListChecks, status: 'active' },
-  { title: 'Engineering Review', path: '/review', icon: ClipboardCheck, status: 'active' },
-  { title: 'Validation Session', path: '/validation-session', icon: PackageCheck, status: 'active' },
-  { title: 'Diagnostics', path: '/diagnostics', icon: Activity, status: 'active' },
-  { title: 'Release Evidence', path: '/release-evidence', icon: FileArchive, status: 'active' },
+  { title: 'Портал инженера', path: '/engineer', icon: ClipboardCheck, status: 'active' },
+  { title: 'Пилот', path: '/pilot', icon: ListChecks, status: 'active' },
+  { title: 'Инженерная проверка', path: '/review', icon: ClipboardCheck, status: 'active' },
+  { title: 'Сессия валидации', path: '/validation-session', icon: PackageCheck, status: 'active' },
+  { title: 'Диагностика', path: '/diagnostics', icon: Activity, status: 'active' },
+  { title: 'Релизные материалы', path: '/release-evidence', icon: FileArchive, status: 'active' },
 ]
 
 export function Sidebar() {
@@ -42,7 +42,7 @@ export function Sidebar() {
           <p className="text-sm font-semibold uppercase tracking-[0.14em] text-slate-500">
             TrueBIM
           </p>
-          <p className="text-base font-semibold text-slate-950">Structural Calcs</p>
+          <p className="text-base font-semibold text-slate-950">Расчеты конструкций</p>
         </div>
       </div>
 
@@ -78,11 +78,11 @@ export function Sidebar() {
       <Separator className="my-5" />
 
       <div className="grid gap-1 rounded-lg border border-slate-200 bg-slate-50 p-3 text-xs text-slate-600">
-        <p className="font-semibold text-slate-900">Build</p>
-        <p>Version: {metadata.version}</p>
-        <p>Commit: {metadata.commit}</p>
-        <p>Time: {metadata.buildTime}</p>
-        <p>Env: {metadata.environment}</p>
+        <p className="font-semibold text-slate-900">Сборка</p>
+        <p>Версия: {metadata.version}</p>
+        <p>Коммит: {metadata.commit}</p>
+        <p>Время: {metadata.buildTime}</p>
+        <p>Среда: {metadata.environment}</p>
       </div>
     </aside>
   )

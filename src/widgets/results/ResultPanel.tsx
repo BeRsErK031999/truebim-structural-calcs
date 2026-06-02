@@ -19,7 +19,17 @@ import { Button } from '@/shared/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card'
 
 const draftWarning =
-  'Draft calculation. Verify formulas and coefficients against СП63.13330 before design use.'
+  'Черновой расчет. Проверьте формулы и коэффициенты по СП 63.13330 перед проектным применением.'
+
+const featureLabels: Record<string, string> = {
+  'center-force-only': 'центральная колонна, только сила',
+  'center-moment-transfer': 'центральная колонна с моментами',
+  edge: 'крайняя колонна',
+  corner: 'угловая колонна',
+  openings: 'отверстия',
+  'shear-reinforcement': 'поперечная арматура',
+  'round-columns': 'круглые колонны',
+}
 
 export function ResultPanel() {
   const result = useCalculationStore((state) => state.punchingShearResult)
@@ -55,7 +65,7 @@ export function ResultPanel() {
     }
 
     void copyText(calculationId).then((ok) => {
-      setCopyMessage(ok ? `Calculation ID copied: ${calculationId}` : 'Could not copy calculation ID')
+      setCopyMessage(ok ? `ID расчета скопирован: ${calculationId}` : 'Не удалось скопировать ID расчета')
     })
   }
 
@@ -67,7 +77,7 @@ export function ResultPanel() {
     const summary = buildReportSummary(result)
 
     void copyText(summary).then((ok) => {
-      setCopyMessage(ok ? `Report summary copied: ${summary}` : 'Could not copy report summary')
+      setCopyMessage(ok ? `Сводка скопирована: ${summary}` : 'Не удалось скопировать сводку')
     })
   }
 
@@ -87,18 +97,18 @@ export function ResultPanel() {
         {result ? (
           <div className="grid gap-3 rounded-lg border border-slate-200 bg-slate-50 p-4">
             <div className="flex items-center justify-between gap-3">
-              <p className="text-sm font-semibold text-slate-900">Verification Level</p>
+              <p className="text-sm font-semibold text-slate-900">Уровень проверки</p>
               <VerificationLevelBadge level={result.verificationLevel} />
             </div>
-            <FeatureList title="Verified features" features={result.verifiedFeatures} />
-            <FeatureList title="Draft features" features={result.draftFeatures} />
+            <FeatureList title="Проверенные возможности" features={result.verifiedFeatures} />
+            <FeatureList title="Черновые возможности" features={result.draftFeatures} />
           </div>
         ) : null}
 
         <div className="grid gap-3 rounded-lg border border-slate-200 bg-slate-50 p-4">
           <p className="text-sm leading-6 text-slate-700">
-            Скачайте отчет и отправьте его инженеру/на проверку. После проверки значения можно
-            использовать для verified case.
+            Скачайте отчет и отправьте его инженеру на проверку. После проверки значения можно
+            использовать для подготовки verified case.
           </p>
           <div className="grid gap-2 sm:grid-cols-2">
             <Button
@@ -131,7 +141,7 @@ export function ResultPanel() {
               onClick={handleCopyCalculationId}
             >
               <Copy />
-              Copy calculation ID
+              Скопировать ID
             </Button>
             <Button
               type="button"
@@ -141,7 +151,7 @@ export function ResultPanel() {
               onClick={handleCopySummary}
             >
               <Copy />
-              Copy summary
+              Скопировать сводку
             </Button>
           </div>
           {exportMessage ? (
@@ -157,21 +167,21 @@ export function ResultPanel() {
           <Metric label="v" value={formatDecimal(result?.shearStressMpa)} unit="МПа" />
           <Metric label="v max" value={formatDecimal(result?.maxShearStressMpa)} unit="МПа" />
           <Metric label="v min" value={formatDecimal(result?.minShearStressMpa)} unit="МПа" />
-          <Metric label="R draft" value={formatDecimal(result?.draftConcreteResistanceMpa)} unit="МПа" />
-          <Metric label="Utilization" value={formatDecimal(result?.utilizationRatio)} unit="η" />
-          <Metric label="Pass/fail" value={formatPassed(result?.passed)} unit="" />
+          <Metric label="R черн." value={formatDecimal(result?.draftConcreteResistanceMpa)} unit="МПа" />
+          <Metric label="Использование" value={formatDecimal(result?.utilizationRatio)} unit="η" />
+          <Metric label="Результат" value={formatPassed(result?.passed)} unit="" />
         </div>
 
         <EngineeringPreview svgModel={result?.svgModel} />
 
         {result ? (
           <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
-            <p className="text-sm font-semibold text-slate-900">Warnings</p>
+            <p className="text-sm font-semibold text-slate-900">Предупреждения</p>
             <ul className="mt-3 grid gap-1 text-sm text-slate-700">
               {result.warnings.length > 0 ? (
                 result.warnings.map((warning) => <li key={warning}>- {warning}</li>)
               ) : (
-                <li>- Нет предупреждений</li>
+                <li>- Предупреждений нет</li>
               )}
             </ul>
           </div>
@@ -182,8 +192,8 @@ export function ResultPanel() {
             <p className="text-sm font-semibold text-slate-800">{report.title}</p>
             <p className="mt-1 text-sm text-slate-600">{report.standard}</p>
             <p className="mt-2 text-sm text-slate-600">
-              Formula: {report.formulaSummary[1] ?? 'n/a'}. Segments:{' '}
-              {report.geometrySummary.segmentCount ?? 'n/a'}.
+              Формула: {report.formulaSummary[1] ?? 'н/д'}. Сегментов:{' '}
+              {report.geometrySummary.segmentCount ?? 'н/д'}.
             </p>
           </div>
         ) : null}
@@ -194,9 +204,9 @@ export function ResultPanel() {
 
 function VerificationLevelBadge({ level }: { level: 'verified' | 'partial' | 'draft' }) {
   const labelByLevel = {
-    verified: 'VERIFIED',
-    partial: 'PARTIALLY VERIFIED',
-    draft: 'DRAFT ONLY',
+    verified: 'ПРОВЕРЕНО',
+    partial: 'ЧАСТИЧНО ПРОВЕРЕНО',
+    draft: 'ТОЛЬКО ЧЕРНОВИК',
   }
   const classByLevel = {
     verified: 'bg-emerald-50 text-emerald-700',
@@ -217,9 +227,9 @@ function FeatureList({ title, features }: { title: string; features: string[] })
       <p className="text-xs font-medium uppercase tracking-[0.12em] text-slate-500">{title}</p>
       <ul className="mt-2 grid gap-1 text-sm text-slate-700">
         {features.length > 0 ? (
-          features.map((feature) => <li key={feature}>- {feature}</li>)
+          features.map((feature) => <li key={feature}>- {featureLabels[feature] ?? feature}</li>)
         ) : (
-          <li>- none</li>
+          <li>- нет</li>
         )}
       </ul>
     </div>
@@ -229,10 +239,10 @@ function FeatureList({ title, features }: { title: string; features: string[] })
 function StatusBadge({ status }: { status?: PunchingShearCheckStatus }) {
   const labelByStatus: Record<PunchingShearCheckStatus | 'draft', string> = {
     draft: 'Нет расчета',
-    draft_ok: 'Draft pass',
-    draft_failed: 'Draft fail',
-    not_implemented: 'not_implemented',
-    invalid_input: 'invalid_input',
+    draft_ok: 'Черновик прошел',
+    draft_failed: 'Черновик не прошел',
+    not_implemented: 'Не реализовано',
+    invalid_input: 'Ошибка ввода',
   }
   const classByStatus: Record<PunchingShearCheckStatus | 'draft', string> = {
     draft: 'bg-slate-100 text-slate-700',
@@ -254,7 +264,7 @@ function EngineeringPreview({ svgModel }: { svgModel?: PunchingSketchModel }) {
   if (!svgModel) {
     return (
       <div className="flex aspect-[4/3] items-center justify-center rounded-lg border border-dashed border-slate-300 bg-slate-50 px-4 text-center text-sm text-slate-500">
-        Запустите draft check, чтобы построить geometry preview
+        Запустите расчет, чтобы построить схему геометрии
       </div>
     )
   }
@@ -294,8 +304,8 @@ function EngineeringPreview({ svgModel }: { svgModel?: PunchingSketchModel }) {
         ))}
       </svg>
       <div className="mt-3 flex items-center justify-between text-xs text-slate-500">
-        <span>Geometry preview: mm, fit-to-view</span>
-        <span>{svgModel.metadata.stressDiagram === 'draft' ? 'Draft stress diagram' : 'Draft check'}</span>
+        <span>Схема геометрии: мм, вписано в область</span>
+        <span>{svgModel.metadata.stressDiagram === 'draft' ? 'Черновая схема напряжений' : 'Черновая проверка'}</span>
       </div>
     </div>
   )
@@ -445,7 +455,7 @@ function formatPassed(value?: boolean | null) {
     return '--'
   }
 
-  return value ? 'Pass' : 'Fail'
+  return value ? 'Проходит' : 'Не проходит'
 }
 
 async function copyText(value: string) {

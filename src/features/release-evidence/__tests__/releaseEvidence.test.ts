@@ -28,8 +28,8 @@ describe('release evidence', () => {
 
     expect(summary.verificationMatrix).toEqual(
       expect.arrayContaining([
-        expect.stringContaining('center force-only: verified'),
-        expect.stringContaining('center moment transfer: partial'),
+        expect.stringContaining('центральная колонна, только сила: verified'),
+        expect.stringContaining('центральная колонна с моментами: partial'),
       ]),
     )
   })

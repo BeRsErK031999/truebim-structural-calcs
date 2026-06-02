@@ -27,13 +27,13 @@ describe('engineer portal content', () => {
   it('contains the return checklist text', () => {
     const checklistText = buildReturnChecklistCopyText()
 
-    expect(engineerReturnChecklist).toContain('HTML/Markdown report')
-    expect(engineerReturnChecklist).toContain('review snapshot')
-    expect(engineerReturnChecklist).toContain('verification candidate JSON')
-    expect(engineerReturnChecklist).toContain('validation session package')
-    expect(engineerReturnChecklist).toContain('trusted evidence attachments')
-    expect(engineerReturnChecklist).toContain('filled checklist')
-    expect(checklistText).toContain('What to return to developer:')
+    expect(engineerReturnChecklist).toContain('HTML/Markdown отчет')
+    expect(engineerReturnChecklist).toContain('снимок проверки')
+    expect(engineerReturnChecklist).toContain('JSON кандидата проверки')
+    expect(engineerReturnChecklist).toContain('пакет сессии проверки')
+    expect(engineerReturnChecklist).toContain('приложения с доверенными расчетами')
+    expect(engineerReturnChecklist).toContain('заполненный checklist')
+    expect(checklistText).toContain('Что вернуть разработчику:')
   })
 
   it('copies current app links with office URLs', () => {

@@ -63,7 +63,7 @@ export function ValidationSessionPage() {
   }
 
   const handleSyncReview = () => {
-    persist(syncValidationSessionReview(session, latestReview), 'Latest review session linked.')
+    persist(syncValidationSessionReview(session, latestReview), 'Последняя сессия проверки привязана.')
   }
 
   const handleExportHtml = () => {
@@ -71,7 +71,7 @@ export function ValidationSessionPage() {
     const filename = `validation-session-report-${metadata.calculationId}.html`
 
     downloadTextFile(filename, buildPunchingShearHtmlReport(draft, result, report, metadata), 'text/html')
-    persist(setValidationSessionExportStatus(session, { htmlReportExported: true }), 'HTML report exported.')
+    persist(setValidationSessionExportStatus(session, { htmlReportExported: true }), 'HTML-отчет выгружен.')
   }
 
   const handleExportMarkdown = () => {
@@ -79,7 +79,7 @@ export function ValidationSessionPage() {
     const filename = `validation-session-report-${metadata.calculationId}.md`
 
     downloadTextFile(filename, buildPunchingShearMarkdownReport(draft, result, report, metadata), 'text/markdown')
-    persist(setValidationSessionExportStatus(session, { markdownReportExported: true }), 'Markdown report exported.')
+    persist(setValidationSessionExportStatus(session, { markdownReportExported: true }), 'Markdown-отчет выгружен.')
   }
 
   const handleExportReviewSnapshot = () => {
@@ -91,7 +91,7 @@ export function ValidationSessionPage() {
     })
 
     downloadTextFile('validation-session-review-snapshot.json', serializeReviewSnapshot(snapshot), 'application/json')
-    persist(setValidationSessionExportStatus(session, { reviewSnapshotExported: true }), 'Review snapshot exported.')
+    persist(setValidationSessionExportStatus(session, { reviewSnapshotExported: true }), 'Снимок проверки выгружен.')
   }
 
   const handleCreateCandidate = () => {
@@ -104,19 +104,19 @@ export function ValidationSessionPage() {
         updatedAt: new Date().toISOString(),
       },
       candidateResult.validation.valid
-        ? 'Verification candidate created.'
-        : 'Candidate created as incomplete; finish blocking checklist items.',
+        ? 'Кандидат проверки создан.'
+        : 'Кандидат создан как неполный; завершите блокирующие пункты чеклиста.',
     )
   }
 
   const handleExportCandidate = () => {
     if (!session.candidate) {
-      setMessage('Create a candidate first.')
+      setMessage('Сначала создайте кандидата проверки.')
       return
     }
 
     downloadTextFile('validation-session-candidate.json', buildCandidateJson(session.candidate), 'application/json')
-    persist(setValidationSessionExportStatus(session, { candidateJsonExported: true }), 'Candidate JSON exported.')
+    persist(setValidationSessionExportStatus(session, { candidateJsonExported: true }), 'JSON кандидата выгружен.')
   }
 
   const handleSaveNotes = () => {
@@ -140,22 +140,22 @@ export function ValidationSessionPage() {
         attachedAt: new Date().toISOString(),
         attachments,
       }),
-      'Engineer notes saved.',
+      'Заметки инженера сохранены.',
     )
   }
 
   const handleFreezeRegression = () => {
-    persist(freezeValidationRegressionSnapshot(session), 'Regression snapshot frozen.')
+    persist(freezeValidationRegressionSnapshot(session), 'Снимок регрессии заморожен.')
   }
 
   const handleCandidateValidated = () => {
-    persist(markValidationCandidateValidated(session, true), 'Candidate validation PASS recorded.')
+    persist(markValidationCandidateValidated(session, true), 'PASS валидации кандидата зафиксирован.')
   }
 
   const handleExportPackage = () => {
     const nextSession = downloadValidationSessionPackageManifest(session)
 
-    persist(nextSession, 'Validation session package manifest exported.')
+    persist(nextSession, 'Манифест пакета валидации выгружен.')
   }
 
   return (
@@ -163,41 +163,41 @@ export function ValidationSessionPage() {
       <header className="grid gap-3 rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
         <div>
           <h1 className="text-3xl font-semibold tracking-normal text-slate-950">
-            Validation Session
+            Сессия валидации
           </h1>
           <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">
-            Engineering evidence package for manual trusted validation. Candidate export does not
-            import data and accepted review does not promote VERIFIED.
+            Пакет инженерных материалов для ручной доверенной проверки. Экспорт кандидата не
+            импортирует данные, а принятая проверка не повышает статус до VERIFIED.
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <StatusPill label="Review" value={session.reviewSession.status} />
-          <StatusPill label="Candidate" value={session.candidate?.candidateStatus ?? 'not-created'} />
-          <StatusPill label="Verification" value={session.result.verificationLevel} />
-          <StatusPill label="Checklist" value={`${checklist.completePercent}%`} />
+          <StatusPill label="Проверка" value={formatReviewStatus(session.reviewSession.status)} />
+          <StatusPill label="Кандидат" value={formatCandidateStatus(session.candidate?.candidateStatus ?? 'not-created')} />
+          <StatusPill label="Уровень" value={formatVerificationLevel(session.result.verificationLevel)} />
+          <StatusPill label="Чеклист" value={`${checklist.completePercent}%`} />
         </div>
       </header>
 
       <section className="grid gap-4 lg:grid-cols-[1.1fr_0.9fr]">
         <Card className="rounded-lg border border-slate-200 bg-white shadow-sm">
           <CardHeader>
-            <CardTitle>Active Calculation</CardTitle>
+            <CardTitle>Активный расчет</CardTitle>
           </CardHeader>
           <CardContent className="grid gap-3 text-sm">
             <InfoGrid
               items={[
-                ['case type', session.input.caseType],
+                ['тип случая', formatCaseType(session.input.caseType)],
                 ['N', `${session.input.forces.axialForceKn} kN`],
                 ['Mx', `${session.input.forces.momentXKnM} kN*m`],
                 ['My', `${session.input.forces.momentYKnM} kN*m`],
-                ['status', session.result.status],
-                ['verification level', session.result.verificationLevel],
+                ['статус', formatCalculationStatus(session.result.status)],
+                ['уровень проверки', formatVerificationLevel(session.result.verificationLevel)],
               ]}
             />
             <div className="grid gap-2">
-              <p className="font-semibold text-slate-900">Verified features</p>
+              <p className="font-semibold text-slate-900">Проверенные возможности</p>
               <FeatureList features={session.result.verifiedFeatures} />
-              <p className="font-semibold text-slate-900">Draft features</p>
+              <p className="font-semibold text-slate-900">Черновые возможности</p>
               <FeatureList features={session.result.draftFeatures} />
             </div>
           </CardContent>
@@ -205,16 +205,16 @@ export function ValidationSessionPage() {
 
         <Card className="rounded-lg border border-slate-200 bg-white shadow-sm">
           <CardHeader>
-            <CardTitle>Reviewer Summary</CardTitle>
+            <CardTitle>Сводка проверяющего</CardTitle>
           </CardHeader>
           <CardContent className="grid gap-3 text-sm">
             <InfoGrid
               items={[
-                ['axis convention', summary.axisConventionStatus],
-                ['drift status', summary.driftStatus],
-                ['recommendation', summary.recommendation],
-                ['open mismatches', summary.openMismatches.length.toString()],
-                ['missing evidence', summary.missingTrustedEvidence.join(', ') || 'none'],
+                ['соглашение осей', formatAxisConventionStatus(summary.axisConventionStatus)],
+                ['статус отклонений', formatDriftStatus(summary.driftStatus)],
+                ['рекомендация', formatRecommendation(summary.recommendation)],
+                ['открытые расхождения', summary.openMismatches.length.toString()],
+                ['недостающие доказательства', formatMissingEvidence(summary.missingTrustedEvidence)],
               ]}
             />
           </CardContent>
@@ -223,7 +223,7 @@ export function ValidationSessionPage() {
 
       <Card className="rounded-lg border border-slate-200 bg-white shadow-sm">
         <CardHeader>
-          <CardTitle>Checklist Progress</CardTitle>
+          <CardTitle>Прогресс чеклиста</CardTitle>
         </CardHeader>
         <CardContent className="grid gap-4">
           <div className="h-3 overflow-hidden rounded-full bg-slate-100">
@@ -245,7 +245,7 @@ export function ValidationSessionPage() {
                       : 'border-amber-200 bg-amber-50 text-amber-900',
                 ].join(' ')}
               >
-                <p className="font-semibold">{item.complete ? 'complete' : 'missing'}: {item.label}</p>
+                <p className="font-semibold">{item.complete ? 'готово' : 'не заполнено'}: {item.label}</p>
                 {!item.complete ? <p className="mt-1">{item.missingText}</p> : null}
               </div>
             ))}
@@ -256,55 +256,55 @@ export function ValidationSessionPage() {
       <section className="grid gap-4 lg:grid-cols-2">
         <Card className="rounded-lg border border-slate-200 bg-white shadow-sm">
           <CardHeader>
-            <CardTitle>Exports</CardTitle>
+            <CardTitle>Экспорт</CardTitle>
           </CardHeader>
           <CardContent className="grid gap-3">
             <div className="grid gap-2 sm:grid-cols-2">
               <Button type="button" variant="outline" onClick={handleExportHtml}>
                 <FileDown />
-                Export HTML report
+                Выгрузить HTML-отчет
               </Button>
               <Button type="button" variant="outline" onClick={handleExportMarkdown}>
                 <FileDown />
-                Export Markdown report
+                Выгрузить Markdown-отчет
               </Button>
               <Button type="button" variant="outline" onClick={handleExportReviewSnapshot}>
                 <FileJson />
-                Export review snapshot
+                Выгрузить снимок проверки
               </Button>
               <Button type="button" variant="outline" onClick={handleExportCandidate}>
                 <FileJson />
-                Export candidate JSON
+                Выгрузить JSON кандидата
               </Button>
             </div>
             <Button type="button" onClick={handleExportPackage}>
               <PackageCheck />
-              Export validation package
+              Выгрузить пакет валидации
             </Button>
           </CardContent>
         </Card>
 
         <Card className="rounded-lg border border-slate-200 bg-white shadow-sm">
           <CardHeader>
-            <CardTitle>Workflow Controls</CardTitle>
+            <CardTitle>Управление процессом</CardTitle>
           </CardHeader>
           <CardContent className="grid gap-3">
             <div className="grid gap-2 sm:grid-cols-2">
               <Button type="button" variant="outline" onClick={handleSyncReview}>
                 <Save />
-                Link latest review
+                Привязать последнюю проверку
               </Button>
               <Button type="button" variant="outline" onClick={handleCreateCandidate}>
                 <FileJson />
-                Create candidate
+                Создать кандидата
               </Button>
               <Button type="button" variant="outline" onClick={handleCandidateValidated}>
                 <PackageCheck />
-                Mark candidate PASS
+                Отметить PASS кандидата
               </Button>
               <Button type="button" variant="outline" onClick={handleFreezeRegression}>
                 <Lock />
-                Freeze regression
+                Заморозить регрессию
               </Button>
             </div>
           </CardContent>
@@ -313,37 +313,37 @@ export function ValidationSessionPage() {
 
       <Card className="rounded-lg border border-slate-200 bg-white shadow-sm">
         <CardHeader>
-          <CardTitle>Engineer Evidence</CardTitle>
+          <CardTitle>Материалы инженера</CardTitle>
         </CardHeader>
         <CardContent className="grid gap-3">
           <textarea
             className="min-h-28 w-full resize-y rounded-lg border border-slate-300 bg-white p-3 text-sm outline-none focus-visible:border-slate-500 focus-visible:ring-3 focus-visible:ring-slate-200"
-            placeholder="Engineer notes, comparison comments, mismatch explanations"
+            placeholder="Заметки инженера, комментарии сравнения, объяснения расхождений"
             value={notes}
             onChange={(event) => setNotes(event.target.value)}
           />
           <div className="grid gap-3 md:grid-cols-2">
             <Input
-              placeholder="Trusted source name"
+              placeholder="Название доверенного источника"
               value={trustedSourceName}
               onChange={(event) => setTrustedSourceName(event.target.value)}
             />
             <Input
-              placeholder="Trusted source reference"
+              placeholder="Ссылка или обозначение доверенного источника"
               value={trustedSourceReference}
               onChange={(event) => setTrustedSourceReference(event.target.value)}
             />
           </div>
           <Button className="w-fit" type="button" onClick={handleSaveNotes}>
             <Save />
-            Save evidence notes
+            Сохранить заметки доказательств
           </Button>
           <InfoGrid
             items={[
-              ['exported reports', `${Number(session.exports.htmlReportExported) + Number(session.exports.markdownReportExported)}/2`],
-              ['attached evidence', session.engineerNotes.attachments.length.toString()],
-              ['regression snapshot', session.regressionSnapshot.status],
-              ['blocking items', checklist.blockingItems.length.toString()],
+              ['выгруженные отчеты', `${Number(session.exports.htmlReportExported) + Number(session.exports.markdownReportExported)}/2`],
+              ['приложенные доказательства', session.engineerNotes.attachments.length.toString()],
+              ['снимок регрессии', formatDriftStatus(session.regressionSnapshot.status)],
+              ['блокирующие пункты', checklist.blockingItems.length.toString()],
             ]}
           />
           {message ? <p className="text-sm font-medium text-slate-700">{message}</p> : null}
@@ -378,8 +378,116 @@ function FeatureList({ features }: { features: string[] }) {
   return (
     <ul className="grid gap-1 text-sm text-slate-700">
       {(features.length > 0 ? features : ['none']).map((feature) => (
-        <li key={feature}>- {feature}</li>
+        <li key={feature}>- {formatFeature(feature)}</li>
       ))}
     </ul>
   )
+}
+
+function formatCaseType(value: string) {
+  const labels: Record<string, string> = {
+    center: 'центральная колонна',
+    edge: 'крайняя колонна',
+    corner: 'угловая колонна',
+  }
+
+  return labels[value] ?? value
+}
+
+function formatCalculationStatus(value: string) {
+  const labels: Record<string, string> = {
+    draft_ok: 'черновик без ошибок',
+    draft_warning: 'черновик с предупреждением',
+    failed: 'не проходит',
+  }
+
+  return labels[value] ?? value
+}
+
+function formatVerificationLevel(value: string) {
+  const labels: Record<string, string> = {
+    verified: 'проверенный',
+    draft: 'черновой',
+    unsupported: 'неподдерживаемый',
+  }
+
+  return labels[value] ?? value
+}
+
+function formatReviewStatus(value: string) {
+  const labels: Record<string, string> = {
+    'pending-review': 'ожидает проверки',
+    reviewed: 'проверено',
+    accepted: 'принято',
+    rejected: 'отклонено',
+    'needs-investigation': 'требует расследования',
+  }
+
+  return labels[value] ?? value
+}
+
+function formatCandidateStatus(value: string) {
+  const labels: Record<string, string> = {
+    'not-created': 'не создан',
+    incomplete: 'неполный',
+    'ready-for-validation': 'готов к валидации',
+    validated: 'валидирован',
+    rejected: 'отклонен',
+  }
+
+  return labels[value] ?? value
+}
+
+function formatAxisConventionStatus(value: string) {
+  const labels: Record<string, string> = {
+    missing: 'не заполнено',
+    documented: 'задокументировано',
+  }
+
+  return labels[value] ?? value
+}
+
+function formatDriftStatus(value: string) {
+  const labels: Record<string, string> = {
+    'not-frozen': 'не заморожен',
+    frozen: 'заморожен',
+    stable: 'стабилен',
+    'drift-detected': 'есть отклонения',
+  }
+
+  return labels[value] ?? value
+}
+
+function formatRecommendation(value: string) {
+  const labels: Record<string, string> = {
+    'keep partial': 'оставить частичным',
+    'ready for release evidence': 'готово к доказательствам релиза',
+  }
+
+  return labels[value] ?? value
+}
+
+function formatMissingEvidence(values: string[]) {
+  if (values.length === 0) {
+    return 'нет'
+  }
+
+  return values.map((value) => formatMissingEvidenceItem(value)).join(', ')
+}
+
+function formatMissingEvidenceItem(value: string) {
+  const labels: Record<string, string> = {
+    'ready verification candidate': 'готовый кандидат проверки',
+  }
+
+  return labels[value] ?? value
+}
+
+function formatFeature(value: string) {
+  const labels: Record<string, string> = {
+    'center-force-only': 'центральная колонна, только сила',
+    none: 'нет',
+  }
+
+  return labels[value] ?? value
 }

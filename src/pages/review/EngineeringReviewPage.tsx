@@ -39,18 +39,18 @@ import {
 } from './engineerHandoffHelp'
 
 const expectedFields: Array<{ key: ReviewValueKey; label: string }> = [
-  { key: 'controlPerimeterMm', label: 'Control perimeter, mm' },
-  { key: 'effectiveDepthMm', label: 'Effective depth, mm' },
-  { key: 'shearStressMpa', label: 'Base shear stress, MPa' },
-  { key: 'maxShearStressMpa', label: 'Max shear stress, MPa' },
-  { key: 'minShearStressMpa', label: 'Min shear stress, MPa' },
-  { key: 'eccentricityX', label: 'Eccentricity X, mm' },
-  { key: 'eccentricityY', label: 'Eccentricity Y, mm' },
-  { key: 'transferFactorX', label: 'Transfer factor X' },
-  { key: 'transferFactorY', label: 'Transfer factor Y' },
-  { key: 'stressPointCount', label: 'Stress point count' },
-  { key: 'stressChecksum', label: 'Stress checksum' },
-  { key: 'verificationLevel', label: 'Verification level' },
+  { key: 'controlPerimeterMm', label: 'Контрольный периметр, мм' },
+  { key: 'effectiveDepthMm', label: 'Рабочая высота, мм' },
+  { key: 'shearStressMpa', label: 'Базовое напряжение среза, МПа' },
+  { key: 'maxShearStressMpa', label: 'Максимальное напряжение среза, МПа' },
+  { key: 'minShearStressMpa', label: 'Минимальное напряжение среза, МПа' },
+  { key: 'eccentricityX', label: 'Эксцентриситет X, мм' },
+  { key: 'eccentricityY', label: 'Эксцентриситет Y, мм' },
+  { key: 'transferFactorX', label: 'Коэффициент передачи X' },
+  { key: 'transferFactorY', label: 'Коэффициент передачи Y' },
+  { key: 'stressPointCount', label: 'Количество точек напряжений' },
+  { key: 'stressChecksum', label: 'Checksum напряжений' },
+  { key: 'verificationLevel', label: 'Уровень проверки' },
 ]
 
 export function EngineeringReviewPage() {
@@ -77,18 +77,18 @@ export function EngineeringReviewPage() {
     [session],
   )
   const candidateChecklist = [
-    { label: 'accepted status', complete: session.status === 'accepted' },
-    { label: 'trusted source', complete: hasTrustedVerificationCandidateSource(session.evidence.source) },
+    { label: 'статус принятия', complete: session.status === 'accepted' },
+    { label: 'доверенный источник', complete: hasTrustedVerificationCandidateSource(session.evidence.source) },
     { label: 'checkedBy', complete: session.evidence.checkedBy.trim().length > 0 },
     { label: 'checkedAt', complete: session.evidence.checkedAt.trim().length > 0 },
     {
-      label: 'expected values',
+      label: 'ожидаемые значения',
       complete: requiredVerificationCandidateExpectedFields.every((field) =>
         Number.isFinite(session.evidence.expectedValues[field]),
       ),
     },
-    { label: 'tolerances', complete: true },
-    { label: 'axis notes', complete: session.evidence.axisConventionNotes.trim().length > 0 },
+    { label: 'допуски', complete: true },
+    { label: 'заметки по осям', complete: session.evidence.axisConventionNotes.trim().length > 0 },
   ]
 
   const updateSession = (nextSession: ReviewSession, save = false) => {
@@ -105,7 +105,7 @@ export function EngineeringReviewPage() {
     const report = buildPunchingShearReport(draft, nextResult)
 
     setPunchingShearResult(nextResult, report)
-    setMessage('Current draft recalculated for review.')
+    setMessage('Текущий черновик пересчитан для проверки.')
   }
 
   const handleEvidenceValue = (key: ReviewValueKey, rawValue: string) => {
@@ -150,7 +150,7 @@ export function EngineeringReviewPage() {
       }),
       true,
     )
-    setMessage('Frozen review snapshot saved locally.')
+    setMessage('Снимок проверки сохранен локально.')
   }
 
   const handleExportJson = () => {
@@ -175,9 +175,9 @@ export function EngineeringReviewPage() {
 
       setSession(imported)
       setImportText('')
-      setMessage('Review session imported.')
+      setMessage('Сессия проверки импортирована.')
     } catch {
-      setMessage('Could not import review session JSON.')
+      setMessage('Не удалось импортировать JSON сессии проверки.')
     }
   }
 
@@ -187,8 +187,8 @@ export function EngineeringReviewPage() {
     setCandidateResult(nextCandidateResult)
     setMessage(
       nextCandidateResult.validation.valid
-        ? 'Verification candidate JSON is ready for manual validation.'
-        : 'Verification candidate is incomplete. Complete the checklist before validation.',
+        ? 'JSON кандидата проверки готов для ручной валидации.'
+        : 'Кандидат проверки неполный. Заполните чеклист перед валидацией.',
     )
   }
 
@@ -202,17 +202,17 @@ export function EngineeringReviewPage() {
     const candidate = candidateResult?.candidate ?? candidatePreview.candidate
 
     await navigator.clipboard.writeText(buildCandidateSummary(candidate))
-    setMessage('Verification candidate summary copied.')
+    setMessage('Сводка кандидата проверки скопирована.')
   }
 
   const handleCopyEngineerChecklist = async () => {
     await navigator.clipboard.writeText(engineerChecklistCopyText)
-    setMessage('Engineer checklist copied.')
+    setMessage('Чеклист инженера скопирован.')
   }
 
   const handleCopyReturnInstructions = async () => {
     await navigator.clipboard.writeText(candidateReturnInstructionsCopyText)
-    setMessage('Candidate return instructions copied.')
+    setMessage('Инструкции возврата кандидата скопированы.')
   }
 
   return (
@@ -220,11 +220,11 @@ export function EngineeringReviewPage() {
       <header className="grid gap-3 rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
         <div>
           <h1 className="text-3xl font-semibold tracking-normal text-slate-950">
-            Engineering Review
+            Инженерная проверка
           </h1>
           <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">
-            Manual trusted evidence collection for engineering comparison. Accepted review records
-            evidence only; VERIFIED still depends on capability promotion logic.
+            Ручной сбор доверенных доказательств для инженерного сравнения. Принятая проверка
+            фиксирует доказательства, но статус VERIFIED зависит от отдельной логики продвижения.
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -243,22 +243,22 @@ export function EngineeringReviewPage() {
         <div className="flex flex-wrap gap-2">
           <StatusBadge status={session.status} />
           <span className="rounded-md bg-amber-50 px-2.5 py-1 text-sm font-semibold text-amber-700">
-            Verification level: {result.verificationLevel}
+            Уровень проверки: {result.verificationLevel}
           </span>
           <span className="rounded-md bg-slate-100 px-2.5 py-1 text-sm font-semibold text-slate-700">
-            Frozen: {session.frozenSnapshots.length}
+            Заморожено: {session.frozenSnapshots.length}
           </span>
         </div>
       </header>
 
       <Card className="rounded-lg border border-slate-200 bg-white shadow-sm">
         <CardHeader>
-          <CardTitle>Manual Evidence Input</CardTitle>
+          <CardTitle>Ввод ручных доказательств</CardTitle>
         </CardHeader>
         <CardContent className="grid gap-4">
           <div className="grid gap-3 md:grid-cols-3">
             <LabelledInput
-              label="Source"
+              label="Источник"
               value={session.evidence.source}
               onChange={(value) =>
                 updateSession({
@@ -268,14 +268,14 @@ export function EngineeringReviewPage() {
               }
             />
             <LabelledInput
-              label="Checked by"
+              label="Проверил"
               value={session.evidence.checkedBy}
               onChange={(value) =>
                 updateSession({ ...session, evidence: { ...session.evidence, checkedBy: value } })
               }
             />
             <LabelledInput
-              label="Checked at"
+              label="Дата проверки"
               value={session.evidence.checkedAt}
               onChange={(value) =>
                 updateSession({ ...session, evidence: { ...session.evidence, checkedAt: value } })
@@ -284,7 +284,7 @@ export function EngineeringReviewPage() {
           </div>
           <textarea
             className="min-h-24 w-full resize-y rounded-lg border border-slate-300 bg-white p-3 text-sm outline-none focus-visible:border-slate-500 focus-visible:ring-3 focus-visible:ring-slate-200"
-            placeholder="Reviewer notes, trusted calculation source, mismatch explanations"
+            placeholder="Заметки проверяющего, доверенный источник расчета, объяснения расхождений"
             value={session.evidence.notes}
             onChange={(event) =>
               updateSession({
@@ -295,7 +295,7 @@ export function EngineeringReviewPage() {
           />
           <textarea
             className="min-h-20 w-full resize-y rounded-lg border border-slate-300 bg-white p-3 text-sm outline-none focus-visible:border-slate-500 focus-visible:ring-3 focus-visible:ring-slate-200"
-            placeholder="Axis convention notes"
+            placeholder="Заметки по соглашению осей"
             value={session.evidence.axisConventionNotes}
             onChange={(event) =>
               updateSession({
@@ -315,10 +315,10 @@ export function EngineeringReviewPage() {
             ))}
           </div>
           <div className="grid gap-2">
-            <p className="text-sm font-semibold text-slate-900">Attachments metadata</p>
+            <p className="text-sm font-semibold text-slate-900">Метаданные приложений</p>
             <textarea
               className="min-h-20 w-full resize-y rounded-lg border border-slate-300 bg-white p-3 text-sm outline-none focus-visible:border-slate-500 focus-visible:ring-3 focus-visible:ring-slate-200"
-              placeholder="One reference per line: screenshot, Excel file, PDF page, WebCAD URL"
+              placeholder="Одна ссылка на строку: скриншот, Excel-файл, PDF-страница, WebCAD URL"
               value={session.evidence.attachments.map((item) => item.reference).join('\n')}
               onChange={(event) =>
                 updateSession({
@@ -344,24 +344,24 @@ export function EngineeringReviewPage() {
 
       <Card className="rounded-lg border border-slate-200 bg-white shadow-sm">
         <CardHeader>
-          <CardTitle>Side-by-side Comparison</CardTitle>
+          <CardTitle>Сравнение рядом</CardTitle>
         </CardHeader>
         <CardContent className="grid gap-4">
           <div className="grid gap-3 md:grid-cols-3">
-            <SummaryTile label="Matches" value={comparison.matchCount.toString()} tone="match" />
-            <SummaryTile label="Tolerance warnings" value={comparison.warningCount.toString()} tone="warning" />
-            <SummaryTile label="Mismatches" value={comparison.mismatchCount.toString()} tone="mismatch" />
+            <SummaryTile label="Совпадения" value={comparison.matchCount.toString()} tone="match" />
+            <SummaryTile label="Предупреждения допуска" value={comparison.warningCount.toString()} tone="warning" />
+            <SummaryTile label="Расхождения" value={comparison.mismatchCount.toString()} tone="mismatch" />
           </div>
           <div className="overflow-x-auto rounded-lg border border-slate-200">
             <table className="w-full min-w-[780px] border-collapse text-sm">
               <thead className="bg-slate-100 text-left text-slate-600">
                 <tr>
-                  <th className="p-3">Section</th>
-                  <th className="p-3">Field</th>
-                  <th className="p-3">App result</th>
-                  <th className="p-3">Trusted value</th>
-                  <th className="p-3">Delta</th>
-                  <th className="p-3">Status</th>
+                  <th className="p-3">Раздел</th>
+                  <th className="p-3">Поле</th>
+                  <th className="p-3">Результат приложения</th>
+                  <th className="p-3">Доверенное значение</th>
+                  <th className="p-3">Отклонение</th>
+                  <th className="p-3">Статус</th>
                 </tr>
               </thead>
               <tbody>
@@ -376,12 +376,12 @@ export function EngineeringReviewPage() {
 
       <Card className="rounded-lg border border-slate-200 bg-white shadow-sm">
         <CardHeader>
-          <CardTitle>Review Workflow</CardTitle>
+          <CardTitle>Процесс проверки</CardTitle>
         </CardHeader>
         <CardContent className="grid gap-4">
           <div className="flex flex-wrap gap-3">
             <Button type="button" variant="outline" onClick={handleRunCurrentDraft}>
-              Run current draft
+              Пересчитать текущий черновик
             </Button>
             {(['pending-review', 'reviewed', 'accepted', 'rejected', 'needs-investigation'] as ReviewStatus[]).map(
               (status) => (
@@ -391,7 +391,7 @@ export function EngineeringReviewPage() {
                   variant={session.status === status ? 'default' : 'outline'}
                   onClick={() => handleStatusChange(status)}
                 >
-                  {status}
+                  {formatReviewStatus(status)}
                 </Button>
               ),
             )}
@@ -399,28 +399,28 @@ export function EngineeringReviewPage() {
           <div className="flex flex-wrap gap-3">
             <Button type="button" variant="outline" onClick={handleFreeze}>
               <Lock />
-              Freeze snapshot
+              Заморозить снимок
             </Button>
             <Button type="button" variant="outline" onClick={handleExportJson}>
               <FileJson />
-              Export snapshot JSON
+              Выгрузить JSON снимка
             </Button>
             <Button type="button" variant="outline" onClick={handleExportHtml}>
               <FileDown />
-              Export snapshot HTML
+              Выгрузить HTML снимка
             </Button>
             <Button type="button" variant="outline" onClick={handleExportSession}>
               <FileJson />
-              Export session JSON
+              Выгрузить JSON сессии
             </Button>
           </div>
           {driftItems.length > 0 ? (
             <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
-              Regression drift detected after manual review: {driftItems.length} field(s).
+              Отклонение регрессии найдено после ручной проверки: {driftItems.length} полей.
             </div>
           ) : (
             <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-700">
-              No frozen snapshot drift detected.
+              Отклонений в замороженных снимках не найдено.
             </div>
           )}
           <div className="grid gap-3 rounded-lg border border-sky-200 bg-sky-50 p-4">
@@ -428,18 +428,18 @@ export function EngineeringReviewPage() {
             <div className="flex flex-wrap gap-3">
               <Button type="button" variant="outline" onClick={handleCopyEngineerChecklist}>
                 <ClipboardCopy />
-                Copy engineer checklist
+                Скопировать чеклист инженера
               </Button>
               <Button type="button" variant="outline" onClick={handleCopyReturnInstructions}>
                 <ClipboardCopy />
-                Copy return instructions
+                Скопировать инструкции возврата
               </Button>
             </div>
           </div>
           <div className="grid gap-4 rounded-lg border border-amber-200 bg-amber-50 p-4">
             <div className="grid gap-2">
               <p className="text-sm font-semibold text-amber-900">
-                Candidate is not VERIFIED and is not automatically added to the verification dataset.
+                Кандидат не является VERIFIED и не добавляется в набор проверочных данных автоматически.
               </p>
               <div className="flex flex-wrap gap-2">
                 {candidateChecklist.map((item) => (
@@ -451,7 +451,7 @@ export function EngineeringReviewPage() {
                         : 'rounded-md bg-white px-2.5 py-1 text-sm font-semibold text-amber-800'
                     }
                   >
-                    {item.complete ? 'ok' : 'missing'}: {item.label}
+                    {item.complete ? 'готово' : 'не заполнено'}: {item.label}
                   </span>
                 ))}
               </div>
@@ -464,7 +464,7 @@ export function EngineeringReviewPage() {
                 onClick={handleCreateCandidate}
               >
                 <FileJson />
-                Create verification candidate
+                Создать кандидата проверки
               </Button>
               <Button
                 type="button"
@@ -473,7 +473,7 @@ export function EngineeringReviewPage() {
                 onClick={handleExportCandidate}
               >
                 <FileDown />
-                Export candidate JSON
+                Выгрузить JSON кандидата
               </Button>
               <Button
                 type="button"
@@ -482,7 +482,7 @@ export function EngineeringReviewPage() {
                 onClick={handleCopyCandidateSummary}
               >
                 <ClipboardCopy />
-                Copy candidate summary
+                Скопировать сводку кандидата
               </Button>
             </div>
             {candidateResult && candidateResult.validation.errors.length > 0 ? (
@@ -495,7 +495,7 @@ export function EngineeringReviewPage() {
           </div>
           <textarea
             className="min-h-24 w-full resize-y rounded-lg border border-slate-300 bg-white p-3 text-sm outline-none focus-visible:border-slate-500 focus-visible:ring-3 focus-visible:ring-slate-200"
-            placeholder="Paste review session JSON to import"
+            placeholder="Вставьте JSON сессии проверки для импорта"
             value={importText}
             onChange={(event) => setImportText(event.target.value)}
           />
@@ -507,7 +507,7 @@ export function EngineeringReviewPage() {
             onClick={handleImportSession}
           >
             <Upload />
-            Import session
+            Импортировать сессию
           </Button>
           {message ? <p className="text-sm font-medium text-slate-700">{message}</p> : null}
         </CardContent>
@@ -543,12 +543,12 @@ function DiffRow({ item }: { item: ReviewDiffItem }) {
 
   return (
     <tr className={`border-t border-slate-200 ${className}`}>
-      <td className="p-3">{item.section}</td>
+      <td className="p-3">{formatSection(item.section)}</td>
       <td className="p-3 font-medium">{item.label}</td>
       <td className="p-3">{formatValue(item.appValue)}</td>
       <td className="p-3">{formatValue(item.expectedValue)}</td>
       <td className="p-3">{formatValue(item.delta)}</td>
-      <td className="p-3 font-semibold">{item.severity}</td>
+      <td className="p-3 font-semibold">{formatSeverity(item.severity)}</td>
     </tr>
   )
 }
@@ -579,9 +579,45 @@ function SummaryTile({
 function StatusBadge({ status }: { status: ReviewStatus }) {
   return (
     <span className="rounded-md bg-slate-950 px-2.5 py-1 text-sm font-semibold text-white">
-      {status}
+      {formatReviewStatus(status)}
     </span>
   )
+}
+
+function formatReviewStatus(status: ReviewStatus) {
+  const labels: Record<ReviewStatus, string> = {
+    'pending-review': 'ожидает проверки',
+    reviewed: 'проверено',
+    accepted: 'принято',
+    rejected: 'отклонено',
+    'needs-investigation': 'нужно расследование',
+  }
+
+  return labels[status]
+}
+
+function formatSection(section: ReviewDiffItem['section']) {
+  const labels: Record<ReviewDiffItem['section'], string> = {
+    geometry: 'геометрия',
+    stress: 'напряжения',
+    eccentricity: 'эксцентриситет',
+    'transfer factors': 'коэффициенты передачи',
+    checksums: 'контрольные суммы',
+    'verification level': 'уровень проверки',
+  }
+
+  return labels[section]
+}
+
+function formatSeverity(severity: ReviewDiffItem['severity']) {
+  const labels: Record<ReviewDiffItem['severity'], string> = {
+    match: 'совпадает',
+    warning: 'предупреждение',
+    mismatch: 'расхождение',
+    missing: 'не заполнено',
+  }
+
+  return labels[severity]
 }
 
 function formatValue(value: number | string | null) {

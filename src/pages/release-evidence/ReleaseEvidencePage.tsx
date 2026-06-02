@@ -31,9 +31,9 @@ export function ReleaseEvidencePage() {
       <header className="grid gap-4 rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="grid gap-2">
-            <h1 className="text-3xl font-semibold tracking-normal text-slate-950">Release Evidence</h1>
+            <h1 className="text-3xl font-semibold tracking-normal text-slate-950">Релизные материалы</h1>
             <p className="text-sm text-slate-600">
-              Audit-only bundle for release reproducibility. No verification status is promoted here.
+              Аудит-пакет для воспроизводимости релиза. Этот раздел не повышает статус верификации.
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -55,30 +55,30 @@ export function ReleaseEvidencePage() {
 
       <Card className="rounded-lg border border-slate-200 bg-white shadow-sm">
         <CardHeader>
-          <CardTitle>Release Identity</CardTitle>
+          <CardTitle>Идентификаторы релиза</CardTitle>
         </CardHeader>
         <CardContent>
           <dl className="grid gap-3 md:grid-cols-2">
-            <EvidenceItem label="Current commit" value={summary.commit} />
-            <EvidenceItem label="App version" value={summary.version} />
-            <EvidenceItem label="Build time" value={evidence.buildTime} />
-            <EvidenceItem label="Generated at" value={summary.generatedAt} />
+            <EvidenceItem label="Текущий коммит" value={summary.commit} />
+            <EvidenceItem label="Версия приложения" value={summary.version} />
+            <EvidenceItem label="Время сборки" value={evidence.buildTime} />
+            <EvidenceItem label="Сформировано" value={summary.generatedAt} />
           </dl>
         </CardContent>
       </Card>
 
       <Card className="rounded-lg border border-slate-200 bg-white shadow-sm">
         <CardHeader>
-          <CardTitle>Verification Matrix</CardTitle>
+          <CardTitle>Матрица верификации</CardTitle>
         </CardHeader>
         <CardContent className="grid gap-3">
           <div className="flex flex-wrap gap-2">
-            <Badge className="rounded-md">verified: {evidence.counts.verified}</Badge>
+            <Badge className="rounded-md">проверено: {evidence.counts.verified}</Badge>
             <Badge variant="secondary" className="rounded-md">
-              draft: {evidence.counts.draft}
+              черновик: {evidence.counts.draft}
             </Badge>
             <Badge variant="secondary" className="rounded-md">
-              partial: {evidence.counts.partial}
+              частично: {evidence.counts.partial}
             </Badge>
           </div>
           <dl className="grid gap-3 md:grid-cols-2">
@@ -86,7 +86,7 @@ export function ReleaseEvidencePage() {
               <EvidenceItem
                 key={capability.id}
                 label={capability.label}
-                value={`${capability.status} | arithmetic: ${capability.arithmeticSupport}`}
+                value={`${formatEvidenceStatus(capability.status)} | арифметика: ${formatEvidenceStatus(capability.arithmeticSupport)}`}
               />
             ))}
           </dl>
@@ -95,7 +95,7 @@ export function ReleaseEvidencePage() {
 
       <Card className="rounded-lg border border-slate-200 bg-white shadow-sm">
         <CardHeader>
-          <CardTitle>Server URLs</CardTitle>
+          <CardTitle>URL сервера</CardTitle>
         </CardHeader>
         <CardContent>
           <dl className="grid gap-3 md:grid-cols-2">
@@ -112,7 +112,7 @@ export function ReleaseEvidencePage() {
 
       <Card className="rounded-lg border border-slate-200 bg-white shadow-sm">
         <CardHeader>
-          <CardTitle>Diagnostics Summary</CardTitle>
+          <CardTitle>Сводка диагностики</CardTitle>
         </CardHeader>
         <CardContent>
           <dl className="grid gap-3 md:grid-cols-2">
@@ -127,7 +127,7 @@ export function ReleaseEvidencePage() {
 
       <Card className="rounded-lg border border-slate-200 bg-white shadow-sm">
         <CardHeader>
-          <CardTitle>Validation Session Readiness</CardTitle>
+          <CardTitle>Готовность сессии валидации</CardTitle>
         </CardHeader>
         <CardContent>
           <dl className="grid gap-3 md:grid-cols-2">
@@ -142,7 +142,7 @@ export function ReleaseEvidencePage() {
 
       <Card className="rounded-lg border border-slate-200 bg-white shadow-sm">
         <CardHeader>
-          <CardTitle>Known Blockers</CardTitle>
+          <CardTitle>Известные блокеры</CardTitle>
         </CardHeader>
         <CardContent>
           <ul className="grid gap-2 text-sm text-slate-700">
@@ -165,4 +165,14 @@ function EvidenceItem({ label, value }: { label: string; value: string }) {
       <dd className="mt-2 break-words text-base font-semibold text-slate-950">{value}</dd>
     </div>
   )
+}
+
+function formatEvidenceStatus(value: string) {
+  const labels: Record<string, string> = {
+    verified: 'проверено',
+    partial: 'частично',
+    draft: 'черновик',
+  }
+
+  return labels[value] ?? value
 }

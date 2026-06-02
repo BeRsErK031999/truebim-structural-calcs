@@ -21,11 +21,11 @@ import { SelectField } from './components/SelectField'
 import { ToggleField } from './components/ToggleField'
 
 const caseOptions: Array<{ value: PunchingShearCaseType; label: string; disabled?: boolean }> = [
-  { value: 'center', label: 'Center rectangular column' },
-  { value: 'edge', label: 'Edge column - coming soon', disabled: true },
-  { value: 'corner', label: 'Corner column - coming soon', disabled: true },
-  { value: 'opening', label: 'Opening near column - coming soon', disabled: true },
-  { value: 'round', label: 'Round column - coming soon', disabled: true },
+  { value: 'center', label: 'Центральная прямоугольная колонна' },
+  { value: 'edge', label: 'Крайняя колонна - скоро', disabled: true },
+  { value: 'corner', label: 'Угловая колонна - скоро', disabled: true },
+  { value: 'opening', label: 'Отверстие рядом с колонной - скоро', disabled: true },
+  { value: 'round', label: 'Круглая колонна - скоро', disabled: true },
 ]
 
 const concreteClassOptions: ConcreteClassName[] = ['B15', 'B20', 'B25', 'B30', 'B35', 'B40']
@@ -108,7 +108,7 @@ export function CalculationForm() {
       setImportText('')
       setIsImportOpen(false)
       setFormError(null)
-      setFormMessage(`Импортирован расчет: ${savedCalculation.title}`)
+      setFormMessage(`Расчет импортирован: ${savedCalculation.title}`)
     } catch (error) {
       setFormMessage(null)
       setFormError(error instanceof Error ? error.message : 'Не удалось импортировать JSON')
@@ -118,7 +118,7 @@ export function CalculationForm() {
   return (
     <form className="grid gap-5" onSubmit={handleSubmit(runCalculation)}>
       <FormSection
-        title="Calculation case"
+        title="Расчетный случай"
         helperText="Сейчас расчетный движок поддерживает только центральную прямоугольную колонну без отверстий и краев плиты."
       >
         <SelectField
@@ -137,8 +137,8 @@ export function CalculationForm() {
       </FormSection>
 
       <FormSection
-        title="Loads"
-        helperText="Введите расчетную продавливающую силу и моменты. В текущем draft-чеке моменты сохраняются, но не участвуют в формулах."
+        title="Нагрузки"
+        helperText="Введите расчетную продавливающую силу и моменты. Моменты сохраняются для пилотной проверки и требуют отдельной инженерной валидации."
       >
         <NumberField
           label="N"
@@ -161,7 +161,7 @@ export function CalculationForm() {
       </FormSection>
 
       <FormSection
-        title="Slab geometry"
+        title="Геометрия плиты"
         helperText="Геометрия плиты задается в миллиметрах. Пустые и отрицательные значения блокируют запуск расчета."
       >
         <NumberField
@@ -185,8 +185,8 @@ export function CalculationForm() {
       </FormSection>
 
       <FormSection
-        title="Column geometry"
-        helperText="Размеры прямоугольной колонны управляют контрольным периметром и SVG preview после ручного расчета."
+        title="Геометрия колонны"
+        helperText="Размеры прямоугольной колонны задают контрольный периметр и схему после расчета."
       >
         <NumberField
           label="Ширина по X"
@@ -203,8 +203,8 @@ export function CalculationForm() {
       </FormSection>
 
       <FormSection
-        title="Materials"
-        helperText="Класс бетона берется из существующей таблицы draft-сопротивлений без изменения расчетных коэффициентов."
+        title="Материалы"
+        helperText="Класс бетона берется из текущей таблицы черновых сопротивлений без изменения расчетных коэффициентов."
       >
         <SelectField
           label="Класс бетона"
@@ -222,13 +222,13 @@ export function CalculationForm() {
       </FormSection>
 
       <FormSection
-        title="Shear reinforcement"
-        helperText="Переключатель сохраняет состояние в input. Расчет вклада поперечной арматуры пока возвращает not_implemented."
+        title="Поперечная арматура"
+        helperText="Переключатель сохраняет состояние во входных данных. Вклад поперечной арматуры пока не реализован."
       >
         <ToggleField
           checked={shearReinforcementEnabled}
           label="Учитывать поперечную арматуру"
-          helperText="Для текущего draft-чека оставьте выключенным, чтобы получить draft_ok или draft_failed."
+          helperText="Для текущего чернового расчета оставьте выключенным, чтобы получить результат без неподдерживаемого сценария."
           onCheckedChange={(checked) =>
             setValue('shearReinforcement.enabled', checked, {
               shouldDirty: true,
@@ -246,7 +246,7 @@ export function CalculationForm() {
           type="submit"
         >
           <Calculator className="size-4" />
-          Рассчитать draft
+          Рассчитать
         </Button>
         <Button
           className="h-11 rounded-lg"

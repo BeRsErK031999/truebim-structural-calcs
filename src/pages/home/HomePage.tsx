@@ -8,8 +8,8 @@ import { CalculationHistoryPanel } from '@/widgets/calculation-history/Calculati
 import { ResultPanel } from '@/widgets/results/ResultPanel'
 
 const workflowCards = [
-  { title: 'Геометрия', value: 'Плита, колонна, контур', tone: 'bg-sky-50 text-sky-700' },
-  { title: 'Материалы', value: 'Бетон и армирование', tone: 'bg-amber-50 text-amber-700' },
+  { title: 'Геометрия', value: 'Плита, колонна, контрольный контур', tone: 'bg-sky-50 text-sky-700' },
+  { title: 'Материалы', value: 'Бетон и арматура', tone: 'bg-amber-50 text-amber-700' },
   { title: 'Проверки', value: 'Нагрузки и коэффициенты', tone: 'bg-emerald-50 text-emerald-700' },
 ]
 
@@ -24,19 +24,19 @@ export function HomePage() {
       <header className="grid gap-4 rounded-lg border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
         <div className="flex flex-wrap items-center gap-3">
           <Badge className="rounded-md bg-teal-50 text-teal-700 hover:bg-teal-50">
-            UI shell
+            Рабочий экран
           </Badge>
           <Badge variant="outline" className="rounded-md border-slate-300 text-slate-600">
-            Без расчетной логики
+            Пилотная проверка продавливания
           </Badge>
         </div>
         <div className="max-w-4xl">
           <h1 className="text-3xl font-semibold tracking-normal text-slate-950 sm:text-4xl">
-            TrueBIM Structural Calculations
+            TrueBIM: расчеты конструкций
           </h1>
           <p className="mt-3 max-w-2xl text-base leading-7 text-slate-600">
-            Рабочая оболочка для инженерных проверок: навигация по разделам,
-            подготовка исходных данных и закрепленная панель будущих результатов.
+            Рабочая оболочка для инженерных проверок: ввод исходных данных, расчет продавливания,
+            экспорт отчета и подготовка материалов для независимой проверки.
           </p>
         </div>
       </header>

@@ -54,26 +54,26 @@ export function EngineerPortalPage() {
       <header className="grid gap-4 rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="grid gap-2">
-            <h1 className="text-3xl font-semibold tracking-normal text-slate-950">Engineer Portal</h1>
+            <h1 className="text-3xl font-semibold tracking-normal text-slate-950">Портал инженера</h1>
             <p className="max-w-3xl text-sm leading-6 text-slate-600">
-              Start page for the engineering handoff: run the calculation, review trusted evidence,
-              package validation materials and export release evidence.
+              Стартовая страница инженерной передачи: расчет, проверка доверенных материалов,
+              упаковка validation materials и выгрузка release evidence.
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
             <CopyButton
               copied={copied === 'instructions'}
-              label="Copy engineer instructions"
+              label="Скопировать инструкции инженеру"
               onClick={() => void copyText('instructions', buildEngineerInstructionsCopyText())}
             />
             <CopyButton
               copied={copied === 'checklist'}
-              label="Copy return checklist"
+              label="Скопировать чеклист возврата"
               onClick={() => void copyText('checklist', buildReturnChecklistCopyText())}
             />
             <CopyButton
               copied={copied === 'links'}
-              label="Copy current app links"
+              label="Скопировать ссылки приложения"
               onClick={() => void copyText('links', buildCurrentAppLinksCopyText())}
             />
           </div>
@@ -94,12 +94,12 @@ export function EngineerPortalPage() {
               </CardHeader>
               <CardContent className="grid gap-3 text-sm text-slate-700">
                 <p>{step.description}</p>
-                <InfoBlock label="What to do" value={step.action} />
-                <InfoBlock label="Return to developer" value={step.returnToDeveloper} />
+                <InfoBlock label="Что сделать" value={step.action} />
+                <InfoBlock label="Что вернуть разработчику" value={step.returnToDeveloper} />
                 <Button asChild variant="outline" className="w-fit">
                   <Link to={step.href}>
                     <ExternalLink className="size-4" />
-                    Open section
+                    Открыть раздел
                   </Link>
                 </Button>
               </CardContent>
@@ -111,29 +111,29 @@ export function EngineerPortalPage() {
       <section className="grid gap-4 lg:grid-cols-[1.1fr_0.9fr]">
         <Card className="rounded-lg border border-slate-200 bg-white shadow-sm">
           <CardHeader>
-            <CardTitle>Status Cards</CardTitle>
+            <CardTitle>Статусы</CardTitle>
           </CardHeader>
           <CardContent>
             <dl className="grid gap-3 md:grid-cols-2">
-              <StatusCard label="current verification level" value={result.verificationLevel} />
-              <StatusCard label="verified features" value={formatList(result.verifiedFeatures)} />
-              <StatusCard label="draft features" value={formatList(result.draftFeatures)} />
+              <StatusCard label="текущий уровень проверки" value={result.verificationLevel} />
+              <StatusCard label="проверенные возможности" value={formatList(result.verifiedFeatures)} />
+              <StatusCard label="черновые возможности" value={formatList(result.draftFeatures)} />
               <StatusCard
-                label="candidate workflow status"
+                label="статус candidate workflow"
                 value={latestSession?.candidate?.candidateStatus ?? 'not-created'}
               />
               <StatusCard
-                label="validation package readiness"
-                value={checklist ? `${checklist.completePercent}% checklist complete` : 'no validation session'}
+                label="готовность validation package"
+                value={checklist ? `${checklist.completePercent}% чеклиста готово` : 'нет validation session'}
               />
-              <StatusCard label="release evidence status" value="ready to export: HTML, Markdown, JSON" />
+              <StatusCard label="статус release evidence" value="готово к выгрузке: HTML, Markdown, JSON" />
             </dl>
           </CardContent>
         </Card>
 
         <Card className="rounded-lg border border-slate-200 bg-white shadow-sm">
           <CardHeader>
-            <CardTitle>What to return to developer</CardTitle>
+            <CardTitle>Что вернуть разработчику</CardTitle>
           </CardHeader>
           <CardContent className="grid gap-3">
             <ul className="grid gap-2 text-sm text-slate-700">
@@ -151,27 +151,27 @@ export function EngineerPortalPage() {
       <section className="grid gap-4 lg:grid-cols-2">
         <Card className="rounded-lg border border-slate-200 bg-white shadow-sm">
           <CardHeader>
-            <CardTitle>Verification Capability Matrix</CardTitle>
+            <CardTitle>Матрица возможностей проверки</CardTitle>
           </CardHeader>
           <CardContent className="grid gap-3 text-sm">
             <div className="flex flex-wrap gap-2">
-              <Badge className="rounded-md">verified: {capabilities.verified.length}</Badge>
+              <Badge className="rounded-md">проверено: {capabilities.verified.length}</Badge>
               <Badge variant="secondary" className="rounded-md">
-                partial: {capabilities.partial.length}
+                частично: {capabilities.partial.length}
               </Badge>
               <Badge variant="secondary" className="rounded-md">
-                draft: {capabilities.draft.length}
+                черновик: {capabilities.draft.length}
               </Badge>
             </div>
-            <CapabilityList title="Verified" items={capabilities.verified.map((item) => item.label)} />
-            <CapabilityList title="Partial" items={capabilities.partial.map((item) => item.label)} />
-            <CapabilityList title="Draft" items={capabilities.draft.map((item) => item.label)} />
+            <CapabilityList title="Проверено" items={capabilities.verified.map((item) => item.label)} />
+            <CapabilityList title="Частично" items={capabilities.partial.map((item) => item.label)} />
+            <CapabilityList title="Черновик" items={capabilities.draft.map((item) => item.label)} />
           </CardContent>
         </Card>
 
         <Card className="rounded-lg border border-slate-200 bg-white shadow-sm">
           <CardHeader>
-            <CardTitle>Current App Links</CardTitle>
+            <CardTitle>Текущие ссылки приложения</CardTitle>
           </CardHeader>
           <CardContent className="grid gap-2">
             {officeAppLinks.map((link) => (
@@ -190,13 +190,13 @@ export function EngineerPortalPage() {
 
       <Card className="rounded-lg border border-slate-200 bg-white shadow-sm">
         <CardHeader>
-          <CardTitle>Calculation Snapshot</CardTitle>
+          <CardTitle>Снимок расчета</CardTitle>
         </CardHeader>
         <CardContent>
           <dl className="grid gap-3 md:grid-cols-3">
-            <StatusCard label="case type" value={draft.caseType} />
-            <StatusCard label="calculation status" value={result.status} />
-            <StatusCard label="report warnings" value={String(report.warnings.length)} />
+            <StatusCard label="тип случая" value={draft.caseType} />
+            <StatusCard label="статус расчета" value={result.status} />
+            <StatusCard label="предупреждения отчета" value={String(report.warnings.length)} />
           </dl>
         </CardContent>
       </Card>
@@ -216,7 +216,7 @@ function CopyButton({
   return (
     <Button type="button" variant="outline" onClick={onClick}>
       {copied ? <CheckCircle2 className="size-4" /> : <Clipboard className="size-4" />}
-      {copied ? 'Copied' : label}
+      {copied ? 'Скопировано' : label}
     </Button>
   )
 }
@@ -253,7 +253,7 @@ function CapabilityList({ title, items }: { title: string; items: string[] }) {
 }
 
 function formatList(values: string[]) {
-  return values.length > 0 ? values.join(', ') : 'none'
+  return values.length > 0 ? values.join(', ') : 'нет'
 }
 
 async function writeClipboardText(text: string) {

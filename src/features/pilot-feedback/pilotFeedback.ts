@@ -4,13 +4,13 @@ export const pilotFeedbackStorageKey = 'truebim-structural-calcs:pilot-feedback'
 
 export const pilotIssueCategories = [
   'UI',
-  'Geometry',
-  'Stress',
-  'Verification',
-  'Export',
-  'Review Workflow',
-  'Documentation',
-  'Other',
+  'Геометрия',
+  'Напряжения',
+  'Проверка',
+  'Экспорт',
+  'Процесс проверки',
+  'Документация',
+  'Другое',
 ] as const
 
 export type PilotIssueCategory = (typeof pilotIssueCategories)[number]

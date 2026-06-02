@@ -45,7 +45,7 @@ export function PilotPage() {
 
     setFeedback(listPilotFeedback())
     setForm(createEmptyPilotFeedbackInput())
-    setMessage(`Feedback saved locally: ${saved.id}`)
+    setMessage(`Отзыв сохранен локально: ${saved.id}`)
   }
 
   const handleExportFeedback = () => {
@@ -57,7 +57,7 @@ export function PilotPage() {
       'application/json',
     )
     setFeedback(currentFeedback)
-    setMessage(`Feedback JSON exported: ${currentFeedback.length} item(s).`)
+    setMessage(`JSON с отзывами выгружен: ${currentFeedback.length} записей.`)
   }
 
   return (
@@ -65,15 +65,15 @@ export function PilotPage() {
       <header className="grid gap-4 rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="grid gap-2">
-            <h1 className="text-3xl font-semibold tracking-normal text-slate-950">Pilot MVP Mode</h1>
+            <h1 className="text-3xl font-semibold tracking-normal text-slate-950">Пилотный режим</h1>
             <p className="max-w-3xl text-sm leading-6 text-slate-600">
-              Office pilot workspace for engineers to run punching shear calculations, review trusted
-              evidence, create verification candidates, and return validation packages to development.
+              Рабочее пространство пилота: расчет продавливания, проверка доверенных материалов,
+              подготовка кандидата проверки и возврат пакета валидации в разработку.
             </p>
           </div>
           <Button type="button" variant="outline" onClick={handleExportFeedback}>
             <Download className="size-4" />
-            Export feedback JSON
+            Выгрузить JSON с отзывами
           </Button>
         </div>
       </header>
@@ -81,9 +81,9 @@ export function PilotPage() {
       <PilotDashboardSummary dashboard={dashboard} />
 
       <section className="grid gap-4 lg:grid-cols-2">
-        <ChecklistCard title="What can be used in the pilot" items={pilotUsableItems} />
+        <ChecklistCard title="Что можно использовать в пилоте" items={pilotUsableItems} />
         <ChecklistCard
-          title="What cannot be used as a final design calculation yet"
+          title="Что пока нельзя использовать как финальный проектный расчет"
           items={pilotNotDesignUseItems}
         />
       </section>
@@ -93,7 +93,7 @@ export function PilotPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-amber-950">
               <ShieldAlert className="size-5" />
-              Engineer Warnings
+              Предупреждения для инженера
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -109,7 +109,7 @@ export function PilotPage() {
 
         <Card className="rounded-lg border border-slate-200 bg-white shadow-sm">
           <CardHeader>
-            <CardTitle>What Works Today</CardTitle>
+            <CardTitle>Что уже работает</CardTitle>
           </CardHeader>
           <CardContent className="grid gap-3 text-sm text-slate-700">
             {pilotReadinessNotes.map((note) => (
@@ -123,7 +123,7 @@ export function PilotPage() {
 
       <Card className="rounded-lg border border-slate-200 bg-white shadow-sm">
         <CardHeader>
-          <CardTitle>Quick Start Wizard</CardTitle>
+          <CardTitle>Быстрый сценарий</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
@@ -148,7 +148,7 @@ export function PilotPage() {
 
       <Card className="rounded-lg border border-slate-200 bg-white shadow-sm">
         <CardHeader>
-          <CardTitle>Production Calculator Roadmap</CardTitle>
+          <CardTitle>Дорожная карта до продуктового калькулятора</CardTitle>
         </CardHeader>
         <CardContent>
           <ol className="grid gap-2 text-sm text-slate-700 md:grid-cols-2">
@@ -165,44 +165,44 @@ export function PilotPage() {
       </Card>
 
       <section className="grid gap-4 lg:grid-cols-[0.9fr_1.1fr]">
-        <CapabilityCard title="VERIFIED" items={dashboard.verifiedFeatures.map((feature) => feature.label)} />
+        <CapabilityCard title="ПРОВЕРЕНО" items={dashboard.verifiedFeatures.map((feature) => feature.label)} />
         <div className="grid gap-4 md:grid-cols-2">
-          <CapabilityCard title="PARTIAL" items={dashboard.partialFeatures.map((feature) => feature.label)} />
-          <CapabilityCard title="DRAFT" items={dashboard.draftFeatures.map((feature) => feature.label)} />
+          <CapabilityCard title="ЧАСТИЧНО" items={dashboard.partialFeatures.map((feature) => feature.label)} />
+          <CapabilityCard title="ЧЕРНОВИК" items={dashboard.draftFeatures.map((feature) => feature.label)} />
         </div>
       </section>
 
       <Card className="rounded-lg border border-slate-200 bg-white shadow-sm">
         <CardHeader>
-          <CardTitle>Local Pilot Feedback</CardTitle>
+          <CardTitle>Локальная обратная связь пилота</CardTitle>
         </CardHeader>
         <CardContent className="grid gap-4">
           <div className="grid gap-3 md:grid-cols-3">
-            <LabelledInput label="Engineer" value={form.engineer} onChange={(value) => updateForm({ engineer: value })} />
-            <LabelledInput label="Date" type="date" value={form.date} onChange={(value) => updateForm({ date: value })} />
+            <LabelledInput label="Инженер" value={form.engineer} onChange={(value) => updateForm({ engineer: value })} />
+            <LabelledInput label="Дата" type="date" value={form.date} onChange={(value) => updateForm({ date: value })} />
             <LabelledInput
-              label="Calculation"
+              label="Расчет"
               value={form.calculation}
               onChange={(value) => updateForm({ calculation: value })}
             />
             <LabelledInput
-              label="Calculation ID"
+              label="ID расчета"
               value={form.calculationId}
               onChange={(value) => updateForm({ calculationId: value })}
             />
             <LabelledInput
-              label="Review status"
+              label="Статус проверки"
               value={form.reviewStatus}
               onChange={(value) => updateForm({ reviewStatus: value })}
             />
             <LabelledInput
-              label="Verification level"
+              label="Уровень проверки"
               value={form.verificationLevel}
               onChange={(value) => updateForm({ verificationLevel: value })}
             />
           </div>
           <label className="grid gap-1.5">
-            <span className="text-xs font-medium uppercase tracking-[0.12em] text-slate-500">Category</span>
+            <span className="text-xs font-medium uppercase tracking-[0.12em] text-slate-500">Категория</span>
             <Select
               value={form.category}
               onValueChange={(value) => updateForm({ category: value as PilotIssueCategory })}
@@ -220,10 +220,10 @@ export function PilotPage() {
             </Select>
           </label>
           <div className="grid gap-3 md:grid-cols-3">
-            <LabelledTextarea label="Problem" value={form.problem} onChange={(value) => updateForm({ problem: value })} />
-            <LabelledTextarea label="Note" value={form.note} onChange={(value) => updateForm({ note: value })} />
+            <LabelledTextarea label="Проблема" value={form.problem} onChange={(value) => updateForm({ problem: value })} />
+            <LabelledTextarea label="Заметка" value={form.note} onChange={(value) => updateForm({ note: value })} />
             <LabelledTextarea
-              label="Suggestion"
+              label="Предложение"
               value={form.suggestion}
               onChange={(value) => updateForm({ suggestion: value })}
             />
@@ -231,14 +231,14 @@ export function PilotPage() {
           <div className="flex flex-wrap items-center gap-3">
             <Button type="button" onClick={handleSaveFeedback}>
               <Send className="size-4" />
-              Save local feedback
+              Сохранить отзыв
             </Button>
             <Button type="button" variant="outline" onClick={handleExportFeedback}>
               <FileJson className="size-4" />
-              Export JSON
+              Выгрузить JSON
             </Button>
             <span className="text-sm font-medium text-slate-700">
-              Stored locally: {feedback.length}
+              Сохранено локально: {feedback.length}
             </span>
           </div>
           {message ? <p className="text-sm font-medium text-slate-700">{message}</p> : null}
@@ -270,13 +270,13 @@ function ChecklistCard({ title, items }: { title: string; items: readonly string
 function PilotDashboardSummary({ dashboard }: { dashboard: PilotDashboard }) {
   return (
     <section className="grid gap-3 md:grid-cols-3 xl:grid-cols-7">
-      <SummaryTile label="verified features" value={dashboard.verifiedFeatures.length.toString()} />
-      <SummaryTile label="partial features" value={dashboard.partialFeatures.length.toString()} />
-      <SummaryTile label="draft features" value={dashboard.draftFeatures.length.toString()} />
-      <SummaryTile label="feedback" value={dashboard.feedbackCount.toString()} />
-      <SummaryTile label="validation sessions" value={dashboard.validationSessionsCount.toString()} />
-      <SummaryTile label="candidates" value={dashboard.candidatesCount.toString()} />
-      <SummaryTile label="release evidence" value={dashboard.releaseEvidenceStatus} />
+      <SummaryTile label="проверено" value={dashboard.verifiedFeatures.length.toString()} />
+      <SummaryTile label="частично" value={dashboard.partialFeatures.length.toString()} />
+      <SummaryTile label="черновик" value={dashboard.draftFeatures.length.toString()} />
+      <SummaryTile label="отзывы" value={dashboard.feedbackCount.toString()} />
+      <SummaryTile label="сессии валидации" value={dashboard.validationSessionsCount.toString()} />
+      <SummaryTile label="кандидаты" value={dashboard.candidatesCount.toString()} />
+      <SummaryTile label="релизные материалы" value={formatReleaseEvidenceStatus(dashboard.releaseEvidenceStatus)} />
     </section>
   )
 }
@@ -288,6 +288,10 @@ function SummaryTile({ label, value }: { label: string; value: string }) {
       <p className="mt-2 break-words text-xl font-semibold text-slate-950">{value}</p>
     </div>
   )
+}
+
+function formatReleaseEvidenceStatus(status: PilotDashboard['releaseEvidenceStatus']) {
+  return status === 'ready' ? 'готово' : 'нужен пакет'
 }
 
 function CapabilityCard({ title, items }: { title: string; items: string[] }) {

@@ -35,8 +35,8 @@ export function SavedCalculationCard({
         </div>
 
         <div className="grid grid-cols-2 gap-2 text-sm">
-          <HistoryMetric label="Utilization" value={formatUtilization(calculation.result.utilizationRatio)} />
-          <HistoryMetric label="Type" value="Punching shear" />
+          <HistoryMetric label="Использование" value={formatUtilization(calculation.result.utilizationRatio)} />
+          <HistoryMetric label="Тип" value="Продавливание" />
         </div>
 
         <div className="flex flex-wrap gap-2">
@@ -48,7 +48,7 @@ export function SavedCalculationCard({
             onClick={() => onLoad(calculation.id)}
           >
             <Upload className="size-3.5" />
-            Load
+            Загрузить
           </Button>
           <Button
             className="rounded-lg"
@@ -68,7 +68,7 @@ export function SavedCalculationCard({
             onClick={() => onDelete(calculation.id)}
           >
             <Trash2 className="size-3.5" />
-            Delete
+            Удалить
           </Button>
         </div>
       </CardContent>
@@ -83,10 +83,16 @@ function StatusPill({ status }: { status: SavedCalculationSummary['result']['sta
     invalid_input: 'bg-red-50 text-red-700',
     not_implemented: 'bg-amber-50 text-amber-700',
   }
+  const labelByStatus = {
+    draft_ok: 'Черновик прошел',
+    draft_failed: 'Черновик не прошел',
+    invalid_input: 'Ошибка ввода',
+    not_implemented: 'Не реализовано',
+  }
 
   return (
     <span className={`shrink-0 rounded-md px-2 py-1 text-xs font-semibold ${classNameByStatus[status]}`}>
-      {status}
+      {labelByStatus[status]}
     </span>
   )
 }

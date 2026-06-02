@@ -18,7 +18,7 @@ describe('engineer handoff help', () => {
           href: '/docs/engineer-handoff.md',
         }),
         expect.objectContaining({
-          label: 'Checklist review',
+          label: 'Чеклист проверки',
           href: '/docs/engineer-review-checklist.md',
         }),
       ]),
@@ -26,21 +26,21 @@ describe('engineer handoff help', () => {
   })
 
   it('review hint mentions candidate is not verified', () => {
-    expect(reviewCandidateHandoffHint).toContain('accepted review')
-    expect(reviewCandidateHandoffHint).toContain('Candidate != VERIFIED')
+    expect(reviewCandidateHandoffHint).toContain('принятой проверки')
+    expect(reviewCandidateHandoffHint).toContain('Кандидат проверки != VERIFIED')
     expect(reviewCandidateHandoffHint).toContain('не добавляется автоматически')
   })
 
   it('checklist copy text exists', () => {
-    expect(engineerChecklistCopyText).toContain('input data checked')
-    expect(engineerChecklistCopyText).toContain('axis convention checked')
-    expect(engineerChecklistCopyText).toContain('candidate exported')
+    expect(engineerChecklistCopyText).toContain('исходные данные проверены')
+    expect(engineerChecklistCopyText).toContain('соглашение осей проверено')
+    expect(engineerChecklistCopyText).toContain('кандидат проверки выгружен')
   })
 
   it('return instructions copy text names expected evidence package', () => {
     expect(candidateReturnInstructionsCopyText).toContain('verification candidate JSON')
-    expect(candidateReturnInstructionsCopyText).toContain('trusted evidence attachments')
-    expect(candidateReturnInstructionsCopyText).toContain('Candidate != VERIFIED')
+    expect(candidateReturnInstructionsCopyText).toContain('приложения с доверенными расчетами')
+    expect(candidateReturnInstructionsCopyText).toContain('Кандидат проверки != VERIFIED')
   })
 
   it('README has engineer handoff docs links', () => {

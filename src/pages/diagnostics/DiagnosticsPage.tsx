@@ -21,184 +21,184 @@ export function DiagnosticsPage() {
   return (
     <div className="grid gap-6">
       <header className="grid gap-2 rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
-        <h1 className="text-3xl font-semibold tracking-normal text-slate-950">Diagnostics</h1>
-        <p className="text-sm font-medium text-amber-700">{diagnostics.warning}</p>
+        <h1 className="text-3xl font-semibold tracking-normal text-slate-950">Диагностика</h1>
+        <p className="text-sm font-medium text-amber-700">{formatDiagnosticValue(diagnostics.warning)}</p>
       </header>
 
       <Card className="rounded-lg border border-slate-200 bg-white shadow-sm">
         <CardHeader>
-          <CardTitle>Runtime</CardTitle>
+          <CardTitle>Среда выполнения</CardTitle>
         </CardHeader>
         <CardContent className="grid gap-4">
           <div className="flex flex-wrap gap-2">
-            <VerificationBadge label="Draft only" active={diagnostics.verification.draftCases > 0} />
+            <VerificationBadge label="Только черновики" active={diagnostics.verification.draftCases > 0} />
             <VerificationBadge
-              label="Verification pending"
+              label="Проверка ожидается"
               active={diagnostics.verification.verifiedCases === 0}
             />
-            <VerificationBadge label="Verified" active={diagnostics.verification.verifiedCases > 0} />
-            <VerificationBadge label="Failed" active={diagnostics.verification.failedCases > 0} />
+            <VerificationBadge label="Проверено" active={diagnostics.verification.verifiedCases > 0} />
+            <VerificationBadge label="Есть ошибки" active={diagnostics.verification.failedCases > 0} />
           </div>
           <dl className="grid gap-3 md:grid-cols-2">
-            <DiagnosticItem label="App loaded" value={diagnostics.appLoaded} />
-            <DiagnosticItem label="Version" value={diagnostics.version} />
-            <DiagnosticItem label="Commit" value={diagnostics.commit} />
-            <DiagnosticItem label="Build time" value={diagnostics.buildTime} />
-            <DiagnosticItem label="Environment" value={diagnostics.environment} />
+            <DiagnosticItem label="Приложение загружено" value={formatDiagnosticValue(diagnostics.appLoaded)} />
+            <DiagnosticItem label="Версия" value={diagnostics.version} />
+            <DiagnosticItem label="Коммит" value={diagnostics.commit} />
+            <DiagnosticItem label="Время сборки" value={diagnostics.buildTime} />
+            <DiagnosticItem label="Среда" value={diagnostics.environment} />
             <DiagnosticItem
-              label="localStorage available"
-              value={diagnostics.localStorageAvailable ? 'yes' : 'no'}
+              label="localStorage доступен"
+              value={diagnostics.localStorageAvailable ? 'да' : 'нет'}
             />
             <DiagnosticItem
-              label="Saved calculations"
+              label="Сохраненные расчеты"
               value={diagnostics.savedCalculationsCount.toString()}
             />
             <DiagnosticItem
-              label="Current calculation status"
-              value={diagnostics.currentCalculationStatus}
+              label="Статус текущего расчета"
+              value={formatDiagnosticValue(diagnostics.currentCalculationStatus)}
             />
             <DiagnosticItem
-              label="Stress distribution support"
-              value={diagnostics.stressDistributionSupport}
+              label="Распределение напряжений"
+              value={formatDiagnosticValue(diagnostics.stressDistributionSupport)}
             />
             <DiagnosticItem
-              label="Stress regression support"
-              value={diagnostics.stressRegressionSupport}
+              label="Регрессия напряжений"
+              value={formatDiagnosticValue(diagnostics.stressRegressionSupport)}
             />
             <DiagnosticItem
-              label="Stress checksum support"
-              value={diagnostics.stressChecksumSupport}
+              label="Checksum напряжений"
+              value={formatDiagnosticValue(diagnostics.stressChecksumSupport)}
             />
             <DiagnosticItem
-              label="Axis convention validation"
-              value={diagnostics.axisConventionValidationSupport}
+              label="Проверка осей"
+              value={formatDiagnosticValue(diagnostics.axisConventionValidationSupport)}
             />
             <DiagnosticItem
-              label="Drift detection support"
-              value={diagnostics.driftDetectionSupport}
+              label="Поиск drift"
+              value={formatDiagnosticValue(diagnostics.driftDetectionSupport)}
             />
             <DiagnosticItem
-              label="Moment transfer status"
-              value={diagnostics.momentTransferStatus}
+              label="Передача моментов"
+              value={formatDiagnosticValue(diagnostics.momentTransferStatus)}
             />
             <DiagnosticItem
-              label="Moment verification support"
-              value={diagnostics.momentVerificationSupport}
+              label="Проверка моментов"
+              value={formatDiagnosticValue(diagnostics.momentVerificationSupport)}
             />
             <DiagnosticItem
-              label="Stress comparison support"
-              value={diagnostics.stressComparisonSupport}
+              label="Сравнение напряжений"
+              value={formatDiagnosticValue(diagnostics.stressComparisonSupport)}
             />
             <DiagnosticItem
-              label="Eccentricity comparison support"
-              value={diagnostics.eccentricityComparisonSupport}
+              label="Сравнение эксцентриситета"
+              value={formatDiagnosticValue(diagnostics.eccentricityComparisonSupport)}
             />
-            <DiagnosticItem label="Edge support" value={diagnostics.edgeSupport} />
-            <DiagnosticItem label="Corner support" value={diagnostics.cornerSupport} />
-            <DiagnosticItem label="Openings support" value={diagnostics.openingsSupport} />
+            <DiagnosticItem label="Крайние колонны" value={formatDiagnosticValue(diagnostics.edgeSupport)} />
+            <DiagnosticItem label="Угловые колонны" value={formatDiagnosticValue(diagnostics.cornerSupport)} />
+            <DiagnosticItem label="Отверстия" value={formatDiagnosticValue(diagnostics.openingsSupport)} />
             <DiagnosticItem
-              label="Clipped perimeter support"
-              value={diagnostics.clippedPerimeterSupport}
-            />
-            <DiagnosticItem
-              label="Geometry verification support"
-              value={diagnostics.geometryVerificationSupport}
+              label="Обрезка контура"
+              value={formatDiagnosticValue(diagnostics.clippedPerimeterSupport)}
             />
             <DiagnosticItem
-              label="Clipping verification support"
-              value={diagnostics.clippingVerificationSupport}
+              label="Проверка геометрии"
+              value={formatDiagnosticValue(diagnostics.geometryVerificationSupport)}
             />
             <DiagnosticItem
-              label="Opening verification support"
-              value={diagnostics.openingVerificationSupport}
+              label="Проверка обрезки"
+              value={formatDiagnosticValue(diagnostics.clippingVerificationSupport)}
             />
             <DiagnosticItem
-              label="Verified arithmetic support"
-              value={diagnostics.verifiedArithmeticSupport}
+              label="Проверка отверстий"
+              value={formatDiagnosticValue(diagnostics.openingVerificationSupport)}
             />
             <DiagnosticItem
-              label="Partial verification support"
-              value={diagnostics.partialVerificationSupport}
+              label="Проверенная арифметика"
+              value={formatDiagnosticValue(diagnostics.verifiedArithmeticSupport)}
             />
             <DiagnosticItem
-              label="Verified evidence count"
+              label="Частичная проверка"
+              value={formatDiagnosticValue(diagnostics.partialVerificationSupport)}
+            />
+            <DiagnosticItem
+              label="Проверенные случаи доказательств"
               value={diagnostics.verifiedEvidenceCount.toString()}
             />
             <DiagnosticItem
-              label="Verified moment evidence templates"
+              label="Проверенные шаблоны доказательств для моментов"
               value={diagnostics.verifiedMomentEvidenceCount.toString()}
             />
-            <DiagnosticItem label="Review mode support" value={diagnostics.reviewModeSupport} />
+            <DiagnosticItem label="Режим проверки" value={formatDiagnosticValue(diagnostics.reviewModeSupport)} />
             <DiagnosticItem
-              label="Verification candidate support"
-              value={diagnostics.verificationCandidateSupport}
+              label="Кандидат проверки"
+              value={formatDiagnosticValue(diagnostics.verificationCandidateSupport)}
             />
             <DiagnosticItem
-              label="Candidate auto promotion"
-              value={diagnostics.candidateAutoPromotion}
+              label="Автоповышение кандидата"
+              value={formatDiagnosticValue(diagnostics.candidateAutoPromotion)}
             />
             <DiagnosticItem
-              label="Manual dataset import required"
-              value={diagnostics.manualDatasetImportRequired}
+              label="Нужен ручной импорт набора данных"
+              value={formatDiagnosticValue(diagnostics.manualDatasetImportRequired)}
             />
             <DiagnosticItem
-              label="Validation session support"
-              value={diagnostics.validationSessionSupport}
+              label="Сессия валидации"
+              value={formatDiagnosticValue(diagnostics.validationSessionSupport)}
             />
             <DiagnosticItem
-              label="Validation package export support"
-              value={diagnostics.validationPackageExportSupport}
+              label="Экспорт пакета валидации"
+              value={formatDiagnosticValue(diagnostics.validationPackageExportSupport)}
             />
             <DiagnosticItem
-              label="Checklist progress support"
-              value={diagnostics.checklistProgressSupport}
+              label="Прогресс чеклиста"
+              value={formatDiagnosticValue(diagnostics.checklistProgressSupport)}
             />
             <DiagnosticItem
-              label="Release evidence support"
-              value={diagnostics.releaseEvidenceSupport}
+              label="Релизные материалы"
+              value={formatDiagnosticValue(diagnostics.releaseEvidenceSupport)}
             />
             <DiagnosticItem
-              label="Release evidence export formats"
+              label="Форматы релизных материалов"
               value={diagnostics.releaseEvidenceExportFormats}
             />
             <DiagnosticItem
-              label="CalcEngine gap analysis"
-              value={diagnostics.calcengineGapAnalysis}
+              label="Анализ разрывов CalcEngine"
+              value={formatDiagnosticValue(diagnostics.calcengineGapAnalysis)}
             />
             <DiagnosticItem
-              label="Pilot readiness matrix"
-              value={diagnostics.pilotReadinessMatrix}
+              label="Матрица готовности пилота"
+              value={formatDiagnosticValue(diagnostics.pilotReadinessMatrix)}
             />
             <DiagnosticItem
-              label="Production design readiness"
-              value={diagnostics.productionDesignReadiness}
+              label="Готовность к проектному применению"
+              value={formatDiagnosticValue(diagnostics.productionDesignReadiness)}
             />
             <DiagnosticItem
-              label="Current production blocker"
-              value={diagnostics.currentProductionBlocker}
+              label="Текущий продуктовый блокер"
+              value={formatDiagnosticValue(diagnostics.currentProductionBlocker)}
             />
             <DiagnosticItem
-              label="Engineer package ready"
-              value={diagnostics.engineerPackageReady}
+              label="Пакет инженера готов"
+              value={formatDiagnosticValue(diagnostics.engineerPackageReady)}
             />
             <DiagnosticItem
-              label="Validation sessions"
+              label="Сессии валидации"
               value={diagnostics.validationSessionsCount.toString()}
             />
             <DiagnosticItem
-              label="Frozen review snapshots"
+              label="Замороженные снимки проверки"
               value={diagnostics.frozenReviewSnapshotsCount.toString()}
             />
             <DiagnosticItem
-              label="Pending reviews"
+              label="Ожидают проверки"
               value={diagnostics.pendingReviewsCount.toString()}
             />
             <DiagnosticItem
-              label="Accepted reviews"
+              label="Принятые проверки"
               value={diagnostics.acceptedReviewsCount.toString()}
             />
             <DiagnosticItem
-              label="Rejected reviews"
+              label="Отклоненные проверки"
               value={diagnostics.rejectedReviewsCount.toString()}
             />
           </dl>
@@ -208,9 +208,9 @@ export function DiagnosticsPage() {
       <Card className="rounded-lg border border-slate-200 bg-white shadow-sm">
         <CardHeader>
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <CardTitle>Verified Capability Matrix</CardTitle>
+            <CardTitle>Матрица проверенных возможностей</CardTitle>
             <Button asChild variant="outline">
-              <Link to="/release-evidence">Release Evidence</Link>
+              <Link to="/release-evidence">Релизные материалы</Link>
             </Button>
           </div>
         </CardHeader>
@@ -220,7 +220,7 @@ export function DiagnosticsPage() {
               <DiagnosticItem
                 key={capability.id}
                 label={capability.label}
-                value={`${capability.status} | arithmetic: ${capability.arithmeticSupport}`}
+                value={`${formatDiagnosticValue(capability.status)} | арифметика: ${formatDiagnosticValue(capability.arithmeticSupport)}`}
               />
             ))}
           </dl>
@@ -250,23 +250,23 @@ export function DiagnosticsPage() {
               value={diagnostics.verification.failedCases.toString()}
             />
             <DiagnosticItem
-              label="Verified moment cases"
+              label="Проверенные случаи с моментами"
               value={diagnostics.verifiedMomentCasesCount.toString()}
             />
             <DiagnosticItem
-              label="Draft moment cases"
+              label="Черновые случаи с моментами"
               value={diagnostics.draftMomentCasesCount.toString()}
             />
             <DiagnosticItem
-              label="Opening draft cases"
+              label="Черновые случаи с отверстиями"
               value={diagnostics.openingDraftCasesCount.toString()}
             />
             <DiagnosticItem
-              label="Verified edge cases"
+              label="Проверенные крайние случаи"
               value={diagnostics.verifiedEdgeCount.toString()}
             />
             <DiagnosticItem
-              label="Verified opening cases"
+              label="Проверенные случаи с отверстиями"
               value={diagnostics.verifiedOpeningCount.toString()}
             />
           </dl>
@@ -296,4 +296,28 @@ function DiagnosticItem({ label, value }: { label: string; value: string }) {
       <dd className="mt-2 break-words text-base font-semibold text-slate-950">{value}</dd>
     </div>
   )
+}
+
+function formatDiagnosticValue(value: string) {
+  const labels: Record<string, string> = {
+    yes: 'да',
+    no: 'нет',
+    draft: 'черновик',
+    'draft-geometry': 'черновая геометрия',
+    verified: 'проверено',
+    partial: 'частично',
+    'local-only': 'локально',
+    manifest: 'манифест',
+    available: 'доступно',
+    'not yet': 'пока нет',
+    'trusted SP63 verification': 'доверенная проверка по СП 63',
+    none: 'нет',
+    draft_ok: 'черновик прошел',
+    draft_failed: 'черновик не прошел',
+    not_implemented: 'не реализовано',
+    invalid_input: 'ошибка ввода',
+    'Client-side diagnostics only': 'Только клиентская диагностика',
+  }
+
+  return labels[value] ?? value
 }

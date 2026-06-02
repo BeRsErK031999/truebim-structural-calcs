@@ -44,7 +44,7 @@ export function CalculationHistoryPanel() {
       <CardHeader>
         <CardTitle>История расчетов</CardTitle>
         <p className="text-sm leading-6 text-slate-600">
-          Локальные сохранения из браузера. Список обновляется сразу после save/import/delete.
+          Локальные сохранения из браузера. Список обновляется после сохранения, импорта или удаления.
         </p>
       </CardHeader>
       <CardContent className="grid gap-3">

@@ -43,18 +43,18 @@ export const defaultReviewTolerances: Partial<Record<ReviewValueKey, ReviewToler
 }
 
 const reviewFields: Array<Omit<ReviewDiffItem, 'appValue' | 'expectedValue' | 'delta' | 'tolerance' | 'severity'>> = [
-  { section: 'geometry', key: 'controlPerimeterMm', label: 'Control perimeter, mm' },
-  { section: 'geometry', key: 'effectiveDepthMm', label: 'Effective depth, mm' },
-  { section: 'stress', key: 'shearStressMpa', label: 'Base shear stress, MPa' },
-  { section: 'stress', key: 'maxShearStressMpa', label: 'Max shear stress, MPa' },
-  { section: 'stress', key: 'minShearStressMpa', label: 'Min shear stress, MPa' },
-  { section: 'eccentricity', key: 'eccentricityX', label: 'Eccentricity X, mm' },
-  { section: 'eccentricity', key: 'eccentricityY', label: 'Eccentricity Y, mm' },
-  { section: 'transfer factors', key: 'transferFactorX', label: 'Transfer factor X' },
-  { section: 'transfer factors', key: 'transferFactorY', label: 'Transfer factor Y' },
-  { section: 'checksums', key: 'stressPointCount', label: 'Stress point count' },
-  { section: 'checksums', key: 'stressChecksum', label: 'Stress checksum' },
-  { section: 'verification level', key: 'verificationLevel', label: 'Verification level' },
+  { section: 'geometry', key: 'controlPerimeterMm', label: 'Контрольный периметр, мм' },
+  { section: 'geometry', key: 'effectiveDepthMm', label: 'Рабочая высота, мм' },
+  { section: 'stress', key: 'shearStressMpa', label: 'Базовое напряжение среза, МПа' },
+  { section: 'stress', key: 'maxShearStressMpa', label: 'Максимальное напряжение среза, МПа' },
+  { section: 'stress', key: 'minShearStressMpa', label: 'Минимальное напряжение среза, МПа' },
+  { section: 'eccentricity', key: 'eccentricityX', label: 'Эксцентриситет X, мм' },
+  { section: 'eccentricity', key: 'eccentricityY', label: 'Эксцентриситет Y, мм' },
+  { section: 'transfer factors', key: 'transferFactorX', label: 'Коэффициент передачи X' },
+  { section: 'transfer factors', key: 'transferFactorY', label: 'Коэффициент передачи Y' },
+  { section: 'checksums', key: 'stressPointCount', label: 'Количество точек напряжений' },
+  { section: 'checksums', key: 'stressChecksum', label: 'Checksum напряжений' },
+  { section: 'verification level', key: 'verificationLevel', label: 'Уровень проверки' },
 ]
 
 export function buildReviewComparison(

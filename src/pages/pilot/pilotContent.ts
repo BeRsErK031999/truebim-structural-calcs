@@ -5,79 +5,79 @@ import { listValidationSessions } from '@/features/validation-session'
 export const pilotRoute = '/pilot'
 
 export const pilotWarnings = [
-  'VERIFIED does not mean full SP63 support.',
-  'Edge columns, corner columns, and openings are still DRAFT.',
-  'Moment transfer is PARTIAL and requires trusted engineering evidence.',
-  'Every pilot calculation requires manual review before engineering use.',
-  'Trusted evidence must be returned with the validation package.',
+  'Статус ПРОВЕРЕНО не означает полную поддержку СП 63.',
+  'Крайние колонны, угловые колонны и отверстия пока остаются черновыми.',
+  'Передача моментов поддерживается частично и требует доверенной инженерной проверки.',
+  'Каждый пилотный расчет требует ручной проверки перед инженерным применением.',
+  'Доверенные проверочные материалы нужно вернуть вместе с пакетом валидации.',
 ] as const
 
 export const pilotQuickStartSteps = [
   {
-    title: 'Run calculation',
-    description: 'Enter geometry, materials, forces, and run the punching shear calculation.',
+    title: 'Выполнить расчет',
+    description: 'Введите геометрию, материалы, нагрузки и запустите расчет продавливания.',
     href: '/',
   },
   {
-    title: 'Check report',
-    description: 'Export or inspect the calculation report and note all assumptions.',
+    title: 'Проверить отчет',
+    description: 'Выгрузите или просмотрите отчет расчета и зафиксируйте все допущения.',
     href: '/',
   },
   {
-    title: 'Open Review',
-    description: 'Compare app output against trusted manual, Excel, WebCAD, or reference evidence.',
+    title: 'Открыть проверку',
+    description: 'Сравните результат приложения с ручным расчетом, Excel, WebCAD или другим доверенным источником.',
     href: '/review',
   },
   {
-    title: 'Create Candidate',
-    description: 'Create a verification candidate only after trusted values and review status are filled.',
+    title: 'Создать кандидата',
+    description: 'Создавайте кандидата проверки только после заполнения доверенных значений и статуса проверки.',
     href: '/review',
   },
   {
-    title: 'Prepare Validation Session',
-    description: 'Link review evidence, freeze regression context, and export the validation package manifest.',
+    title: 'Подготовить сессию валидации',
+    description: 'Свяжите review evidence, заморозьте regression context и выгрузите пакет валидации.',
     href: '/validation-session',
   },
   {
-    title: 'Send package to developer',
-    description: 'Return report, review snapshot, candidate JSON, validation package, and feedback JSON.',
+    title: 'Передать пакет разработчику',
+    description: 'Верните отчет, снимок проверки, candidate JSON, пакет валидации и JSON с отзывами.',
     href: '/release-evidence',
   },
 ] as const
 
 export const pilotReadinessNotes = [
-  'Center force-only calculations are VERIFIED for the current trusted case scope.',
-  'Center calculations with Mx/My are supported as PARTIAL moment-transfer pilot cases.',
-  'Edge, corner, opening, reinforcement, and round-column cases must be treated as DRAFT.',
-  'Review accepted status records evidence only and never promotes auto VERIFIED.',
+  'Центральный расчет только от силы проверен для текущей доверенной области.',
+  'Центральные расчеты с Mx/My доступны как частичные пилотные случаи передачи моментов.',
+  'Край, угол, отверстия, армирование и круглые колонны нужно считать черновыми.',
+  'Принятая проверка фиксирует доказательства, но не переводит расчет в VERIFIED автоматически.',
 ] as const
 
 export const pilotUsableItems = [
-  'Test the UI calculation flow and compare output against trusted engineering evidence.',
-  'Export HTML/Markdown reports for review packages.',
-  'Use review mode to record accepted, rejected, or mismatch evidence.',
-  'Prepare validation sessions, release evidence, and pilot feedback packages.',
-  'Use the center rectangular force-only verified case as the current trusted pilot baseline.',
+  'Тестировать расчетный UI и сравнивать результат с доверенными инженерными материалами.',
+  'Выгружать HTML/Markdown отчеты для пакетов проверки.',
+  'Использовать режим проверки для фиксации принятия, отклонения и расхождений.',
+  'Готовить сессии валидации, релизные материалы и пакеты отзывов пилота.',
+  'Использовать центральный прямоугольный случай только от силы как текущую доверенную пилотную базу.',
 ] as const
 
 export const pilotNotDesignUseItems = [
-  'Do not use the app as the only source for a project design decision.',
-  'Do not treat full SP63.13330.2018 support as implemented.',
-  'Do not use wall, end-wall, multiple-contour, shear-reinforcement, round-column, edge, corner, or opening cases as final verified design calculations.',
-  'When a discrepancy is found, capture it through feedback, review notes, or a verification candidate.',
+  'Нельзя использовать приложение как единственный источник проектного решения.',
+  'Нельзя считать полную поддержку СП 63.13330.2018 реализованной.',
+  'Нельзя применять случаи у стены, торца стены, нескольких контуров, поперечной арматуры, круглых колонн, края, угла или отверстий как финальный проверенный проектный расчет.',
+  'Если найдено расхождение, его нужно оформить через отзыв, заметки проверки или кандидата проверки.',
 ] as const
 
 export const pilotRoadmapItems = [
-  'Verified center force-only',
-  'Verified center moments',
-  'Verified edge/corner',
-  'Verified openings',
-  'Wall/end-wall cases',
-  'Multiple control perimeters',
-  'Shear reinforcement',
-  'DOCX/PDF official report',
-  'Full SP63 trace',
-  'Golden examples pack',
+  'Проверенный центр только от силы',
+  'Проверенный центр с моментами',
+  'Проверенные край/угол',
+  'Проверенные отверстия',
+  'Случаи у стены и торца стены',
+  'Несколько контрольных контуров',
+  'Поперечная арматура',
+  'Официальный отчет DOCX/PDF',
+  'Полная трассировка СП 63',
+  'Пакет эталонных примеров',
 ] as const
 
 export type PilotDashboard = {

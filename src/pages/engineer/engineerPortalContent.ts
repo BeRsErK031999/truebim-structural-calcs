@@ -12,55 +12,55 @@ export const officeAppLinks = [
 
 export const engineerWorkflowSteps = [
   {
-    title: 'Run calculation',
+    title: 'Выполнить расчет',
     href: '/',
-    description: 'Create or load the punching shear calculation and export the report.',
-    action: 'Check inputs, units, warnings, verification level, verified features and draft features.',
-    returnToDeveloper: 'HTML/Markdown report and the calculation identifier from the export.',
+    description: 'Создайте или загрузите расчет продавливания и выгрузите отчет.',
+    action: 'Проверьте исходные данные, единицы, предупреждения, уровень проверки, проверенные и черновые возможности.',
+    returnToDeveloper: 'HTML/Markdown отчет и идентификатор расчета из экспорта.',
   },
   {
-    title: 'Check report',
+    title: 'Проверить отчет',
     href: '/validation-session',
-    description: 'Collect the calculation report, validation package metadata and checklist progress.',
-    action: 'Link the latest review, export report files, add trusted evidence references and freeze the snapshot.',
-    returnToDeveloper: 'Validation session package with manifest, checklist and engineer notes.',
+    description: 'Соберите отчет расчета, metadata validation package и прогресс чеклиста.',
+    action: 'Привяжите последнюю проверку, выгрузите отчеты, добавьте ссылки на доверенные доказательства и заморозьте снимок.',
+    returnToDeveloper: 'Пакет сессии проверки с манифестом, чеклистом и заметками инженера.',
   },
   {
-    title: 'Fill Engineering Review',
+    title: 'Заполнить инженерную проверку',
     href: '/review',
-    description: 'Compare app values against WebCAD, Excel, manual or normative trusted evidence.',
-    action: 'Fill source, checked-by, checked-at, expected values, tolerances and axis convention notes.',
-    returnToDeveloper: 'Review snapshot and verification candidate JSON after manual acceptance.',
+    description: 'Сравните значения приложения с доверенными данными из WebCAD, Excel, ручного или нормативного расчета.',
+    action: 'Заполните source, checked-by, checked-at, expected values, tolerances и axis convention notes.',
+    returnToDeveloper: 'Снимок проверки и JSON кандидата проверки после ручного принятия.',
   },
   {
-    title: 'Download Release Evidence',
+    title: 'Выгрузить релизные материалы',
     href: '/release-evidence',
-    description: 'Export the audit bundle for release reproducibility and diagnostics.',
-    action: 'Download HTML, Markdown or JSON evidence without changing verification status.',
-    returnToDeveloper: 'Release evidence bundle and trusted evidence attachments.',
+    description: 'Выгрузите audit bundle для воспроизводимости релиза и диагностики.',
+    action: 'Скачайте доказательства в HTML, Markdown или JSON без изменения статуса проверки.',
+    returnToDeveloper: 'Пакет доказательств релиза и приложения с доверенными расчетами.',
   },
 ] as const
 
 export const engineerReturnChecklist = [
-  'HTML/Markdown report',
-  'review snapshot',
-  'verification candidate JSON',
-  'validation session package',
-  'trusted evidence attachments',
-  'filled checklist',
+  'HTML/Markdown отчет',
+  'снимок проверки',
+  'JSON кандидата проверки',
+  'пакет сессии проверки',
+  'приложения с доверенными расчетами',
+  'заполненный checklist',
 ] as const
 
 export const engineerInstructionsText = [
-  'Engineer handoff instructions',
+  'Инструкции для инженерной передачи',
   '',
-  '1. Run the calculation and review warnings, verification level, verified features and draft features.',
-  '2. Check the report against trusted WebCAD, Excel, manual or normative evidence.',
-  '3. Fill Engineering Review with source, checked-by, checked-at, expected values and axis notes.',
-  '4. Create and export the verification candidate JSON only after manual acceptance.',
-  '5. Build the validation session package and attach trusted evidence references.',
-  '6. Export release evidence for audit and reproducibility.',
+  '1. Выполните расчет и проверьте warnings, verification level, verified features и draft features.',
+  '2. Сравните отчет с доверенными данными WebCAD, Excel, ручного или нормативного расчета.',
+  '3. Заполните инженерную проверку: источник, проверяющего, дату проверки, ожидаемые значения и заметки по осям.',
+  '4. Создайте и выгрузите verification candidate JSON только после ручного acceptance.',
+  '5. Соберите пакет сессии проверки и приложите ссылки на доверенные доказательства.',
+  '6. Выгрузите релизные материалы для аудита и воспроизводимости.',
   '',
-  'Important: accepted review and candidate JSON do not promote VERIFIED. Draft features remain draft until manual dataset import and verification runner pass.',
+  'Важно: accepted review и candidate JSON не повышают статус до VERIFIED. Черновые возможности остаются draft до ручного импорта dataset и прохождения verification runner.',
 ] as const
 
 export function buildEngineerInstructionsCopyText() {
@@ -68,11 +68,11 @@ export function buildEngineerInstructionsCopyText() {
 }
 
 export function buildReturnChecklistCopyText() {
-  return ['What to return to developer:', ...engineerReturnChecklist.map((item) => `- ${item}`)].join('\n')
+  return ['Что вернуть разработчику:', ...engineerReturnChecklist.map((item) => `- ${item}`)].join('\n')
 }
 
 export function buildCurrentAppLinksCopyText() {
-  return ['Current app links:', ...officeAppLinks.map((link) => `- ${link}`)].join('\n')
+  return ['Текущие ссылки приложения:', ...officeAppLinks.map((link) => `- ${link}`)].join('\n')
 }
 
 export function getEngineerPortalCapabilitySummary() {
