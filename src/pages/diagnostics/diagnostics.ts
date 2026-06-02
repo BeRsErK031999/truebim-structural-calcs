@@ -29,6 +29,7 @@ export type DiagnosticsModel = {
   edgeSupport: 'draft'
   cornerSupport: 'draft'
   openingsSupport: 'draft-geometry'
+  wallPunchingSupport: 'draft'
   clippedPerimeterSupport: 'draft'
   geometryVerificationSupport: 'draft'
   clippingVerificationSupport: 'draft'
@@ -139,6 +140,7 @@ export function buildDiagnosticsModel({
     edgeSupport: 'draft',
     cornerSupport: 'draft',
     openingsSupport: 'draft-geometry',
+    wallPunchingSupport: 'draft',
     clippedPerimeterSupport: 'draft',
     geometryVerificationSupport: 'draft',
     clippingVerificationSupport: 'draft',

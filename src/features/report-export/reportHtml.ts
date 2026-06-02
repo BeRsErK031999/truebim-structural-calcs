@@ -81,6 +81,8 @@ export function buildPunchingShearHtmlReport(
       ['concrete cover', formatValueWithUnit(input.slab.concreteCoverMm, 'mm')],
       ['column width', formatValueWithUnit(input.rectColumn?.widthXMm ?? input.roundColumn?.diameterMm, 'mm')],
       ['column height', formatValueWithUnit(input.rectColumn?.widthYMm ?? input.roundColumn?.diameterMm, 'mm')],
+      ['wall length', formatValueWithUnit(input.wall?.wallLength, 'mm')],
+      ['wall thickness', formatValueWithUnit(input.wall?.wallThickness, 'mm')],
       ['concrete class', input.concrete.className],
       ['shear reinforcement enabled', String(input.shearReinforcement.enabled)],
     ])}
@@ -94,6 +96,14 @@ export function buildPunchingShearHtmlReport(
       ['bounding box minY', formatValueWithUnit(result.perimeter.boundingBox.minY, 'mm')],
       ['bounding box width', formatValueWithUnit(result.perimeter.boundingBox.width, 'mm')],
       ['bounding box height', formatValueWithUnit(result.perimeter.boundingBox.height, 'mm')],
+    ])}
+    <h2>Wall Geometry</h2>
+    ${renderTable([
+      ['enabled', String(input.caseType === 'wall-end')],
+      ['wall length', formatValueWithUnit(input.wall?.wallLength, 'mm')],
+      ['wall thickness', formatValueWithUnit(input.wall?.wallThickness, 'mm')],
+      ['control perimeter', formatValueWithUnit(result.controlPerimeterMm, 'mm')],
+      ['geometry warnings', result.perimeter.warnings.join('; ') || 'none'],
     ])}
     <h2>Boundary Effects</h2>
     ${renderTable([
@@ -347,6 +357,7 @@ function createReportWarnings(result: PunchingShearResult) {
       ...result.warnings,
       'Moment transfer is draft-only where Mx/My are provided',
       'Openings and boundary clipping are draft geometry only.',
+      'Wall-end punching support is draft geometry only.',
       'Shear reinforcement is unsupported in this draft',
       'Verify against SP63 before design use',
     ]),
@@ -367,6 +378,7 @@ function getStroke(role: SvgSketchElement['role']) {
     slab: '#cbd5e1',
     'slab-boundary': '#64748b',
     column: '#020617',
+    wall: '#020617',
     'control-perimeter': '#0f766e',
     'removed-perimeter': '#dc2626',
     opening: '#ef4444',
@@ -387,6 +399,7 @@ function getFill(role: SvgSketchElement['role']) {
     slab: '#f1f5f9',
     'slab-boundary': 'none',
     column: '#1e293b',
+    wall: '#334155',
     'control-perimeter': 'none',
     'removed-perimeter': 'none',
     opening: '#ffedd5',

@@ -4,6 +4,7 @@ export type VerifiedFeatureId =
   | 'edge'
   | 'corner'
   | 'openings'
+  | 'wall-end'
   | 'shear-reinforcement'
   | 'round-columns'
 

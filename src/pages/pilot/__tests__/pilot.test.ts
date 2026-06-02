@@ -145,7 +145,10 @@ describe('pilot mode', () => {
 
     expect(dashboard.verifiedFeatures).toHaveLength(1)
     expect(dashboard.partialFeatures).toHaveLength(1)
-    expect(dashboard.draftFeatures).toHaveLength(5)
+    expect(dashboard.draftFeatures).toHaveLength(6)
+    expect(dashboard.draftFeatures).toEqual(
+      expect.arrayContaining([expect.objectContaining({ id: 'wall-end' })]),
+    )
     expect(dashboard.feedbackCount).toBe(1)
     expect(dashboard.validationSessionsCount).toBe(1)
     expect(dashboard.candidatesCount).toBe(1)

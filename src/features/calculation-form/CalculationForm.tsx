@@ -26,6 +26,7 @@ const caseOptions: Array<{ value: PunchingShearCaseType; label: string; disabled
   { value: 'corner', label: 'Угловая колонна - скоро', disabled: true },
   { value: 'opening', label: 'Отверстие рядом с колонной - скоро', disabled: true },
   { value: 'round', label: 'Круглая колонна - скоро', disabled: true },
+  { value: 'wall-end', label: 'Wall end punching - draft geometry' },
 ]
 
 const concreteClassOptions: ConcreteClassName[] = ['B15', 'B20', 'B25', 'B30', 'B35', 'B40']
@@ -201,6 +202,26 @@ export function CalculationForm() {
           error={errors.rectColumn?.widthYMm?.message}
         />
       </FormSection>
+
+      {caseType === 'wall-end' ? (
+        <FormSection
+          title="Wall Geometry"
+          helperText="Draft-only wall-end geometry input. No verified SP63 wall punching formulas are claimed."
+        >
+          <NumberField
+            label="Wall length"
+            unit="mm"
+            registration={register('wall.wallLength', { valueAsNumber: true })}
+            error={errors.wall?.wallLength?.message}
+          />
+          <NumberField
+            label="Wall thickness"
+            unit="mm"
+            registration={register('wall.wallThickness', { valueAsNumber: true })}
+            error={errors.wall?.wallThickness?.message}
+          />
+        </FormSection>
+      ) : null}
 
       <FormSection
         title="Материалы"

@@ -38,6 +38,16 @@ export function buildPunchingShearReport(
       boundingBoxWidthMm: result.perimeter.boundingBox.width,
       boundingBoxHeightMm: result.perimeter.boundingBox.height,
     },
+    wallGeometrySummary: {
+      enabled: input.caseType === 'wall-end',
+      wallLengthMm: input.wall?.wallLength ?? 'n/a',
+      wallThicknessMm: input.wall?.wallThickness ?? 'n/a',
+      slabThicknessMm: input.wall?.slabThickness ?? input.slab.thicknessMm,
+      effectiveDepthMm: input.wall?.effectiveDepth ?? input.slab.effectiveDepthMm,
+      coverMm: input.wall?.cover ?? input.slab.concreteCoverMm,
+      controlPerimeterMm: result.perimeter.perimeterMm,
+      warningCount: result.perimeter.warnings.length,
+    },
     boundaryEffectsSummary: {
       edgeAffected: result.perimeter.edgeAffected,
       cornerAffected: result.perimeter.cornerAffected,
@@ -138,6 +148,9 @@ export function buildPunchingShearReport(
       'Units normalized into the current internal DTO shape.',
       'Draft material resistance selected.',
       'Control perimeter draft geometry generated.',
+      input.caseType === 'wall-end'
+        ? 'Draft wall-end geometry generated without SP63 wall punching coefficients.'
+        : 'Wall-end geometry not selected.',
       'SVG sketch model generated from geometry DTOs.',
       'Draft moment-transfer stress distribution generated where Mx/My are present.',
       'Draft rectangular force-only check evaluated where supported.',

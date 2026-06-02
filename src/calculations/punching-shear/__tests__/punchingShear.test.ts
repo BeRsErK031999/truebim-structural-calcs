@@ -223,6 +223,64 @@ describe('punching shear draft center check', () => {
     expect(result.draftFeatures).toContain('openings')
   })
 
+  it('creates draft wall-end geometry without verified promotion', () => {
+    const input: PunchingShearInput = {
+      ...defaultPunchingShearInput,
+      caseType: 'wall-end',
+      wall: {
+        wallLength: 1200,
+        wallThickness: 200,
+        slabThickness: 220,
+        effectiveDepth: 190,
+        cover: 30,
+      },
+    }
+    const result = calculatePunchingShear(input)
+
+    expect(['draft_ok', 'draft_failed']).toContain(result.status)
+    expect(result.verificationLevel).toBe('draft')
+    expect(result.verifiedFeatures).toEqual([])
+    expect(result.draftFeatures).toContain('wall-end')
+    expect(result.perimeter.perimeterMm).toBeGreaterThan(0)
+    expect(result.perimeter.segments).toHaveLength(3)
+    expect(result.perimeter.vertices).toHaveLength(4)
+    expect(result.perimeter.boundingBox.width).toBeGreaterThan(input.wall!.wallLength)
+    expect(result.perimeter.warnings).toEqual(
+      expect.arrayContaining([
+        'No SP63 wall punching coefficients or verified resistance formulas are applied',
+      ]),
+    )
+  })
+
+  it('generates wall-end SVG elements and labels', () => {
+    const input: PunchingShearInput = {
+      ...defaultPunchingShearInput,
+      caseType: 'wall-end',
+    }
+    const result = calculatePunchingShear(input)
+
+    expect(result.svgModel.elements.some((element) => element.role === 'wall')).toBe(true)
+    expect(result.svgModel.elements).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          role: 'label',
+          type: 'text',
+          text: 'Draft wall punching geometry',
+        }),
+        expect.objectContaining({
+          role: 'dimension',
+          type: 'line',
+          label: '1200 mm wall length',
+        }),
+        expect.objectContaining({
+          role: 'dimension',
+          type: 'line',
+          label: '200 mm wall thickness',
+        }),
+      ]),
+    )
+  })
+
   it.each(['round'] as const)(
     'returns not_implemented for %s cases',
     (caseType) => {

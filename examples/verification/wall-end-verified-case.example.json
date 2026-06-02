@@ -1,0 +1,63 @@
+{
+  "id": "verified-wall-end-example",
+  "title": "Verified wall-end punching shear preparation case",
+  "source": "TODO: trusted manual/WebCAD/Excel source",
+  "verificationSource": "NOT VERIFIED",
+  "checkedBy": null,
+  "checkedAt": null,
+  "comparisonNotes": "TODO: document trusted SP63 wall-end punching comparison.",
+  "standard": "SP63.13330",
+  "caseType": "wall-end",
+  "input": {
+    "caseType": "wall-end",
+    "forces": {
+      "axialForceKn": 420,
+      "momentXKnM": 0,
+      "momentYKnM": 0
+    },
+    "slab": {
+      "thicknessMm": 220,
+      "effectiveDepthMm": 190,
+      "concreteCoverMm": 30
+    },
+    "concrete": {
+      "className": "B25"
+    },
+    "wall": {
+      "wallLength": 1200,
+      "wallThickness": 200,
+      "slabThickness": 220,
+      "effectiveDepth": 190,
+      "cover": 30
+    },
+    "openings": [],
+    "shearReinforcement": {
+      "enabled": false
+    }
+  },
+  "expected": null,
+  "tolerance": {
+    "relativePercent": 0.1,
+    "absolute": 0.000001,
+    "geometryToleranceMm": 0.001,
+    "stressTolerancePercent": 0.1
+  },
+  "geometryVerification": {
+    "geometryToleranceMm": 0.001,
+    "stressTolerancePercent": 0.1,
+    "boundaryClassification": "edge",
+    "checkedGeometryItems": [
+      "wallLength",
+      "wallThickness",
+      "controlPerimeterMm",
+      "segmentCount"
+    ],
+    "requiredTrustedValues": [
+      "wall-end control perimeter",
+      "control perimeter segment layout",
+      "SP63 wall punching stress check"
+    ]
+  },
+  "notes": "Template only. Keep status draft until trusted geometry and formula values are filled.",
+  "status": "draft"
+}

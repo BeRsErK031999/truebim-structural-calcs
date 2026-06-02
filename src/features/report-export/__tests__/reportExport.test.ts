@@ -166,6 +166,28 @@ describe('report export', () => {
     expect(html).toContain('Scale: 1 unit = 1 mm, fit-to-view')
   })
 
+  it('includes wall geometry section in exported reports', () => {
+    const input = {
+      ...defaultPunchingShearInput,
+      caseType: 'wall-end' as const,
+    }
+    const result = calculatePunchingShear(input)
+    const report = buildPunchingShearReport(input, result)
+    const html = buildPunchingShearHtmlReport(input, result, report)
+    const markdown = buildPunchingShearMarkdownReport(input, result, report)
+
+    expect(report.wallGeometrySummary).toMatchObject({
+      enabled: true,
+      wallLengthMm: 1200,
+      wallThicknessMm: 200,
+    })
+    expect(html).toContain('Wall Geometry')
+    expect(html).toContain('Draft wall punching geometry')
+    expect(markdown).toContain('## Wall Geometry')
+    expect(markdown).toContain('| wall length | 1200 mm |')
+    expect(markdown).toContain('Wall-end punching support is draft geometry only.')
+  })
+
   it('formats copy report summary', () => {
     const result = calculatePunchingShear(defaultPunchingShearInput)
 

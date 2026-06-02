@@ -17,6 +17,7 @@ export const punchingShearCaseTypeSchema = z.enum([
   'corner',
   'opening',
   'round',
+  'wall-end',
 ])
 
 export const forceInputSchema = z.object({
@@ -38,6 +39,14 @@ export const rectColumnInputSchema = z.object({
 
 export const roundColumnInputSchema = z.object({
   diameterMm: positiveNumber,
+})
+
+export const wallInputSchema = z.object({
+  wallLength: positiveNumber,
+  wallThickness: positiveNumber,
+  slabThickness: positiveNumber,
+  effectiveDepth: positiveNumber,
+  cover: positiveNumber,
 })
 
 export const openingInputSchema = z.object({
@@ -73,6 +82,7 @@ export const punchingShearInputSchema = z.object({
   concrete: concreteInputSchema,
   rectColumn: rectColumnInputSchema.optional(),
   roundColumn: roundColumnInputSchema.optional(),
+  wall: wallInputSchema.optional(),
   slabEdges: slabEdgesInputSchema.optional(),
   openings: z.array(openingInputSchema),
   shearReinforcement: shearReinforcementInputSchema,

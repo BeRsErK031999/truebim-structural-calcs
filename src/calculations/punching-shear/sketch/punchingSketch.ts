@@ -14,9 +14,11 @@ export function buildPunchingSketchModel(
   momentTransfer?: MomentTransferResult,
 ): PunchingSketchModel {
   const columnVertices = getColumnVertices(input)
+  const wallVertices = getWallVertices(input)
   const openingElements = input.openings.map((opening) => createOpeningElement(opening))
   const allPoints = [
     ...columnVertices,
+    ...wallVertices,
     ...perimeter.vertices,
     ...perimeter.removedSegments.flatMap((segment) => [segment.start, segment.end]),
     ...perimeter.openingTangents.flatMap((tangent) => [tangent.start, tangent.end]),
@@ -26,26 +28,24 @@ export function buildPunchingSketchModel(
   const slabElement = createSlabElement(viewBox)
   const elements: SvgSketchElement[] = [
     slabElement,
-    {
-      id: 'column',
-      role: 'column',
-      type: 'polygon',
-      points: columnVertices,
-    },
+    ...createSupportElements(columnVertices, wallVertices),
     ...createBoundaryElements(perimeter),
     ...createControlPerimeterElements(perimeter),
     ...createRemovedPerimeterElements(perimeter),
     ...openingElements,
     ...createOpeningTangentElements(perimeter),
     ...createStressElements(perimeter, momentTransfer),
-    ...createDimensionElements(columnVertices, perimeter, viewBox),
+    ...createDimensionElements(input, columnVertices, wallVertices, perimeter, viewBox),
     ...createBoundaryLabels(perimeter),
     {
       id: 'label-control-perimeter',
       role: 'label',
       type: 'text',
       position: { x: perimeter.boundingBox.minX, y: perimeter.boundingBox.minY - 24 },
-      text: 'Control perimeter draft geometry',
+      text:
+        input.caseType === 'wall-end'
+          ? 'Draft wall punching geometry'
+          : 'Control perimeter draft geometry',
     },
   ]
 
@@ -62,6 +62,33 @@ export function buildPunchingSketchModel(
       stressDiagram: momentTransfer?.stressDistribution ? 'draft' : 'disabled',
     },
   }
+}
+
+function createSupportElements(
+  columnVertices: Point2D[],
+  wallVertices: Point2D[],
+): SvgSketchElement[] {
+  const elements: SvgSketchElement[] = []
+
+  if (columnVertices.length > 0) {
+    elements.push({
+      id: 'column',
+      role: 'column',
+      type: 'polygon',
+      points: columnVertices,
+    })
+  }
+
+  if (wallVertices.length > 0) {
+    elements.push({
+      id: 'wall',
+      role: 'wall',
+      type: 'polygon',
+      points: wallVertices,
+    })
+  }
+
+  return elements
 }
 
 function createControlPerimeterElements(perimeter: ControlPerimeterResult): SvgSketchElement[] {
@@ -164,6 +191,21 @@ function getColumnVertices(input: PunchingShearInput): Point2D[] {
   ]
 }
 
+function getWallVertices(input: PunchingShearInput): Point2D[] {
+  if (input.caseType !== 'wall-end' || !input.wall) {
+    return []
+  }
+
+  const halfThickness = input.wall.wallThickness / 2
+
+  return [
+    { x: 0, y: -halfThickness },
+    { x: input.wall.wallLength, y: -halfThickness },
+    { x: input.wall.wallLength, y: halfThickness },
+    { x: 0, y: halfThickness },
+  ]
+}
+
 function createOpeningElement(opening: OpeningInput): SvgSketchElement {
   return {
     id: `opening-${opening.id}`,
@@ -189,10 +231,16 @@ function createSlabElement(viewBox: PunchingSketchModel['viewBox']): SvgSketchEl
 }
 
 function createDimensionElements(
+  input: PunchingShearInput,
   columnVertices: Point2D[],
+  wallVertices: Point2D[],
   perimeter: ControlPerimeterResult,
   viewBox: PunchingSketchModel['viewBox'],
 ): SvgSketchElement[] {
+  if (input.caseType === 'wall-end' && input.wall && wallVertices.length > 0) {
+    return createWallDimensionElements(input, wallVertices, perimeter, viewBox)
+  }
+
   if (columnVertices.length === 0) {
     return []
   }
@@ -247,6 +295,94 @@ function createDimensionElements(
     },
     {
       id: 'dimension-control-perimeter-height',
+      role: 'dimension',
+      type: 'line',
+      start: { x: perimeterHeightX, y: perimeter.boundingBox.minY },
+      end: { x: perimeterHeightX, y: perimeter.boundingBox.maxY },
+      label: `${formatMm(perimeter.boundingBox.height)} contour Y`,
+    },
+    {
+      id: 'axis-x',
+      role: 'dimension',
+      type: 'line',
+      start: axisStart,
+      end: { x: axisStart.x + 90, y: axisStart.y },
+      label: 'X',
+    },
+    {
+      id: 'axis-y',
+      role: 'dimension',
+      type: 'line',
+      start: axisStart,
+      end: { x: axisStart.x, y: axisStart.y + 90 },
+      label: 'Y',
+    },
+    {
+      id: 'label-scale',
+      role: 'label',
+      type: 'text',
+      position: { x: viewBox.minX + 36, y: viewBox.maxY - 36 },
+      text: 'Scale: 1 unit = 1 mm, fit-to-view',
+    },
+  ]
+}
+
+function createWallDimensionElements(
+  input: PunchingShearInput,
+  wallVertices: Point2D[],
+  perimeter: ControlPerimeterResult,
+  viewBox: PunchingSketchModel['viewBox'],
+): SvgSketchElement[] {
+  const wallBox = {
+    minX: Math.min(...wallVertices.map((point) => point.x)),
+    maxX: Math.max(...wallVertices.map((point) => point.x)),
+    minY: Math.min(...wallVertices.map((point) => point.y)),
+    maxY: Math.max(...wallVertices.map((point) => point.y)),
+  }
+  const lengthY = wallBox.maxY + 42
+  const thicknessX = wallBox.minX - 42
+  const perimeterWidthY = perimeter.boundingBox.maxY + 72
+  const perimeterHeightX = perimeter.boundingBox.minX - 72
+  const axisStart = {
+    x: viewBox.minX + 36,
+    y: viewBox.minY + 36,
+  }
+
+  return [
+    {
+      id: 'dimension-wall-length',
+      role: 'dimension',
+      type: 'line',
+      start: { x: wallBox.minX, y: lengthY },
+      end: { x: wallBox.maxX, y: lengthY },
+      label: `${formatMm(input.wall?.wallLength ?? wallBox.maxX - wallBox.minX)} wall length`,
+    },
+    {
+      id: 'dimension-wall-thickness',
+      role: 'dimension',
+      type: 'line',
+      start: { x: thicknessX, y: wallBox.minY },
+      end: { x: thicknessX, y: wallBox.maxY },
+      label: `${formatMm(input.wall?.wallThickness ?? wallBox.maxY - wallBox.minY)} wall thickness`,
+    },
+    {
+      id: 'dimension-wall-contour-offset',
+      role: 'dimension',
+      type: 'line',
+      start: { x: wallBox.minX, y: 0 },
+      end: { x: perimeter.boundingBox.minX, y: 0 },
+      label: `${formatMm(perimeter.draftOffsetMm)} draft offset`,
+    },
+    {
+      id: 'dimension-wall-control-perimeter-width',
+      role: 'dimension',
+      type: 'line',
+      start: { x: perimeter.boundingBox.minX, y: perimeterWidthY },
+      end: { x: perimeter.boundingBox.maxX, y: perimeterWidthY },
+      label: `${formatMm(perimeter.boundingBox.width)} contour X`,
+    },
+    {
+      id: 'dimension-wall-control-perimeter-height',
       role: 'dimension',
       type: 'line',
       start: { x: perimeterHeightX, y: perimeter.boundingBox.minY },

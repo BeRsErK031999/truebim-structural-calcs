@@ -1,4 +1,10 @@
-export type PunchingShearCaseType = 'center' | 'edge' | 'corner' | 'opening' | 'round'
+export type PunchingShearCaseType =
+  | 'center'
+  | 'edge'
+  | 'corner'
+  | 'opening'
+  | 'round'
+  | 'wall-end'
 
 import type { ContourLoop } from './domain/contour'
 import type { BoundingBox, Point2D } from './domain/point'
@@ -31,6 +37,14 @@ export type RectColumnInput = {
 
 export type RoundColumnInput = {
   diameterMm: number
+}
+
+export type WallInput = {
+  wallLength: number
+  wallThickness: number
+  slabThickness: number
+  effectiveDepth: number
+  cover: number
 }
 
 export type OpeningInput = {
@@ -157,6 +171,7 @@ export type PunchingShearInput = {
   concrete: ConcreteInput
   rectColumn?: RectColumnInput
   roundColumn?: RoundColumnInput
+  wall?: WallInput
   slabEdges?: SlabEdgesInput
   openings: OpeningInput[]
   shearReinforcement: ShearReinforcementInput
@@ -204,6 +219,7 @@ export type PunchingShearReportModel = {
   inputSummary: Record<string, string | number | boolean>
   resultSummary: Record<string, string | number | null>
   geometrySummary: Record<string, string | number>
+  wallGeometrySummary: Record<string, string | number | boolean>
   boundaryEffectsSummary: Record<string, string | number | boolean>
   openingsSummary: Record<string, string | number | boolean>
   geometryVerificationSummary: Record<string, string | number | boolean>

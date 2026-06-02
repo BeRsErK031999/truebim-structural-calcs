@@ -6,6 +6,7 @@ export type SvgElementBase = {
     | 'slab'
     | 'slab-boundary'
     | 'column'
+    | 'wall'
     | 'control-perimeter'
     | 'removed-perimeter'
     | 'opening'

@@ -97,7 +97,11 @@ export function DiagnosticsPage() {
             <DiagnosticItem label="Угловые колонны" value={formatDiagnosticValue(diagnostics.cornerSupport)} />
             <DiagnosticItem label="Отверстия" value={formatDiagnosticValue(diagnostics.openingsSupport)} />
             <DiagnosticItem
-              label="Обрезка контура"
+              label="wall punching support"
+              value={formatDiagnosticValue(diagnostics.wallPunchingSupport)}
+            />
+            <DiagnosticItem
+              label="Contour clipping"
               value={formatDiagnosticValue(diagnostics.clippedPerimeterSupport)}
             />
             <DiagnosticItem

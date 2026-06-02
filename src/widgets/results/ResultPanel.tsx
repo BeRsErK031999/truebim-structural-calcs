@@ -27,6 +27,7 @@ const featureLabels: Record<string, string> = {
   edge: 'крайняя колонна',
   corner: 'угловая колонна',
   openings: 'отверстия',
+  'wall-end': 'wall punching at wall end',
   'shear-reinforcement': 'поперечная арматура',
   'round-columns': 'круглые колонны',
 }
@@ -399,6 +400,7 @@ function getElementClassName(role: SvgSketchElement['role']) {
     slab: 'fill-slate-100 stroke-slate-300 stroke-2',
     'slab-boundary': 'fill-transparent stroke-slate-500 stroke-2 stroke-dasharray-[10_8]',
     column: 'fill-slate-800 stroke-slate-950 stroke-2',
+    wall: 'fill-slate-700 stroke-slate-950 stroke-2',
     'control-perimeter': 'fill-none stroke-teal-700 stroke-4',
     'removed-perimeter': 'fill-none stroke-red-600 stroke-3 stroke-dasharray-[10_7]',
     opening: 'fill-orange-100 stroke-red-500 stroke-2 stroke-dasharray-[8_6]',

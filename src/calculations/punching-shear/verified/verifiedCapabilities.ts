@@ -47,6 +47,13 @@ export const verifiedCapabilityMatrix: VerifiedCapability[] = [
     notes: 'Opening tangent subtraction remains draft geometry.',
   },
   {
+    id: 'wall-end',
+    label: 'wall punching at wall end',
+    status: 'draft',
+    arithmeticSupport: 'draft',
+    notes: 'Wall-end punching currently has draft geometry only; SP63 formulas are not verified.',
+  },
+  {
     id: 'shear-reinforcement',
     label: 'поперечная арматура',
     status: 'draft',
@@ -93,6 +100,10 @@ export function detectInputFeatures(input: PunchingShearInput): VerifiedFeatureI
 
   if (input.caseType === 'opening' || input.openings.length > 0) {
     features.add('openings')
+  }
+
+  if (input.caseType === 'wall-end') {
+    features.add('wall-end')
   }
 
   if (input.shearReinforcement.enabled) {

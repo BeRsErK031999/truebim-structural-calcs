@@ -39,7 +39,12 @@ export {
   shearReinforcementInputSchema,
   slabEdgesInputSchema,
   slabGeometryInputSchema,
+  wallInputSchema,
 } from './schemas'
+export { createWallGeometry } from './wall/wallGeometry'
+export { calculateWallEndControlPerimeter } from './wall/wallPerimeter'
+export { classifyWallPunching } from './wall/wallClassification'
+export { resolveWallDimensions } from './wall/wallDimensions'
 export { cmToMm, knToN, mmToCm, nToKn, normalizePunchingShearInput } from './units'
 export { createContourLoop } from './domain/contour'
 export { createBoundingBox, distanceBetweenPoints } from './domain/point'
@@ -65,6 +70,7 @@ export type {
   ShearReinforcementInput,
   SlabEdgesInput,
   SlabGeometryInput,
+  WallInput,
   StressDistribution,
   StressPoint,
   MomentTransferResult,
