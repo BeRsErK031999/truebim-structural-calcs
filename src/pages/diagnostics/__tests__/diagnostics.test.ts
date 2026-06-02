@@ -59,6 +59,10 @@ describe('diagnostics helpers', () => {
       checklistProgressSupport: 'yes',
       releaseEvidenceSupport: 'yes',
       releaseEvidenceExportFormats: 'html/md/json',
+      calcengineGapAnalysis: 'available',
+      pilotReadinessMatrix: 'available',
+      productionDesignReadiness: 'not yet',
+      currentProductionBlocker: 'trusted SP63 verification',
       engineerPackageReady: 'no',
       validationSessionsCount: 0,
       verifiedEvidenceCount: 1,
@@ -89,6 +93,22 @@ describe('diagnostics helpers', () => {
 
     expect(model.verification.verifiedCases).toBeGreaterThan(0)
     expect(model.verification.warning).toBeNull()
+  })
+
+  it('exposes production design readiness as not yet', () => {
+    const model = buildDiagnosticsModel({
+      metadata: {
+        version: '1.0.0',
+        commit: 'abc1234',
+        buildTime: '2026-05-25T09:00:00.000Z',
+        environment: 'production',
+      },
+      localStorageAvailable: true,
+      savedCalculationsCount: 0,
+    })
+
+    expect(model.productionDesignReadiness).toBe('not yet')
+    expect(model.currentProductionBlocker).toBe('trusted SP63 verification')
   })
 
   it('detects unavailable localStorage', () => {

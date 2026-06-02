@@ -162,6 +162,22 @@ export function DiagnosticsPage() {
               value={diagnostics.releaseEvidenceExportFormats}
             />
             <DiagnosticItem
+              label="CalcEngine gap analysis"
+              value={diagnostics.calcengineGapAnalysis}
+            />
+            <DiagnosticItem
+              label="Pilot readiness matrix"
+              value={diagnostics.pilotReadinessMatrix}
+            />
+            <DiagnosticItem
+              label="Production design readiness"
+              value={diagnostics.productionDesignReadiness}
+            />
+            <DiagnosticItem
+              label="Current production blocker"
+              value={diagnostics.currentProductionBlocker}
+            />
+            <DiagnosticItem
               label="Engineer package ready"
               value={diagnostics.engineerPackageReady}
             />

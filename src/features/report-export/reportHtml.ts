@@ -14,6 +14,7 @@ import {
 } from './reportFormatting'
 import {
   createReportMetadata,
+  reportApplicabilityItems,
   reportAssumptions,
   unsupportedDraftFeatures,
   type ReportMetadata,
@@ -216,6 +217,14 @@ export function buildPunchingShearHtmlReport(
     <p class="note">draft features: ${escapeHtml(formatInlineFeatures(result.draftFeatures))}</p>
     <p class="note">This report can be used to create a verified case only after checking with manual calculation, WebCAD, Excel, or another trusted source.</p>
 
+    <h2>Applicability</h2>
+    <ul>${reportApplicabilityItems.map((item) => `<li>${escapeHtml(item)}</li>`).join('')}</ul>
+    ${renderTable([
+      ['verified features', formatInlineFeatures(result.verifiedFeatures)],
+      ['partial features', formatInlineFeatures(getPartialReportFeatures(result))],
+      ['draft features', formatInlineFeatures(result.draftFeatures)],
+    ])}
+
     <h2>Source Report Notes</h2>
     <ul>${report.calculationSteps.map((step) => `<li>${escapeHtml(step)}</li>`).join('')}</ul>
   </main>
@@ -245,6 +254,10 @@ function renderEvidence(result: PunchingShearResult) {
 
 function formatInlineFeatures(features: string[]) {
   return features.length > 0 ? features.join(', ') : 'none'
+}
+
+function getPartialReportFeatures(result: PunchingShearResult) {
+  return result.verificationLevel === 'partial' ? result.draftFeatures : []
 }
 
 function renderSegments(result: PunchingShearResult) {

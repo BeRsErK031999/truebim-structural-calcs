@@ -52,6 +52,10 @@ export type DiagnosticsModel = {
   checklistProgressSupport: 'yes'
   releaseEvidenceSupport: 'yes'
   releaseEvidenceExportFormats: 'html/md/json'
+  calcengineGapAnalysis: 'available'
+  pilotReadinessMatrix: 'available'
+  productionDesignReadiness: 'not yet'
+  currentProductionBlocker: 'trusted SP63 verification'
   engineerPackageReady: 'yes' | 'no'
   validationSessionsCount: number
   frozenReviewSnapshotsCount: number
@@ -156,6 +160,10 @@ export function buildDiagnosticsModel({
     manualDatasetImportRequired: 'yes',
     releaseEvidenceSupport: 'yes',
     releaseEvidenceExportFormats: 'html/md/json',
+    calcengineGapAnalysis: 'available',
+    pilotReadinessMatrix: 'available',
+    productionDesignReadiness: 'not yet',
+    currentProductionBlocker: 'trusted SP63 verification',
     ...validationSessionDiagnostics,
     ...reviewDiagnostics,
     warning: 'Client-side diagnostics only',

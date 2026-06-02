@@ -1,0 +1,42 @@
+# Pilot Readiness Matrix
+
+This matrix separates what engineers can safely test in the office pilot from what must remain out of final design use.
+
+## Ready For Pilot
+
+| Feature | Pilot use |
+| --- | --- |
+| UI calculation flow | Engineers can enter inputs, run calculations, inspect warnings, and compare outputs. |
+| report export | HTML and Markdown reports can be attached to review and validation packages. |
+| review mode | Engineers can freeze snapshots, record comparison status, and capture mismatch notes. |
+| validation session | Review, report, candidate, regression, and checklist context can be packaged locally. |
+| release evidence | Release metadata, diagnostics-like status, and rollback notes can be exported. |
+| center force-only verified case | Current trusted baseline for a center rectangular force-only case. |
+
+## Pilot With Warning
+
+| Feature | Warning |
+| --- | --- |
+| center moment transfer | Partial workflow only; moment formulas and stress redistribution need trusted SP63 evidence. |
+| edge/corner/opening draft geometry | Useful for comparison and feedback, not verified design behavior. |
+| stress visualization | Draft visualization/regression aid, not verified engineering output. |
+| candidate workflow | Candidate export records evidence intent; it does not auto-promote a case to VERIFIED. |
+
+## Not Ready For Design Use
+
+| Feature | Blocker |
+| --- | --- |
+| full SP63.13330.2018 support | Trusted clause-level verification is not complete. |
+| wall punching shear | Wall and end-wall input/geometry/formula workflow is not implemented. |
+| multiple contours | Generation and selection of multiple control perimeters is not implemented. |
+| verified openings | Opening behavior is draft geometry only. |
+| verified edge/corner | Boundary behavior is draft geometry only. |
+| shear reinforcement | Reinforcement contribution is not included in verified arithmetic. |
+| round columns | Round-column geometry is outside the verified transition scope. |
+
+## Production Blockers
+
+- Trusted SP63 verification for formulas, coefficients, rounding, and applicability limits.
+- Golden examples pack covering center moments, edge/corner, openings, wall cases, and multiple contours.
+- Official report format with stable traceability and case-specific limitations.
+- Engineer-reviewed evidence flow for promoting candidates without hiding draft warnings.

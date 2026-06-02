@@ -54,6 +54,20 @@ describe('report export', () => {
     expect(markdown).toContain('verified-center-rect-001')
   })
 
+  it('includes the applicability section in exported reports', () => {
+    const result = calculatePunchingShear(defaultPunchingShearInput)
+    const report = buildPunchingShearReport(defaultPunchingShearInput, result)
+    const html = buildPunchingShearHtmlReport(defaultPunchingShearInput, result, report)
+    const markdown = buildPunchingShearMarkdownReport(defaultPunchingShearInput, result, report)
+
+    expect(html).toContain('Applicability')
+    expect(html).toContain('Suitable for pilot review, comparison, and evidence collection.')
+    expect(html).toContain('Not a final design document unless verified capability coverage matches the selected case.')
+    expect(markdown).toContain('## Applicability')
+    expect(markdown).toContain('- partial features: none')
+    expect(markdown).toContain('- draft features: none')
+  })
+
   it('builds a Markdown report with the formula', () => {
     const result = calculatePunchingShear(defaultPunchingShearInput)
     const report = buildPunchingShearReport(defaultPunchingShearInput, result)

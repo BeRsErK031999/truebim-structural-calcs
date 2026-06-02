@@ -20,8 +20,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 
 import {
   buildPilotDashboard,
+  pilotNotDesignUseItems,
   pilotQuickStartSteps,
   pilotReadinessNotes,
+  pilotRoadmapItems,
+  pilotUsableItems,
   pilotWarnings,
   type PilotDashboard,
 } from './pilotContent'
@@ -76,6 +79,14 @@ export function PilotPage() {
       </header>
 
       <PilotDashboardSummary dashboard={dashboard} />
+
+      <section className="grid gap-4 lg:grid-cols-2">
+        <ChecklistCard title="What can be used in the pilot" items={pilotUsableItems} />
+        <ChecklistCard
+          title="What cannot be used as a final design calculation yet"
+          items={pilotNotDesignUseItems}
+        />
+      </section>
 
       <section className="grid gap-4 lg:grid-cols-[0.95fr_1.05fr]">
         <Card className="rounded-lg border border-amber-200 bg-amber-50 shadow-sm">
@@ -132,6 +143,24 @@ export function PilotPage() {
               </a>
             ))}
           </div>
+        </CardContent>
+      </Card>
+
+      <Card className="rounded-lg border border-slate-200 bg-white shadow-sm">
+        <CardHeader>
+          <CardTitle>Production Calculator Roadmap</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ol className="grid gap-2 text-sm text-slate-700 md:grid-cols-2">
+            {pilotRoadmapItems.map((item, index) => (
+              <li key={item} className="flex gap-3 rounded-lg border border-slate-200 bg-slate-50 p-3">
+                <span className="flex size-7 shrink-0 items-center justify-center rounded-md bg-slate-950 text-xs font-semibold text-white">
+                  {index + 1}
+                </span>
+                <span className="self-center font-medium text-slate-800">{item}</span>
+              </li>
+            ))}
+          </ol>
         </CardContent>
       </Card>
 
@@ -216,6 +245,25 @@ export function PilotPage() {
         </CardContent>
       </Card>
     </div>
+  )
+}
+
+function ChecklistCard({ title, items }: { title: string; items: readonly string[] }) {
+  return (
+    <Card className="rounded-lg border border-slate-200 bg-white shadow-sm">
+      <CardHeader>
+        <CardTitle>{title}</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <ul className="grid gap-2 text-sm leading-6 text-slate-700">
+          {items.map((item) => (
+            <li key={item} className="rounded-lg border border-slate-200 bg-slate-50 p-3">
+              {item}
+            </li>
+          ))}
+        </ul>
+      </CardContent>
+    </Card>
   )
 }
 

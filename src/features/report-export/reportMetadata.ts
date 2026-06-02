@@ -33,6 +33,14 @@ export const unsupportedDraftFeatures = [
   'verified SP63 coefficients',
 ]
 
+export const reportApplicabilityItems = [
+  'Suitable for pilot review, comparison, and evidence collection.',
+  'Verified features are limited to the features listed in this report.',
+  'Partial features require trusted engineering review before use.',
+  'Draft features are not final design capabilities.',
+  'Not a final design document unless verified capability coverage matches the selected case.',
+]
+
 export function createReportMetadata(now = new Date()): ReportMetadata {
   return {
     generatedAt: now.toISOString(),

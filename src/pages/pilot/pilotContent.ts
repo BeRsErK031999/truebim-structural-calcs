@@ -52,6 +52,34 @@ export const pilotReadinessNotes = [
   'Review accepted status records evidence only and never promotes auto VERIFIED.',
 ] as const
 
+export const pilotUsableItems = [
+  'Test the UI calculation flow and compare output against trusted engineering evidence.',
+  'Export HTML/Markdown reports for review packages.',
+  'Use review mode to record accepted, rejected, or mismatch evidence.',
+  'Prepare validation sessions, release evidence, and pilot feedback packages.',
+  'Use the center rectangular force-only verified case as the current trusted pilot baseline.',
+] as const
+
+export const pilotNotDesignUseItems = [
+  'Do not use the app as the only source for a project design decision.',
+  'Do not treat full SP63.13330.2018 support as implemented.',
+  'Do not use wall, end-wall, multiple-contour, shear-reinforcement, round-column, edge, corner, or opening cases as final verified design calculations.',
+  'When a discrepancy is found, capture it through feedback, review notes, or a verification candidate.',
+] as const
+
+export const pilotRoadmapItems = [
+  'Verified center force-only',
+  'Verified center moments',
+  'Verified edge/corner',
+  'Verified openings',
+  'Wall/end-wall cases',
+  'Multiple control perimeters',
+  'Shear reinforcement',
+  'DOCX/PDF official report',
+  'Full SP63 trace',
+  'Golden examples pack',
+] as const
+
 export type PilotDashboard = {
   verifiedFeatures: VerifiedCapability[]
   partialFeatures: VerifiedCapability[]

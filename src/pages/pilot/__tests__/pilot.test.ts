@@ -10,7 +10,14 @@ import { createValidationSession, saveValidationSession } from '@/features/valid
 import { calculatePunchingShear, buildPunchingShearReport } from '@/calculations/punching-shear'
 import { defaultPunchingShearInput } from '@/calculations/punching-shear/defaults'
 
-import { buildPilotDashboard, pilotRoute, pilotWarnings } from '../pilotContent'
+import {
+  buildPilotDashboard,
+  pilotNotDesignUseItems,
+  pilotRoadmapItems,
+  pilotRoute,
+  pilotUsableItems,
+  pilotWarnings,
+} from '../pilotContent'
 
 describe('pilot mode', () => {
   it('defines the pilot route', () => {
@@ -40,6 +47,48 @@ describe('pilot mode', () => {
         'Trusted evidence must be returned with the validation package.',
       ]),
     )
+  })
+
+  it('exposes pilot readiness text and roadmap items', () => {
+    expect(pilotUsableItems).toEqual(
+      expect.arrayContaining([
+        'Test the UI calculation flow and compare output against trusted engineering evidence.',
+        'Export HTML/Markdown reports for review packages.',
+        'Use review mode to record accepted, rejected, or mismatch evidence.',
+      ]),
+    )
+    expect(pilotNotDesignUseItems).toEqual(
+      expect.arrayContaining([
+        'Do not use the app as the only source for a project design decision.',
+        'Do not treat full SP63.13330.2018 support as implemented.',
+      ]),
+    )
+    expect(pilotRoadmapItems).toEqual(
+      expect.arrayContaining([
+        'Verified center force-only',
+        'Verified center moments',
+        'Verified edge/corner',
+        'Verified openings',
+        'Wall/end-wall cases',
+        'Multiple control perimeters',
+        'Shear reinforcement',
+        'DOCX/PDF official report',
+        'Full SP63 trace',
+        'Golden examples pack',
+      ]),
+    )
+  })
+
+  it('does not claim complete SP63 production coverage in pilot copy', () => {
+    const pilotCopy = [
+      ...pilotWarnings,
+      ...pilotUsableItems,
+      ...pilotNotDesignUseItems,
+      ...pilotRoadmapItems,
+    ].join('\n')
+
+    expect(pilotCopy).not.toMatch(new RegExp(['full', 'SP63', 'production', 'support'].join(' '), 'i'))
+    expect(pilotCopy).not.toMatch(new RegExp(['production', 'SP63', 'support', 'is', 'implemented'].join(' '), 'i'))
   })
 
   it('counts dashboard readiness data from local storage', () => {
