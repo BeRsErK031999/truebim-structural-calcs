@@ -6,6 +6,7 @@ import {
   DraftingCompass,
   FileArchive,
   Layers3,
+  ListChecks,
   PackageCheck,
 } from 'lucide-react'
 import { NavLink } from 'react-router-dom'
@@ -21,6 +22,7 @@ const sections: CalculationSection[] = [
   { title: 'Балки', path: '/beams', icon: Building2, status: 'planned' },
   { title: 'Колонны', path: '/columns', icon: Columns3, status: 'planned' },
   { title: 'Engineer Portal', path: '/engineer', icon: ClipboardCheck, status: 'active' },
+  { title: 'Pilot MVP', path: '/pilot', icon: ListChecks, status: 'active' },
   { title: 'Engineering Review', path: '/review', icon: ClipboardCheck, status: 'active' },
   { title: 'Validation Session', path: '/validation-session', icon: PackageCheck, status: 'active' },
   { title: 'Diagnostics', path: '/diagnostics', icon: Activity, status: 'active' },
