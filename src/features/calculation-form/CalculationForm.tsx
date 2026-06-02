@@ -27,6 +27,7 @@ const caseOptions: Array<{ value: PunchingShearCaseType; label: string; disabled
   { value: 'opening', label: 'Отверстие рядом с колонной - скоро', disabled: true },
   { value: 'round', label: 'Круглая колонна - скоро', disabled: true },
   { value: 'wall-end', label: 'Wall end punching - draft geometry' },
+  { value: 'wall-corner', label: 'Wall corner punching - draft geometry' },
 ]
 
 const concreteClassOptions: ConcreteClassName[] = ['B15', 'B20', 'B25', 'B30', 'B35', 'B40']
@@ -58,6 +59,7 @@ export function CalculationForm() {
   } = form
   const caseType = useWatch({ control, name: 'caseType' })
   const concreteClass = useWatch({ control, name: 'concrete.className' })
+  const wallCornerOrientation = useWatch({ control, name: 'wallCorner.orientation' })
   const shearReinforcementEnabled = useWatch({
     control,
     name: 'shearReinforcement.enabled',
@@ -219,6 +221,56 @@ export function CalculationForm() {
             unit="mm"
             registration={register('wall.wallThickness', { valueAsNumber: true })}
             error={errors.wall?.wallThickness?.message}
+          />
+        </FormSection>
+      ) : null}
+
+      {caseType === 'wall-corner' ? (
+        <FormSection
+          title="Wall Corner Geometry"
+          helperText="Draft-only wall-corner geometry input. No verified SP63 wall punching formulas are claimed."
+        >
+          <NumberField
+            label="Wall length X"
+            unit="mm"
+            registration={register('wallCorner.wallLengthX', { valueAsNumber: true })}
+            error={errors.wallCorner?.wallLengthX?.message}
+          />
+          <NumberField
+            label="Wall length Y"
+            unit="mm"
+            registration={register('wallCorner.wallLengthY', { valueAsNumber: true })}
+            error={errors.wallCorner?.wallLengthY?.message}
+          />
+          <NumberField
+            label="Wall thickness X"
+            unit="mm"
+            registration={register('wallCorner.wallThicknessX', { valueAsNumber: true })}
+            error={errors.wallCorner?.wallThicknessX?.message}
+          />
+          <NumberField
+            label="Wall thickness Y"
+            unit="mm"
+            registration={register('wallCorner.wallThicknessY', { valueAsNumber: true })}
+            error={errors.wallCorner?.wallThicknessY?.message}
+          />
+          <SelectField
+            label="Corner orientation"
+            placeholder="Select orientation"
+            value={wallCornerOrientation ?? 'top-left'}
+            options={[
+              { value: 'top-left', label: 'top-left' },
+              { value: 'top-right', label: 'top-right' },
+              { value: 'bottom-left', label: 'bottom-left' },
+              { value: 'bottom-right', label: 'bottom-right' },
+            ]}
+            error={errors.wallCorner?.orientation?.message}
+            onValueChange={(value) =>
+              setValue('wallCorner.orientation', value as NonNullable<PunchingShearInput['wallCorner']>['orientation'], {
+                shouldDirty: true,
+                shouldValidate: true,
+              })
+            }
           />
         </FormSection>
       ) : null}

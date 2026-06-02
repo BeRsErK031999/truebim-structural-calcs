@@ -188,6 +188,33 @@ describe('report export', () => {
     expect(markdown).toContain('Wall-end punching support is draft geometry only.')
   })
 
+  it('includes wall corner geometry section in exported reports', () => {
+    const input = {
+      ...defaultPunchingShearInput,
+      caseType: 'wall-corner' as const,
+    }
+    const result = calculatePunchingShear(input)
+    const report = buildPunchingShearReport(input, result)
+    const html = buildPunchingShearHtmlReport(input, result, report)
+    const markdown = buildPunchingShearMarkdownReport(input, result, report)
+
+    expect(report.wallCornerGeometrySummary).toMatchObject({
+      enabled: true,
+      wallLengthXMm: 1200,
+      wallLengthYMm: 1000,
+      wallThicknessXMm: 200,
+      wallThicknessYMm: 220,
+      orientation: 'top-left',
+      applicability: 'draft-only',
+    })
+    expect(html).toContain('Wall Corner Geometry')
+    expect(html).toContain('Draft wall corner punching geometry')
+    expect(markdown).toContain('## Wall Corner Geometry')
+    expect(markdown).toContain('| wall length X | 1200 mm |')
+    expect(markdown).toContain('| applicability | draft-only |')
+    expect(markdown).toContain('Wall-corner punching support is draft geometry only.')
+  })
+
   it('formats copy report summary', () => {
     const result = calculatePunchingShear(defaultPunchingShearInput)
 

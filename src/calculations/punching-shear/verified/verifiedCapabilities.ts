@@ -54,6 +54,13 @@ export const verifiedCapabilityMatrix: VerifiedCapability[] = [
     notes: 'Wall-end punching currently has draft geometry only; SP63 formulas are not verified.',
   },
   {
+    id: 'wall-corner',
+    label: 'wall punching at wall corner',
+    status: 'draft',
+    arithmeticSupport: 'draft',
+    notes: 'Wall-corner punching currently has draft geometry only; SP63 formulas are not verified.',
+  },
+  {
     id: 'shear-reinforcement',
     label: 'поперечная арматура',
     status: 'draft',
@@ -104,6 +111,10 @@ export function detectInputFeatures(input: PunchingShearInput): VerifiedFeatureI
 
   if (input.caseType === 'wall-end') {
     features.add('wall-end')
+  }
+
+  if (input.caseType === 'wall-corner') {
+    features.add('wall-corner')
   }
 
   if (input.shearReinforcement.enabled) {

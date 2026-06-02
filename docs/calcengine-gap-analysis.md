@@ -17,8 +17,8 @@ Public benchmark: https://calcengine.ru/punchshear
 | Feature | CalcEngine states | Current TrueBIM state | Status | What needs to be done | Priority |
 | --- | --- | --- | --- | --- | --- |
 | center column | Related punching shear column workflow is a public reference; this wall page is not centered on column punching. | Center rectangular force-only case has one trusted verified case. | done | Preserve warning text that verified scope is narrow and add more golden examples. | P0 |
-| wall/end-wall case | Wall end-zone punching shear is part of the public page scope. | No wall punching shear calculation model. | missing | Define wall input schema, contour rules, report fields, and trusted benchmark cases before implementation. | P0 |
-| wall corner case | Wall corner punching shear is part of the public page scope. | No wall corner case. | missing | Add wall-corner geometry and independent SP63 verification examples. | P0 |
+| wall/end-wall case | Wall end-zone punching shear is part of the public page scope. | Wall-end draft DTO, geometry, SVG/report exposure, diagnostics, and verification template exist. | draft | Collect trusted SP63 wall-end examples and add verified formula evidence before promotion. | P0 |
+| wall corner case | Wall corner punching shear is part of the public page scope. | Wall-corner draft DTO, L-shaped geometry, SVG/report exposure, diagnostics, and verification template exist. | draft | Collect trusted SP63 wall-corner examples and add verified formula evidence before promotion. | P0 |
 | edge column | Not the main wall page focus, but comparable boundary behavior is expected in punching shear tools. | Edge clipping exists as draft geometry and regression preparation only. | draft | Verify edge perimeter rules, stress checks, warnings, and evidence fixtures. | P1 |
 | corner column | Not the main wall page focus, but comparable boundary behavior is expected in punching shear tools. | Corner clipping exists as draft geometry and regression preparation only. | draft | Verify corner perimeter rules, stress checks, warnings, and evidence fixtures. | P1 |
 | openings | Public page states openings are considered. | Opening tangent subtraction exists as draft geometry only. | draft | Verify opening influence rules, removed perimeter, stress redistribution, and report trace. | P1 |
@@ -36,4 +36,4 @@ Public benchmark: https://calcengine.ru/punchshear
 
 ## Short Gap Summary
 
-TrueBIM is ready as a pilot review and evidence collection tool for a narrow punching shear workflow. It is not ready to be marketed or used as a production SP63 wall-punching calculator. The biggest gaps are trusted SP63 verification, wall/end-wall cases, wall corner cases, multiple control perimeters, and verified edge/opening behavior.
+TrueBIM is ready as a pilot review and evidence collection tool for a narrow punching shear workflow. It is not ready to be marketed or used as a production SP63 wall-punching calculator. The biggest gaps are trusted SP63 verification, verified wall/end-wall and wall-corner formulas, multiple control perimeters, and verified edge/opening behavior.

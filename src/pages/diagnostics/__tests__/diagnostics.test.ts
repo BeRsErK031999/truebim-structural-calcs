@@ -46,6 +46,7 @@ describe('diagnostics helpers', () => {
       cornerSupport: 'draft',
       openingsSupport: 'draft-geometry',
       wallPunchingSupport: 'draft',
+      wallCornerSupport: 'draft',
       clippedPerimeterSupport: 'draft',
       geometryVerificationSupport: 'draft',
       clippingVerificationSupport: 'draft',
@@ -77,6 +78,7 @@ describe('diagnostics helpers', () => {
         expect.objectContaining({ id: 'center-moment-transfer', status: 'partial' }),
         expect.objectContaining({ id: 'openings', status: 'draft' }),
         expect.objectContaining({ id: 'wall-end', status: 'draft' }),
+        expect.objectContaining({ id: 'wall-corner', status: 'draft' }),
       ]),
     )
   })

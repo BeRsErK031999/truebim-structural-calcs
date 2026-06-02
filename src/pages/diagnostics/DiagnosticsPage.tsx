@@ -101,6 +101,10 @@ export function DiagnosticsPage() {
               value={formatDiagnosticValue(diagnostics.wallPunchingSupport)}
             />
             <DiagnosticItem
+              label="wall corner support"
+              value={formatDiagnosticValue(diagnostics.wallCornerSupport)}
+            />
+            <DiagnosticItem
               label="Contour clipping"
               value={formatDiagnosticValue(diagnostics.clippedPerimeterSupport)}
             />

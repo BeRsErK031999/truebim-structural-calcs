@@ -252,6 +252,97 @@ describe('punching shear draft center check', () => {
     )
   })
 
+  it('validates wall-corner schema input', () => {
+    const input: PunchingShearInput = {
+      ...defaultPunchingShearInput,
+      caseType: 'wall-corner',
+      wallCorner: {
+        wallLengthX: 1300,
+        wallLengthY: 900,
+        wallThicknessX: 220,
+        wallThicknessY: 180,
+        slabThickness: 220,
+        effectiveDepth: 190,
+        cover: 30,
+        orientation: 'bottom-right',
+      },
+    }
+
+    expect(punchingShearInputSchema.safeParse(input).success).toBe(true)
+  })
+
+  it('creates draft wall-corner geometry without verified promotion', () => {
+    const input: PunchingShearInput = {
+      ...defaultPunchingShearInput,
+      caseType: 'wall-corner',
+      wallCorner: {
+        wallLengthX: 1300,
+        wallLengthY: 900,
+        wallThicknessX: 220,
+        wallThicknessY: 180,
+        slabThickness: 220,
+        effectiveDepth: 190,
+        cover: 30,
+        orientation: 'top-left',
+      },
+    }
+    const result = calculatePunchingShear(input)
+
+    expect(['draft_ok', 'draft_failed']).toContain(result.status)
+    expect(result.verificationLevel).toBe('draft')
+    expect(result.verifiedFeatures).toEqual([])
+    expect(result.draftFeatures).toContain('wall-corner')
+    expect(result.perimeter.perimeterMm).toBeGreaterThan(0)
+    expect(result.perimeter.segments).toHaveLength(6)
+    expect(result.perimeter.vertices).toHaveLength(6)
+    expect(result.perimeter.cornerAffected).toBe(true)
+    expect(result.perimeter.svgPath).toContain('M')
+    expect(result.perimeter.warnings).toEqual(
+      expect.arrayContaining([
+        'No SP63 wall-corner punching coefficients or verified resistance formulas are applied',
+      ]),
+    )
+  })
+
+  it('generates wall-corner SVG elements and labels', () => {
+    const input: PunchingShearInput = {
+      ...defaultPunchingShearInput,
+      caseType: 'wall-corner',
+    }
+    const result = calculatePunchingShear(input)
+
+    expect(result.svgModel.elements.some((element) => element.role === 'wall')).toBe(true)
+    expect(result.svgModel.elements).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          role: 'label',
+          type: 'text',
+          text: 'Draft wall corner punching geometry',
+        }),
+        expect.objectContaining({
+          role: 'dimension',
+          type: 'line',
+          label: '1200 mm wall length X',
+        }),
+        expect.objectContaining({
+          role: 'dimension',
+          type: 'line',
+          label: '1000 mm wall length Y',
+        }),
+        expect.objectContaining({
+          role: 'label',
+          type: 'text',
+          text: 'inner corner',
+        }),
+        expect.objectContaining({
+          role: 'label',
+          type: 'text',
+          text: 'outer corner',
+        }),
+      ]),
+    )
+  })
+
   it('generates wall-end SVG elements and labels', () => {
     const input: PunchingShearInput = {
       ...defaultPunchingShearInput,
@@ -316,5 +407,13 @@ describe('punching shear draft center check', () => {
     )
     expect(report.formulaSummary).toContain('DRAFT / NOT FOR DESIGN USE')
     expect(report.verificationCapabilities.verified).toContain('center-force-only')
+  })
+
+  it('keeps center verified case verified after wall-corner support is added', () => {
+    const result = calculatePunchingShear(defaultPunchingShearInput)
+
+    expect(result.verificationLevel).toBe('verified')
+    expect(result.verifiedFeatures).toContain('center-force-only')
+    expect(result.draftFeatures).toEqual([])
   })
 })

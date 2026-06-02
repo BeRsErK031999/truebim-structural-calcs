@@ -5,6 +5,7 @@ export type VerifiedFeatureId =
   | 'corner'
   | 'openings'
   | 'wall-end'
+  | 'wall-corner'
   | 'shear-reinforcement'
   | 'round-columns'
 

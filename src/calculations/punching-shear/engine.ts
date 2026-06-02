@@ -19,6 +19,7 @@ const draftScopeWarnings = [
   'Moment transfer uses draft-only stress redistribution when Mx/My are provided',
   'Openings and boundary clipping are draft geometry only',
   'Wall-end punching support is draft geometry only',
+  'Wall-corner punching support is draft geometry only',
   'Shear reinforcement is not included in this draft',
   'Draft formula must be verified before design use',
 ]
@@ -44,7 +45,7 @@ export function calculatePunchingShear(input: PunchingShearInput): PunchingShear
       warnings: [
         ...draftScopeWarnings,
         ...perimeter.warnings,
-        'Only rectangular center, edge, corner, opening, and wall-end draft geometry cases are implemented',
+        'Only rectangular center, edge, corner, opening, wall-end, and wall-corner draft geometry cases are implemented',
       ],
     })
   }
@@ -111,9 +112,10 @@ function isSupportedDraftGeometryCase(input: PunchingShearInput) {
       input.caseType === 'opening') &&
     Boolean(input.rectColumn)
   const wallEndDraftCase = input.caseType === 'wall-end' && Boolean(input.wall)
+  const wallCornerDraftCase = input.caseType === 'wall-corner' && Boolean(input.wallCorner)
 
   return (
-    (rectangularDraftCase || wallEndDraftCase) &&
+    (rectangularDraftCase || wallEndDraftCase || wallCornerDraftCase) &&
     !input.shearReinforcement.enabled
   )
 }

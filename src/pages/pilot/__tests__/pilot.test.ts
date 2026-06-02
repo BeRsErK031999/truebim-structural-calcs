@@ -70,6 +70,7 @@ describe('pilot mode', () => {
         'Проверенные край/угол',
         'Проверенные отверстия',
         'Случаи у стены и торца стены',
+        'Wall-corner punching geometry',
         'Несколько контрольных контуров',
         'Поперечная арматура',
         'Официальный отчет DOCX/PDF',
@@ -145,9 +146,12 @@ describe('pilot mode', () => {
 
     expect(dashboard.verifiedFeatures).toHaveLength(1)
     expect(dashboard.partialFeatures).toHaveLength(1)
-    expect(dashboard.draftFeatures).toHaveLength(6)
+    expect(dashboard.draftFeatures).toHaveLength(7)
     expect(dashboard.draftFeatures).toEqual(
-      expect.arrayContaining([expect.objectContaining({ id: 'wall-end' })]),
+      expect.arrayContaining([
+        expect.objectContaining({ id: 'wall-end' }),
+        expect.objectContaining({ id: 'wall-corner' }),
+      ]),
     )
     expect(dashboard.feedbackCount).toBe(1)
     expect(dashboard.validationSessionsCount).toBe(1)

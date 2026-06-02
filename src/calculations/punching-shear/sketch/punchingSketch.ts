@@ -5,6 +5,7 @@ import type {
   PunchingShearInput,
 } from '../types'
 import type { Point2D } from '../domain/point'
+import { createWallCornerGeometry } from '../wall/wallCornerGeometry'
 import { createPaddedViewBox } from './viewport'
 import type { PunchingSketchModel, SvgSketchElement } from './svg'
 
@@ -43,9 +44,11 @@ export function buildPunchingSketchModel(
       type: 'text',
       position: { x: perimeter.boundingBox.minX, y: perimeter.boundingBox.minY - 24 },
       text:
-        input.caseType === 'wall-end'
-          ? 'Draft wall punching geometry'
-          : 'Control perimeter draft geometry',
+        input.caseType === 'wall-corner'
+          ? 'Draft wall corner punching geometry'
+          : input.caseType === 'wall-end'
+            ? 'Draft wall punching geometry'
+            : 'Control perimeter draft geometry',
     },
   ]
 
@@ -192,6 +195,10 @@ function getColumnVertices(input: PunchingShearInput): Point2D[] {
 }
 
 function getWallVertices(input: PunchingShearInput): Point2D[] {
+  if (input.caseType === 'wall-corner' && input.wallCorner) {
+    return createWallCornerGeometry(input.wallCorner).vertices
+  }
+
   if (input.caseType !== 'wall-end' || !input.wall) {
     return []
   }
@@ -239,6 +246,10 @@ function createDimensionElements(
 ): SvgSketchElement[] {
   if (input.caseType === 'wall-end' && input.wall && wallVertices.length > 0) {
     return createWallDimensionElements(input, wallVertices, perimeter, viewBox)
+  }
+
+  if (input.caseType === 'wall-corner' && input.wallCorner && wallVertices.length > 0) {
+    return createWallCornerDimensionElements(input, wallVertices, perimeter, viewBox)
   }
 
   if (columnVertices.length === 0) {
@@ -300,6 +311,136 @@ function createDimensionElements(
       start: { x: perimeterHeightX, y: perimeter.boundingBox.minY },
       end: { x: perimeterHeightX, y: perimeter.boundingBox.maxY },
       label: `${formatMm(perimeter.boundingBox.height)} contour Y`,
+    },
+    {
+      id: 'axis-x',
+      role: 'dimension',
+      type: 'line',
+      start: axisStart,
+      end: { x: axisStart.x + 90, y: axisStart.y },
+      label: 'X',
+    },
+    {
+      id: 'axis-y',
+      role: 'dimension',
+      type: 'line',
+      start: axisStart,
+      end: { x: axisStart.x, y: axisStart.y + 90 },
+      label: 'Y',
+    },
+    {
+      id: 'label-scale',
+      role: 'label',
+      type: 'text',
+      position: { x: viewBox.minX + 36, y: viewBox.maxY - 36 },
+      text: 'Scale: 1 unit = 1 mm, fit-to-view',
+    },
+  ]
+}
+
+function createWallCornerDimensionElements(
+  input: PunchingShearInput,
+  wallVertices: Point2D[],
+  perimeter: ControlPerimeterResult,
+  viewBox: PunchingSketchModel['viewBox'],
+): SvgSketchElement[] {
+  const wallCorner = input.wallCorner
+
+  if (!wallCorner) {
+    return []
+  }
+
+  const geometry = createWallCornerGeometry(wallCorner)
+  const wallBox = {
+    minX: Math.min(...wallVertices.map((point) => point.x)),
+    maxX: Math.max(...wallVertices.map((point) => point.x)),
+    minY: Math.min(...wallVertices.map((point) => point.y)),
+    maxY: Math.max(...wallVertices.map((point) => point.y)),
+  }
+  const signX = wallCorner.orientation === 'top-right' || wallCorner.orientation === 'bottom-right' ? -1 : 1
+  const signY = wallCorner.orientation === 'bottom-left' || wallCorner.orientation === 'bottom-right' ? -1 : 1
+  const xDimensionY = signY > 0 ? wallBox.minY - 42 : wallBox.maxY + 42
+  const yDimensionX = signX > 0 ? wallBox.minX - 42 : wallBox.maxX + 42
+  const axisStart = {
+    x: viewBox.minX + 36,
+    y: viewBox.minY + 36,
+  }
+
+  return [
+    {
+      id: 'dimension-wall-corner-length-x',
+      role: 'dimension',
+      type: 'line',
+      start: { x: 0, y: xDimensionY },
+      end: { x: signX * wallCorner.wallLengthX, y: xDimensionY },
+      label: `${formatMm(wallCorner.wallLengthX)} wall length X`,
+    },
+    {
+      id: 'dimension-wall-corner-length-y',
+      role: 'dimension',
+      type: 'line',
+      start: { x: yDimensionX, y: 0 },
+      end: { x: yDimensionX, y: signY * wallCorner.wallLengthY },
+      label: `${formatMm(wallCorner.wallLengthY)} wall length Y`,
+    },
+    {
+      id: 'dimension-wall-corner-thickness-x',
+      role: 'dimension',
+      type: 'line',
+      start: { x: signX * (wallCorner.wallLengthX * 0.45), y: 0 },
+      end: { x: signX * (wallCorner.wallLengthX * 0.45), y: signY * wallCorner.wallThicknessX },
+      label: `${formatMm(wallCorner.wallThicknessX)} thickness X`,
+    },
+    {
+      id: 'dimension-wall-corner-thickness-y',
+      role: 'dimension',
+      type: 'line',
+      start: { x: 0, y: signY * (wallCorner.wallLengthY * 0.45) },
+      end: { x: signX * wallCorner.wallThicknessY, y: signY * (wallCorner.wallLengthY * 0.45) },
+      label: `${formatMm(wallCorner.wallThicknessY)} thickness Y`,
+    },
+    {
+      id: 'dimension-wall-corner-contour-offset',
+      role: 'dimension',
+      type: 'line',
+      start: geometry.innerCorner,
+      end: { x: signX * -perimeter.draftOffsetMm, y: signY * -perimeter.draftOffsetMm },
+      label: `${formatMm(perimeter.draftOffsetMm)} draft offset`,
+    },
+    {
+      id: 'label-wall-corner-orientation',
+      role: 'label',
+      type: 'text',
+      position: { x: perimeter.boundingBox.minX, y: perimeter.boundingBox.maxY + 36 },
+      text: `wall corner ${wallCorner.orientation}`,
+    },
+    {
+      id: 'label-wall-corner-inner',
+      role: 'label',
+      type: 'text',
+      position: { x: geometry.innerCorner.x + 18 * signX, y: geometry.innerCorner.y + 28 * signY },
+      text: 'inner corner',
+    },
+    {
+      id: 'label-wall-corner-outer',
+      role: 'label',
+      type: 'text',
+      position: { x: geometry.outerCorner.x + 18 * signX, y: geometry.outerCorner.y + 28 * signY },
+      text: 'outer corner',
+    },
+    {
+      id: 'label-wall-corner-x-arm',
+      role: 'label',
+      type: 'text',
+      position: geometry.labels.xArm,
+      text: 'X arm',
+    },
+    {
+      id: 'label-wall-corner-y-arm',
+      role: 'label',
+      type: 'text',
+      position: geometry.labels.yArm,
+      text: 'Y arm',
     },
     {
       id: 'axis-x',

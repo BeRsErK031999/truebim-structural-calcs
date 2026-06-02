@@ -39,8 +39,13 @@ export {
   shearReinforcementInputSchema,
   slabEdgesInputSchema,
   slabGeometryInputSchema,
+  wallCornerInputSchema,
+  wallCornerOrientationSchema,
   wallInputSchema,
 } from './schemas'
+export { createWallCornerGeometry } from './wall/wallCornerGeometry'
+export { calculateWallCornerControlPerimeter } from './wall/wallCornerPerimeter'
+export { classifyWallCornerPunching } from './wall/wallCornerClassification'
 export { createWallGeometry } from './wall/wallGeometry'
 export { calculateWallEndControlPerimeter } from './wall/wallPerimeter'
 export { classifyWallPunching } from './wall/wallClassification'
@@ -71,6 +76,8 @@ export type {
   SlabEdgesInput,
   SlabGeometryInput,
   WallInput,
+  WallCornerInput,
+  WallCornerOrientation,
   StressDistribution,
   StressPoint,
   MomentTransferResult,

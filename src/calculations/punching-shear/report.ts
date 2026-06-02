@@ -48,6 +48,17 @@ export function buildPunchingShearReport(
       controlPerimeterMm: result.perimeter.perimeterMm,
       warningCount: result.perimeter.warnings.length,
     },
+    wallCornerGeometrySummary: {
+      enabled: input.caseType === 'wall-corner',
+      wallLengthXMm: input.wallCorner?.wallLengthX ?? 'n/a',
+      wallLengthYMm: input.wallCorner?.wallLengthY ?? 'n/a',
+      wallThicknessXMm: input.wallCorner?.wallThicknessX ?? 'n/a',
+      wallThicknessYMm: input.wallCorner?.wallThicknessY ?? 'n/a',
+      orientation: input.wallCorner?.orientation ?? 'n/a',
+      controlPerimeterMm: result.perimeter.perimeterMm,
+      applicability: 'draft-only',
+      warningCount: result.perimeter.warnings.length,
+    },
     boundaryEffectsSummary: {
       edgeAffected: result.perimeter.edgeAffected,
       cornerAffected: result.perimeter.cornerAffected,
@@ -151,6 +162,9 @@ export function buildPunchingShearReport(
       input.caseType === 'wall-end'
         ? 'Draft wall-end geometry generated without SP63 wall punching coefficients.'
         : 'Wall-end geometry not selected.',
+      input.caseType === 'wall-corner'
+        ? 'Draft wall-corner geometry generated without SP63 wall punching coefficients.'
+        : 'Wall-corner geometry not selected.',
       'SVG sketch model generated from geometry DTOs.',
       'Draft moment-transfer stress distribution generated where Mx/My are present.',
       'Draft rectangular force-only check evaluated where supported.',

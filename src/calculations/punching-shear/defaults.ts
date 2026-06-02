@@ -26,6 +26,16 @@ export const defaultPunchingShearInput: PunchingShearInput = {
     effectiveDepth: 190,
     cover: 30,
   },
+  wallCorner: {
+    wallLengthX: 1200,
+    wallLengthY: 1000,
+    wallThicknessX: 200,
+    wallThicknessY: 220,
+    slabThickness: 220,
+    effectiveDepth: 190,
+    cover: 30,
+    orientation: 'top-left',
+  },
   openings: [],
   shearReinforcement: {
     enabled: false,

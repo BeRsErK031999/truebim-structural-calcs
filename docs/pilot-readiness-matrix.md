@@ -19,6 +19,7 @@ This matrix separates what engineers can safely test in the office pilot from wh
 | --- | --- |
 | center moment transfer | Partial workflow only; moment formulas and stress redistribution need trusted SP63 evidence. |
 | edge/corner/opening draft geometry | Useful for comparison and feedback, not verified design behavior. |
+| wall-end/wall-corner draft geometry | Useful for geometry review, report export, and verification preparation only. |
 | stress visualization | Draft visualization/regression aid, not verified engineering output. |
 | candidate workflow | Candidate export records evidence intent; it does not auto-promote a case to VERIFIED. |
 
@@ -27,7 +28,7 @@ This matrix separates what engineers can safely test in the office pilot from wh
 | Feature | Blocker |
 | --- | --- |
 | full SP63.13330.2018 support | Trusted clause-level verification is not complete. |
-| wall punching shear | Wall and end-wall input/geometry/formula workflow is not implemented. |
+| verified wall punching shear | Wall-end and wall-corner geometry exists as draft preparation only; formulas and SP63 coefficients are not verified. |
 | multiple contours | Generation and selection of multiple control perimeters is not implemented. |
 | verified openings | Opening behavior is draft geometry only. |
 | verified edge/corner | Boundary behavior is draft geometry only. |

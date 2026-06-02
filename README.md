@@ -42,6 +42,12 @@ This is geometry and verification preparation only, not verified SP63 support. S
 
 Edge/opening trusted validation workflow templates and snapshot comparison guidance are documented in `docs/verified-edge-opening-workflow.md`.
 
+## Draft wall corner geometry
+
+Wall-end and wall-corner cases now have draft geometry foundations for pilot review. Wall-corner uses a `WallCornerInput` DTO with independent X/Y lengths, independent X/Y thicknesses, and four orientation options. The SVG/report output shows the L-shaped wall corner, active control perimeter, dimensions, warnings and draft-only applicability.
+
+This is geometry and verification preparation only, not verified SP63 support. See `docs/wall-punching-draft.md` and `docs/wall-corner-punching-draft.md`.
+
 Moment transfer trusted validation templates, stress comparison and snapshot review workflow are documented in `docs/verified-moment-transfer-workflow.md`.
 
 Stress regression evidence collection is documented in `docs/stress-regression-workflow.md`. Draft templates for trusted moment stress evidence live in `examples/verification/moments/` and cover low/high Mx, low/high My and combined Mx/My cases.

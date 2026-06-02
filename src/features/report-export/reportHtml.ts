@@ -83,6 +83,11 @@ export function buildPunchingShearHtmlReport(
       ['column height', formatValueWithUnit(input.rectColumn?.widthYMm ?? input.roundColumn?.diameterMm, 'mm')],
       ['wall length', formatValueWithUnit(input.wall?.wallLength, 'mm')],
       ['wall thickness', formatValueWithUnit(input.wall?.wallThickness, 'mm')],
+      ['wall length X', formatValueWithUnit(input.wallCorner?.wallLengthX, 'mm')],
+      ['wall length Y', formatValueWithUnit(input.wallCorner?.wallLengthY, 'mm')],
+      ['wall thickness X', formatValueWithUnit(input.wallCorner?.wallThicknessX, 'mm')],
+      ['wall thickness Y', formatValueWithUnit(input.wallCorner?.wallThicknessY, 'mm')],
+      ['wall corner orientation', input.wallCorner?.orientation ?? 'n/a'],
       ['concrete class', input.concrete.className],
       ['shear reinforcement enabled', String(input.shearReinforcement.enabled)],
     ])}
@@ -103,6 +108,18 @@ export function buildPunchingShearHtmlReport(
       ['wall length', formatValueWithUnit(input.wall?.wallLength, 'mm')],
       ['wall thickness', formatValueWithUnit(input.wall?.wallThickness, 'mm')],
       ['control perimeter', formatValueWithUnit(result.controlPerimeterMm, 'mm')],
+      ['geometry warnings', result.perimeter.warnings.join('; ') || 'none'],
+    ])}
+    <h2>Wall Corner Geometry</h2>
+    ${renderTable([
+      ['enabled', String(input.caseType === 'wall-corner')],
+      ['wall length X', formatValueWithUnit(input.wallCorner?.wallLengthX, 'mm')],
+      ['wall length Y', formatValueWithUnit(input.wallCorner?.wallLengthY, 'mm')],
+      ['wall thickness X', formatValueWithUnit(input.wallCorner?.wallThicknessX, 'mm')],
+      ['wall thickness Y', formatValueWithUnit(input.wallCorner?.wallThicknessY, 'mm')],
+      ['orientation', input.wallCorner?.orientation ?? 'n/a'],
+      ['control perimeter', formatValueWithUnit(result.controlPerimeterMm, 'mm')],
+      ['applicability', 'draft-only'],
       ['geometry warnings', result.perimeter.warnings.join('; ') || 'none'],
     ])}
     <h2>Boundary Effects</h2>
@@ -358,6 +375,7 @@ function createReportWarnings(result: PunchingShearResult) {
       'Moment transfer is draft-only where Mx/My are provided',
       'Openings and boundary clipping are draft geometry only.',
       'Wall-end punching support is draft geometry only.',
+      'Wall-corner punching support is draft geometry only.',
       'Shear reinforcement is unsupported in this draft',
       'Verify against SP63 before design use',
     ]),

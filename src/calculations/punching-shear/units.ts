@@ -32,6 +32,14 @@ export function normalizePunchingShearInput(input: PunchingShearInput): Punching
           cover: input.slab.concreteCoverMm,
         }
       : undefined,
+    wallCorner: input.wallCorner
+      ? {
+          ...input.wallCorner,
+          slabThickness: input.slab.thicknessMm,
+          effectiveDepth: input.slab.effectiveDepthMm,
+          cover: input.slab.concreteCoverMm,
+        }
+      : undefined,
     slabEdges: input.slabEdges ? { ...input.slabEdges } : undefined,
     openings: input.openings.map((opening) => ({ ...opening })),
     shearReinforcement: { ...input.shearReinforcement },

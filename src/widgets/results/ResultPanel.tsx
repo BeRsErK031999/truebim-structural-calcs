@@ -28,6 +28,7 @@ const featureLabels: Record<string, string> = {
   corner: 'угловая колонна',
   openings: 'отверстия',
   'wall-end': 'wall punching at wall end',
+  'wall-corner': 'wall punching at wall corner',
   'shear-reinforcement': 'поперечная арматура',
   'round-columns': 'круглые колонны',
 }
