@@ -3,6 +3,7 @@ import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import { DiagnosticsPage } from '@/pages/diagnostics/DiagnosticsPage'
 import { EngineerPortalPage } from '@/pages/engineer/EngineerPortalPage'
 import { HomePage } from '@/pages/home/HomePage'
+import { KnowledgePage } from '@/pages/knowledge/KnowledgePage'
 import { PilotPage } from '@/pages/pilot/PilotPage'
 import { pilotRoute } from '@/pages/pilot/pilotContent'
 import { ReleaseEvidencePage } from '@/pages/release-evidence/ReleaseEvidencePage'
@@ -20,6 +21,7 @@ export function App() {
           <Route path={pilotRoute.slice(1)} element={<PilotPage />} />
           <Route path="review" element={<EngineeringReviewPage />} />
           <Route path="validation-session" element={<ValidationSessionPage />} />
+          <Route path="knowledge" element={<KnowledgePage />} />
           <Route path="diagnostics" element={<DiagnosticsPage />} />
           <Route path="release-evidence" element={<ReleaseEvidencePage />} />
           <Route path="*" element={<HomePage />} />

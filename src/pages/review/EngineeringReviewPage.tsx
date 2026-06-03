@@ -1,4 +1,4 @@
-import { ClipboardCopy, FileDown, FileJson, Lock, Upload } from 'lucide-react'
+import { BookOpen, ClipboardCopy, FileDown, FileJson, Lock, Upload } from 'lucide-react'
 import { useMemo, useState } from 'react'
 
 import { buildPunchingShearReport, calculatePunchingShear } from '@/calculations/punching-shear'
@@ -27,6 +27,10 @@ import {
   type ReviewValueKey,
 } from '@/features/review-mode'
 import { downloadTextFile } from '@/features/report-export/downloadFile'
+import {
+  createKnowledgeEntryFromAcceptedReview,
+  saveKnowledgeEntry,
+} from '@/features/knowledge-base'
 import { Button } from '@/shared/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card'
 import { Input } from '@/shared/ui/input'
@@ -167,6 +171,20 @@ export function EngineeringReviewPage() {
 
   const handleExportSession = () => {
     downloadTextFile('engineering-review-session.json', exportReviewSession(session), 'application/json')
+  }
+
+  const handleCreateKnowledgeEntry = () => {
+    try {
+      const entry = createKnowledgeEntryFromAcceptedReview({
+        reviewSession: session,
+        comparisonItems: comparison.items,
+      })
+
+      saveKnowledgeEntry(entry)
+      setMessage(`Knowledge entry created: ${entry.title}`)
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : 'Could not create knowledge entry.')
+    }
   }
 
   const handleImportSession = () => {
@@ -412,6 +430,15 @@ export function EngineeringReviewPage() {
             <Button type="button" variant="outline" onClick={handleExportSession}>
               <FileJson />
               Выгрузить JSON сессии
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              disabled={session.status !== 'accepted'}
+              onClick={handleCreateKnowledgeEntry}
+            >
+              <BookOpen />
+              Create Knowledge Entry
             </Button>
           </div>
           {driftItems.length > 0 ? (

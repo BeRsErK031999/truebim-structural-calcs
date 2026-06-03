@@ -190,6 +190,22 @@ export function DiagnosticsPage() {
               value={diagnostics.releaseEvidenceExportFormats}
             />
             <DiagnosticItem
+              label="Knowledge base support"
+              value={formatDiagnosticValue(diagnostics.knowledgeBaseSupport)}
+            />
+            <DiagnosticItem
+              label="Knowledge entries"
+              value={diagnostics.knowledgeEntriesCount.toString()}
+            />
+            <DiagnosticItem
+              label="Verified findings"
+              value={diagnostics.verifiedFindingsCount.toString()}
+            />
+            <DiagnosticItem
+              label="Unresolved findings"
+              value={diagnostics.unresolvedFindingsCount.toString()}
+            />
+            <DiagnosticItem
               label="Анализ разрывов CalcEngine"
               value={formatDiagnosticValue(diagnostics.calcengineGapAnalysis)}
             />

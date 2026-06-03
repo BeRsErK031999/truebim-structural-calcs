@@ -6,6 +6,7 @@ import {
   type PunchingShearResult,
   type SvgSketchElement,
 } from '@/calculations/punching-shear'
+import { getRelatedKnowledgeEntries } from '@/features/knowledge-base'
 import { getAppMetadata } from '@/shared/config/appMetadata'
 
 import {
@@ -28,6 +29,7 @@ export function buildPunchingShearHtmlReport(
 ) {
   const metadata = getAppMetadata()
   const warnings = createReportWarnings(result)
+  const relatedKnowledge = getRelatedKnowledgeEntries({ input, result })
 
   return `<!doctype html>
 <html lang="en">
@@ -192,6 +194,8 @@ export function buildPunchingShearHtmlReport(
     ${renderFeatureList(result.draftFeatures)}
     <h2>Verification Evidence</h2>
     ${renderEvidence(result)}
+    <h2>Related Knowledge</h2>
+    ${renderRelatedKnowledge(relatedKnowledge)}
     ${renderSegments(result)}
     ${renderSvg(result)}
 
@@ -292,6 +296,20 @@ export function buildPunchingShearHtmlReport(
   </main>
 </body>
 </html>`
+}
+
+function renderRelatedKnowledge(entries: ReturnType<typeof getRelatedKnowledgeEntries>) {
+  if (entries.length === 0) {
+    return '<p class="note">No related knowledge entries linked.</p>'
+  }
+
+  return renderTable([
+    ['entry ID', 'title | category | source | tags'],
+    ...entries.map((entry) => [
+      entry.id,
+      `${entry.title} | ${entry.category} | ${entry.sourceReference} | ${entry.tags.join(', ') || 'none'}`,
+    ] satisfies [string, string]),
+  ])
 }
 
 function renderMultipleControlPerimeters(result: PunchingShearResult) {

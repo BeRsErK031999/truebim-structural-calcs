@@ -1,5 +1,6 @@
 import {
   Activity,
+  BookOpen,
   Building2,
   ClipboardCheck,
   Columns3,
@@ -25,6 +26,7 @@ const sections: CalculationSection[] = [
   { title: 'Пилот', path: '/pilot', icon: ListChecks, status: 'active' },
   { title: 'Инженерная проверка', path: '/review', icon: ClipboardCheck, status: 'active' },
   { title: 'Сессия валидации', path: '/validation-session', icon: PackageCheck, status: 'active' },
+  { title: 'Knowledge Base', path: '/knowledge', icon: BookOpen, status: 'active' },
   { title: 'Диагностика', path: '/diagnostics', icon: Activity, status: 'active' },
   { title: 'Релизные материалы', path: '/release-evidence', icon: FileArchive, status: 'active' },
 ]

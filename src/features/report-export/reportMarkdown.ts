@@ -4,6 +4,7 @@ import type {
   PunchingShearReportModel,
   PunchingShearResult,
 } from '@/calculations/punching-shear'
+import { getRelatedKnowledgeEntries } from '@/features/knowledge-base'
 
 import {
   formatUtilization,
@@ -25,6 +26,7 @@ export function buildPunchingShearMarkdownReport(
 ) {
   const metadata = getAppMetadata()
   const warnings = createReportWarnings(result)
+  const relatedKnowledge = getRelatedKnowledgeEntries({ input, result })
 
   return [
     '# TrueBIM Structural Calculations - Punching Shear Report',
@@ -213,6 +215,18 @@ export function buildPunchingShearMarkdownReport(
           ] satisfies [string, string]),
         ])
       : 'No verified evidence linked.',
+    '',
+    '## Related Knowledge',
+    '',
+    relatedKnowledge.length > 0
+      ? table([
+          ['entry ID', 'title | category | source | tags'],
+          ...relatedKnowledge.map((entry) => [
+            entry.id,
+            `${entry.title} | ${entry.category} | ${entry.sourceReference} | ${entry.tags.join(', ') || 'none'}`,
+          ] satisfies [string, string]),
+        ])
+      : 'No related knowledge entries linked.',
     '',
     '### Segments',
     '',

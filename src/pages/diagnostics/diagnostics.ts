@@ -5,6 +5,7 @@ import { runVerificationCases } from '@/calculations/punching-shear/verification
 import type { VerificationSummary } from '@/calculations/punching-shear/verification/verificationSummary'
 import { getReviewDiagnostics } from '@/features/review-mode'
 import { getValidationSessionDiagnostics } from '@/features/validation-session'
+import { getKnowledgeDiagnostics } from '@/features/knowledge-base'
 import type { AppMetadata } from '@/shared/config/appMetadata'
 
 export type DiagnosticsModel = {
@@ -63,6 +64,10 @@ export type DiagnosticsModel = {
   checklistProgressSupport: 'yes'
   releaseEvidenceSupport: 'yes'
   releaseEvidenceExportFormats: 'html/md/json'
+  knowledgeBaseSupport: 'local-only'
+  knowledgeEntriesCount: number
+  verifiedFindingsCount: number
+  unresolvedFindingsCount: number
   calcengineGapAnalysis: 'available'
   pilotReadinessMatrix: 'available'
   productionDesignReadiness: 'not yet'
@@ -106,6 +111,7 @@ export function buildDiagnosticsModel({
   const verification = runVerificationCases(punchingShearVerificationCases).summary
   const reviewDiagnostics = getReviewDiagnostics()
   const validationSessionDiagnostics = getValidationSessionDiagnostics()
+  const knowledgeDiagnostics = getKnowledgeDiagnostics()
   const verifiedCapabilityMatrix = getVerifiedCapabilityMatrix()
   const momentCases = punchingShearVerificationCases.filter(
     (verificationCase) =>
@@ -182,6 +188,7 @@ export function buildDiagnosticsModel({
     manualDatasetImportRequired: 'yes',
     releaseEvidenceSupport: 'yes',
     releaseEvidenceExportFormats: 'html/md/json',
+    ...knowledgeDiagnostics,
     calcengineGapAnalysis: 'available',
     pilotReadinessMatrix: 'available',
     productionDesignReadiness: 'not yet',
