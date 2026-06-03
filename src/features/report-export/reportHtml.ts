@@ -7,6 +7,7 @@ import {
   type SvgSketchElement,
 } from '@/calculations/punching-shear'
 import { getRelatedKnowledgeEntries } from '@/features/knowledge-base'
+import { formatFeatureLabel } from '@/shared/labels/featureLabels'
 import { getAppMetadata } from '@/shared/config/appMetadata'
 
 import {
@@ -344,7 +345,7 @@ function renderCalculationTrace(report: PunchingShearReportModel) {
 
 function renderFeatureList(features: string[]) {
   return `<ul>${(features.length > 0 ? features : ['none'])
-    .map((feature) => `<li>${escapeHtml(feature)}</li>`)
+    .map((feature) => `<li>${escapeHtml(feature === 'none' ? feature : formatFeatureLabel(feature))}</li>`)
     .join('')}</ul>`
 }
 
@@ -363,7 +364,7 @@ function renderEvidence(result: PunchingShearResult) {
 }
 
 function formatInlineFeatures(features: string[]) {
-  return features.length > 0 ? features.join(', ') : 'none'
+  return features.length > 0 ? features.map(formatFeatureLabel).join(', ') : 'none'
 }
 
 function getPartialReportFeatures(result: PunchingShearResult) {

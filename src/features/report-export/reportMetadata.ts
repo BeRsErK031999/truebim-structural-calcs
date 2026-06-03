@@ -43,10 +43,10 @@ export const reportApplicabilityItems = [
   'Not a final design document unless verified capability coverage matches the selected case.',
 ]
 
-export function createReportMetadata(now = new Date()): ReportMetadata {
+export function createReportMetadata(now = new Date(), calculationId = createCalculationId(now)): ReportMetadata {
   return {
     generatedAt: now.toISOString(),
-    calculationId: createCalculationId(now),
+    calculationId,
     verificationSource: 'NOT VERIFIED',
   }
 }

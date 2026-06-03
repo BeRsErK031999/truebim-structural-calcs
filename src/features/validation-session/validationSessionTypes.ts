@@ -10,6 +10,7 @@ export type ValidationSessionChecklistKey =
   | 'reviewCompleted'
   | 'acceptedReview'
   | 'candidateCreated'
+  | 'candidateCliValidationPassed'
   | 'candidateValidated'
   | 'engineerNotesAttached'
   | 'trustedSourceAttached'
@@ -48,6 +49,12 @@ export type ValidationSessionRegressionSnapshot = {
   notes: string
 }
 
+export type ValidationSessionCliValidationResult = {
+  status: 'not-attached' | 'PASS' | 'FAIL'
+  attachedAt: string | null
+  notes: string
+}
+
 export type ValidationSessionEngineerNotes = {
   text: string
   attachedAt: string | null
@@ -71,6 +78,7 @@ export type ValidationSession = {
   reviewComparison: ReviewComparison
   candidate: VerificationCandidate | null
   candidateValidated: boolean
+  candidateCliValidation: ValidationSessionCliValidationResult
   exports: ValidationSessionExportStatus
   regressionSnapshot: ValidationSessionRegressionSnapshot
   engineerNotes: ValidationSessionEngineerNotes

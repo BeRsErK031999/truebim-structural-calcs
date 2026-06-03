@@ -53,7 +53,7 @@ describe('pilot mode', () => {
     expect(pilotUsableItems).toEqual(
       expect.arrayContaining([
         'Тестировать расчетный UI и сравнивать результат с доверенными инженерными материалами.',
-        'Выгружать HTML/Markdown отчеты для пакетов проверки.',
+        'Preview report in app or download HTML/Markdown reports for validation packages.',
         'Использовать режим проверки для фиксации принятия, отклонения и расхождений.',
       ]),
     )

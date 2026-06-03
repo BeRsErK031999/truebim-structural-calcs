@@ -10,9 +10,10 @@ import type { ValidationSession, ValidationSessionPackage } from './validationSe
 export function buildValidationSessionPackage(
   session: ValidationSession,
   generatedAt = new Date().toISOString(),
+  options: { incompleteDebug?: boolean } = {},
 ): ValidationSessionPackage {
   const rootFolder = createPackageRoot(session)
-  const reportMetadata = createReportMetadata(new Date(generatedAt))
+  const reportMetadata = createReportMetadata(new Date(generatedAt), session.calculationId ?? undefined)
   const reviewSnapshot = buildReviewSnapshot({
     input: session.input,
     result: session.result,
@@ -28,6 +29,13 @@ export function buildValidationSessionPackage(
     verificationLevel: session.result.verificationLevel,
     reviewStatus: session.reviewSession.status,
     candidateStatus: session.candidate?.candidateStatus ?? 'not-created',
+    packageStatus: checklist.blockingItems.length === 0 ? 'complete' : 'incomplete',
+    warning:
+      checklist.blockingItems.length > 0
+        ? 'INCOMPLETE PACKAGE: blocking checklist items remain unresolved. Use for debugging only.'
+        : null,
+    blockingItems: checklist.blockingItems.map((item) => item.key),
+    incompleteDebug: options.incompleteDebug === true,
     deterministicPackage: true,
     candidateDoesNotImportDataset: true,
     acceptedReviewDoesNotPromoteVerified: true,
@@ -90,12 +98,23 @@ export function buildValidationSessionPackageManifest(session: ValidationSession
   return JSON.stringify(buildValidationSessionPackage(session), null, 2)
 }
 
-export function downloadValidationSessionPackageManifest(session: ValidationSession) {
+export function canExportValidationSessionPackage(session: ValidationSession) {
+  return getValidationChecklistProgress(session).blockingItems.length === 0
+}
+
+export function downloadValidationSessionPackageManifest(
+  session: ValidationSession,
+  options: { incompleteDebug?: boolean } = {},
+) {
+  if (!options.incompleteDebug && !canExportValidationSessionPackage(session)) {
+    return session
+  }
+
   const nextSession = setValidationSessionExportStatus(session, { packageExported: true })
 
   downloadTextFile(
-    `${createPackageRoot(session)}.json`,
-    buildValidationSessionPackageManifest(nextSession),
+    `${createPackageRoot(session)}${options.incompleteDebug ? '-incomplete-debug' : ''}.json`,
+    JSON.stringify(buildValidationSessionPackage(nextSession, new Date().toISOString(), options), null, 2),
     'application/json',
   )
 

@@ -47,6 +47,12 @@ const checklistDefinitions: Array<Omit<ValidationSessionChecklistItem, 'complete
     missingText: 'Создайте кандидата проверки из принятой проверки.',
   },
   {
+    key: 'candidateCliValidationPassed',
+    label: 'Candidate CLI validation passed',
+    blocking: true,
+    missingText: 'Attach a CLI validation result with PASS before marking the candidate PASS.',
+  },
+  {
     key: 'candidateValidated',
     label: 'Кандидат провалидирован',
     blocking: true,
@@ -101,6 +107,7 @@ export function createValidationSession({
     reviewComparison,
     candidate,
     candidateValidated: false,
+    candidateCliValidation: createEmptyCliValidationResult(),
     exports: createEmptyExportStatus(),
     regressionSnapshot: createEmptyRegressionSnapshot(),
     engineerNotes: createEmptyEngineerNotes(),
@@ -120,7 +127,14 @@ export function syncValidationSessionReview(
     calculationId: reviewSession.calculationId,
     reviewSession,
     reviewComparison: buildReviewComparison(session.result, reviewSession.evidence),
-    candidate: candidateResult.validation.valid ? candidateResult.candidate : session.candidate,
+    candidate: candidateResult.candidate,
+    candidateValidated: canMarkValidationCandidatePass({
+      ...session,
+      reviewSession,
+      candidate: candidateResult.candidate,
+    })
+      ? session.candidateValidated
+      : false,
   }
 }
 
@@ -156,11 +170,47 @@ export function markValidationCandidateValidated(
   candidateValidated: boolean,
   now = new Date().toISOString(),
 ): ValidationSession {
+  if (candidateValidated && !canMarkValidationCandidatePass(session)) {
+    return {
+      ...session,
+      updatedAt: now,
+      candidateValidated: false,
+    }
+  }
+
   return {
     ...session,
     updatedAt: now,
     candidateValidated,
   }
+}
+
+export function setValidationCandidateCliResult(
+  session: ValidationSession,
+  status: ValidationSession['candidateCliValidation']['status'],
+  notes = '',
+  now = new Date().toISOString(),
+): ValidationSession {
+  const nextSession = {
+    ...session,
+    updatedAt: now,
+    candidateCliValidation: {
+      status,
+      attachedAt: status === 'not-attached' ? null : now,
+      notes,
+    },
+  }
+
+  return canMarkValidationCandidatePass(nextSession)
+    ? nextSession
+    : { ...nextSession, candidateValidated: false }
+}
+
+export function canMarkValidationCandidatePass(session: ValidationSession) {
+  return (
+    session.candidate?.candidateStatus === 'ready-for-validation' &&
+    session.candidateCliValidation.status === 'PASS'
+  )
 }
 
 export function freezeValidationRegressionSnapshot(
@@ -203,7 +253,8 @@ export function getValidationChecklistProgress(
     reviewCompleted: session.reviewSession.status !== 'pending-review',
     acceptedReview: session.reviewSession.status === 'accepted',
     candidateCreated: session.candidate?.candidateStatus === 'ready-for-validation',
-    candidateValidated: session.candidateValidated,
+    candidateCliValidationPassed: session.candidateCliValidation.status === 'PASS',
+    candidateValidated: session.candidateValidated && canMarkValidationCandidatePass(session),
     engineerNotesAttached:
       session.engineerNotes.text.trim().length > 0 ||
       session.engineerNotes.attachments.some((attachment) => attachment.kind === 'engineer-note'),
@@ -225,6 +276,14 @@ export function getValidationChecklistProgress(
     completePercent: Math.round((completeCount / items.length) * 100),
     missingItems: items.filter((item) => !item.complete),
     blockingItems: items.filter((item) => !item.complete && item.blocking),
+  }
+}
+
+function createEmptyCliValidationResult(): ValidationSession['candidateCliValidation'] {
+  return {
+    status: 'not-attached',
+    attachedAt: null,
+    notes: '',
   }
 }
 

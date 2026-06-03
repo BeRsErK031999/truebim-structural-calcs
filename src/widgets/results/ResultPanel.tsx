@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { ChevronDown, Copy, Download } from 'lucide-react'
+import { ChevronDown, Copy, Download, Eye, X } from 'lucide-react'
 
 import {
   pointsToSvg,
@@ -12,36 +12,35 @@ import {
 import { useCalculationStore } from '@/entities/calculation/model/store'
 import {
   buildReportSummary,
-  createCalculationId,
   exportCurrentCalculationAsHtml,
   exportCurrentCalculationAsMarkdown,
 } from '@/features/report-export'
+import { buildPunchingShearHtmlReport } from '@/features/report-export/reportHtml'
+import { createReportMetadata } from '@/features/report-export/reportMetadata'
+import { formatFeatureLabel } from '@/shared/labels/featureLabels'
 import { Button } from '@/shared/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card'
 
 const draftWarning =
   'Черновой расчет. Проверьте формулы и коэффициенты по СП 63.13330 перед проектным применением.'
 
-const featureLabels: Record<string, string> = {
-  'center-force-only': 'центральная колонна, только сила',
-  'center-moment-transfer': 'центральная колонна с моментами',
-  edge: 'крайняя колонна',
-  corner: 'угловая колонна',
-  openings: 'отверстия',
-  'wall-end': 'wall punching at wall end',
-  'wall-corner': 'wall punching at wall corner',
-  'shear-reinforcement': 'поперечная арматура',
-  'round-columns': 'круглые колонны',
-}
-
 export function ResultPanel() {
+  const draft = useCalculationStore((state) => state.draft)
   const result = useCalculationStore((state) => state.punchingShearResult)
   const report = useCalculationStore((state) => state.punchingShearReport)
+  const calculationId = useCalculationStore((state) => state.activeCalculationId)
   const [exportMessage, setExportMessage] = useState<string | null>(null)
   const [copyMessage, setCopyMessage] = useState<string | null>(null)
   const [showTrace, setShowTrace] = useState(false)
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false)
   const canExport = Boolean(result && report)
-  const calculationId = useMemo(() => (result ? createCalculationId() : null), [result])
+  const previewHtml = useMemo(() => {
+    if (!result || !report || !calculationId) {
+      return ''
+    }
+
+    return buildPunchingShearHtmlReport(draft, result, report, createReportMetadata(new Date(), calculationId))
+  }, [calculationId, draft, report, result])
 
   const handleExportHtml = () => {
     const exportResult = exportCurrentCalculationAsHtml()
@@ -115,6 +114,16 @@ export function ResultPanel() {
             использовать для подготовки verified case.
           </p>
           <div className="grid gap-2 sm:grid-cols-2">
+            <Button
+              type="button"
+              variant="outline"
+              className="justify-center"
+              disabled={!canExport}
+              onClick={() => setIsPreviewOpen(true)}
+            >
+              <Eye />
+              Preview HTML report
+            </Button>
             <Button
               type="button"
               variant="outline"
@@ -218,6 +227,22 @@ export function ResultPanel() {
             {showTrace ? <TraceSteps report={report} /> : null}
           </div>
         ) : null}
+
+        {isPreviewOpen && previewHtml ? (
+          <div className="fixed inset-4 z-50 grid overflow-hidden rounded-lg border border-slate-300 bg-white shadow-xl md:inset-8">
+            <div className="flex items-center justify-between gap-3 border-b border-slate-200 px-4 py-3">
+              <div>
+                <p className="text-sm font-semibold text-slate-950">HTML report preview</p>
+                <p className="text-xs text-slate-600">calculationId: {calculationId}</p>
+              </div>
+              <Button type="button" variant="outline" onClick={() => setIsPreviewOpen(false)}>
+                <X />
+                Close
+              </Button>
+            </div>
+            <iframe className="h-full w-full" srcDoc={previewHtml} title="Punching shear HTML report preview" />
+          </div>
+        ) : null}
       </CardContent>
     </Card>
   )
@@ -308,7 +333,7 @@ function FeatureList({ title, features }: { title: string; features: string[] })
       <p className="text-xs font-medium uppercase tracking-[0.12em] text-slate-500">{title}</p>
       <ul className="mt-2 grid gap-1 text-sm text-slate-700">
         {features.length > 0 ? (
-          features.map((feature) => <li key={feature}>- {featureLabels[feature] ?? feature}</li>)
+          features.map((feature) => <li key={feature}>- {formatFeatureLabel(feature)}</li>)
         ) : (
           <li>- нет</li>
         )}

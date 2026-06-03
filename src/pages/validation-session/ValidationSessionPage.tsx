@@ -17,6 +17,8 @@ import {
 } from '@/features/review-mode'
 import {
   buildValidationSessionReviewerSummary,
+  canExportValidationSessionPackage,
+  canMarkValidationCandidatePass,
   createValidationSession,
   downloadValidationSessionPackageManifest,
   freezeValidationRegressionSnapshot,
@@ -24,6 +26,7 @@ import {
   getValidationChecklistProgress,
   markValidationCandidateValidated,
   saveValidationSession,
+  setValidationCandidateCliResult,
   setValidationSessionEngineerNotes,
   setValidationSessionExportStatus,
   syncValidationSessionReview,
@@ -32,18 +35,20 @@ import {
 import { Button } from '@/shared/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card'
 import { Input } from '@/shared/ui/input'
+import { formatFeatureLabel } from '@/shared/labels/featureLabels'
 
 export function ValidationSessionPage() {
   const draft = useCalculationStore((state) => state.draft)
   const storeResult = useCalculationStore((state) => state.punchingShearResult)
   const storeReport = useCalculationStore((state) => state.punchingShearReport)
+  const calculationId = useCalculationStore((state) => state.activeCalculationId)
   const result = storeResult ?? calculatePunchingShear(draft)
   const report = storeReport ?? buildPunchingShearReport(draft, result)
   const latestReview = useMemo(
     () =>
       listReviewSessions().sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))[0] ??
-      createReviewSession({ input: draft }),
-    [draft],
+      createReviewSession({ input: draft, calculationId }),
+    [calculationId, draft],
   )
   const [session, setSession] = useState<ValidationSession>(() => {
     const stored = getLatestValidationSession()
@@ -56,6 +61,13 @@ export function ValidationSessionPage() {
   const [message, setMessage] = useState<string | null>(null)
   const checklist = getValidationChecklistProgress(session)
   const summary = buildValidationSessionReviewerSummary(session)
+  const candidateExportErrors =
+    session.candidate && session.candidate.candidateStatus !== 'ready-for-validation'
+      ? ['Incomplete candidate cannot be exported.', ...createVerificationCandidateFromReview(session.reviewSession).validation.errors]
+      : []
+  const canExportCandidate = session.candidate?.candidateStatus === 'ready-for-validation'
+  const canExportPackage = canExportValidationSessionPackage(session)
+  const passBlockingReason = getCandidatePassBlockingReason(session)
 
   const persist = (nextSession: ValidationSession, nextMessage: string) => {
     setSession(saveValidationSession(nextSession))
@@ -67,7 +79,7 @@ export function ValidationSessionPage() {
   }
 
   const handleExportHtml = () => {
-    const metadata = createReportMetadata()
+    const metadata = createReportMetadata(new Date(), session.calculationId ?? calculationId ?? undefined)
     const filename = `validation-session-report-${metadata.calculationId}.html`
 
     downloadTextFile(filename, buildPunchingShearHtmlReport(draft, result, report, metadata), 'text/html')
@@ -75,7 +87,7 @@ export function ValidationSessionPage() {
   }
 
   const handleExportMarkdown = () => {
-    const metadata = createReportMetadata()
+    const metadata = createReportMetadata(new Date(), session.calculationId ?? calculationId ?? undefined)
     const filename = `validation-session-report-${metadata.calculationId}.md`
 
     downloadTextFile(filename, buildPunchingShearMarkdownReport(draft, result, report, metadata), 'text/markdown')
@@ -110,8 +122,8 @@ export function ValidationSessionPage() {
   }
 
   const handleExportCandidate = () => {
-    if (!session.candidate) {
-      setMessage('Сначала создайте кандидата проверки.')
+    if (!canExportCandidate || !session.candidate) {
+      setMessage(candidateExportErrors[0] ?? 'Create a ready-for-validation candidate before exporting JSON.')
       return
     }
 
@@ -152,10 +164,20 @@ export function ValidationSessionPage() {
     persist(markValidationCandidateValidated(session, true), 'PASS валидации кандидата зафиксирован.')
   }
 
+  const handleAttachCandidateCliPass = () => {
+    persist(setValidationCandidateCliResult(session, 'PASS'), 'CLI validation PASS attached.')
+  }
+
   const handleExportPackage = () => {
     const nextSession = downloadValidationSessionPackageManifest(session)
 
     persist(nextSession, 'Манифест пакета валидации выгружен.')
+  }
+
+  const handleExportIncompletePackage = () => {
+    const nextSession = downloadValidationSessionPackageManifest(session, { incompleteDebug: true })
+
+    persist(nextSession, 'Incomplete debug validation package exported with warning.')
   }
 
   return (
@@ -272,14 +294,35 @@ export function ValidationSessionPage() {
                 <FileJson />
                 Выгрузить снимок проверки
               </Button>
-              <Button type="button" variant="outline" onClick={handleExportCandidate}>
+              <Button type="button" variant="outline" disabled={!canExportCandidate} onClick={handleExportCandidate}>
                 <FileJson />
                 Выгрузить JSON кандидата
               </Button>
             </div>
-            <Button type="button" onClick={handleExportPackage}>
+            {session.candidate?.candidateStatus === 'incomplete' ? (
+              <p className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm font-medium text-amber-900">
+                Incomplete candidate cannot be exported.
+              </p>
+            ) : null}
+            {candidateExportErrors.length > 0 ? (
+              <ul className="grid gap-1 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
+                {candidateExportErrors.map((error) => (
+                  <li key={error}>- {error}</li>
+                ))}
+              </ul>
+            ) : null}
+            <Button type="button" disabled={!canExportPackage} onClick={handleExportPackage}>
               <PackageCheck />
               Выгрузить пакет валидации
+            </Button>
+            {!canExportPackage ? (
+              <p className="text-sm font-medium text-red-700">
+                Normal package export is blocked until checklist blocking items are complete.
+              </p>
+            ) : null}
+            <Button type="button" variant="outline" onClick={handleExportIncompletePackage}>
+              <PackageCheck />
+              Export incomplete package for debugging
             </Button>
           </CardContent>
         </Card>
@@ -298,7 +341,16 @@ export function ValidationSessionPage() {
                 <FileJson />
                 Создать кандидата
               </Button>
-              <Button type="button" variant="outline" onClick={handleCandidateValidated}>
+              <Button
+                type="button"
+                variant="outline"
+                disabled={session.candidate?.candidateStatus !== 'ready-for-validation'}
+                onClick={handleAttachCandidateCliPass}
+              >
+                <PackageCheck />
+                Attach CLI PASS result
+              </Button>
+              <Button type="button" variant="outline" disabled={!canMarkValidationCandidatePass(session)} onClick={handleCandidateValidated}>
                 <PackageCheck />
                 Отметить PASS кандидата
               </Button>
@@ -307,6 +359,7 @@ export function ValidationSessionPage() {
                 Заморозить регрессию
               </Button>
             </div>
+            {passBlockingReason ? <p className="text-sm font-medium text-red-700">{passBlockingReason}</p> : null}
           </CardContent>
         </Card>
       </section>
@@ -378,7 +431,7 @@ function FeatureList({ features }: { features: string[] }) {
   return (
     <ul className="grid gap-1 text-sm text-slate-700">
       {(features.length > 0 ? features : ['none']).map((feature) => (
-        <li key={feature}>- {formatFeature(feature)}</li>
+        <li key={feature}>- {feature === 'none' ? formatFeature(feature) : formatFeatureLabel(feature)}</li>
       ))}
     </ul>
   )
@@ -407,6 +460,7 @@ function formatCalculationStatus(value: string) {
 function formatVerificationLevel(value: string) {
   const labels: Record<string, string> = {
     verified: 'проверенный',
+    partial: 'частично проверенный',
     draft: 'черновой',
     unsupported: 'неподдерживаемый',
   }
@@ -421,6 +475,7 @@ function formatReviewStatus(value: string) {
     accepted: 'принято',
     rejected: 'отклонено',
     'needs-investigation': 'требует расследования',
+    'reviewed-needs-evidence': 'проверено, нужны доказательства',
   }
 
   return labels[value] ?? value
@@ -431,6 +486,7 @@ function formatCandidateStatus(value: string) {
     'not-created': 'не создан',
     incomplete: 'неполный',
     'ready-for-validation': 'готов к валидации',
+    'ready for verification': 'готов к проверке',
     validated: 'валидирован',
     rejected: 'отклонен',
   }
@@ -461,7 +517,9 @@ function formatDriftStatus(value: string) {
 function formatRecommendation(value: string) {
   const labels: Record<string, string> = {
     'keep partial': 'оставить частичным',
+    'ready for verification': 'готово к проверке',
     'ready for release evidence': 'готово к доказательствам релиза',
+    'requires investigation': 'требует расследования',
   }
 
   return labels[value] ?? value
@@ -490,4 +548,20 @@ function formatFeature(value: string) {
   }
 
   return labels[value] ?? value
+}
+
+function getCandidatePassBlockingReason(session: ValidationSession) {
+  if (!session.candidate) {
+    return 'Mark candidate PASS is blocked: create a candidate first.'
+  }
+
+  if (session.candidate.candidateStatus !== 'ready-for-validation') {
+    return 'Mark candidate PASS is blocked: candidate is incomplete or rejected.'
+  }
+
+  if (session.candidateCliValidation.status !== 'PASS') {
+    return 'Mark candidate PASS is blocked: attach a CLI validation result with PASS.'
+  }
+
+  return null
 }

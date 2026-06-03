@@ -57,12 +57,21 @@ const expectedFields: Array<{ key: ReviewValueKey; label: string }> = [
   { key: 'verificationLevel', label: 'Уровень проверки' },
 ]
 
+const sourceOptions = [
+  { value: 'manual', label: 'manual' },
+  { value: 'webcad', label: 'webcad' },
+  { value: 'excel', label: 'excel' },
+  { value: 'hand-calculation', label: 'нормативный пример' },
+  { value: 'other', label: 'other' },
+] as const
+
 export function EngineeringReviewPage() {
   const draft = useCalculationStore((state) => state.draft)
   const storeResult = useCalculationStore((state) => state.punchingShearResult)
+  const calculationId = useCalculationStore((state) => state.activeCalculationId)
   const setPunchingShearResult = useCalculationStore((state) => state.setPunchingShearResult)
   const result = storeResult ?? calculatePunchingShear(draft)
-  const [session, setSession] = useState<ReviewSession>(() => createReviewSession({ input: draft }))
+  const [session, setSession] = useState<ReviewSession>(() => createReviewSession({ input: draft, calculationId }))
   const [candidateResult, setCandidateResult] = useState<VerificationCandidateCreationResult | null>(null)
   const [message, setMessage] = useState<string | null>(null)
   const [importText, setImportText] = useState('')
@@ -80,6 +89,7 @@ export function EngineeringReviewPage() {
     () => createVerificationCandidateFromReview(session),
     [session],
   )
+  const exportableCandidate = candidateResult?.candidate.candidateStatus === 'ready-for-validation'
   const candidateChecklist = [
     { label: 'статус принятия', complete: session.status === 'accepted' },
     { label: 'доверенный источник', complete: hasTrustedVerificationCandidateSource(session.evidence.source) },
@@ -130,10 +140,16 @@ export function EngineeringReviewPage() {
   }
 
   const handleStatusChange = (status: ReviewStatus) => {
+    const evidenceValidation = createVerificationCandidateFromReview({ ...session, status: 'accepted' })
+    const nextStatus =
+      status === 'accepted' && !evidenceValidation.validation.valid
+        ? 'reviewed-needs-evidence'
+        : transitionReviewStatus(session.status, status)
+
     updateSession(
       {
         ...session,
-        status: transitionReviewStatus(session.status, status),
+        status: nextStatus,
         updatedAt: new Date().toISOString(),
         decision: {
           ...session.decision,
@@ -143,6 +159,9 @@ export function EngineeringReviewPage() {
       },
       true,
     )
+    if (status === 'accepted' && !evidenceValidation.validation.valid) {
+      setMessage(`Accepted is blocked until trusted evidence is complete: ${evidenceValidation.validation.missingRequirements.join(', ')}`)
+    }
   }
 
   const handleFreeze = () => {
@@ -213,6 +232,11 @@ export function EngineeringReviewPage() {
   const handleExportCandidate = () => {
     const candidate = candidateResult?.candidate ?? candidatePreview.candidate
 
+    if (candidate.candidateStatus !== 'ready-for-validation') {
+      setMessage('Incomplete candidate cannot be exported.')
+      return
+    }
+
     downloadCandidateJson(candidate)
   }
 
@@ -275,16 +299,28 @@ export function EngineeringReviewPage() {
         </CardHeader>
         <CardContent className="grid gap-4">
           <div className="grid gap-3 md:grid-cols-3">
-            <LabelledInput
-              label="Источник"
-              value={session.evidence.source}
-              onChange={(value) =>
-                updateSession({
-                  ...session,
-                  evidence: { ...session.evidence, source: value as ReviewSession['evidence']['source'] },
-                })
-              }
-            />
+            <label className="grid gap-1 text-sm font-medium text-slate-700">
+              Источник
+              <select
+                className="h-10 rounded-lg border border-slate-300 bg-white px-3 text-sm outline-none focus-visible:border-slate-500 focus-visible:ring-3 focus-visible:ring-slate-200"
+                value={session.evidence.source}
+                onChange={(event) =>
+                  updateSession({
+                    ...session,
+                    evidence: {
+                      ...session.evidence,
+                      source: event.target.value as ReviewSession['evidence']['source'],
+                    },
+                  })
+                }
+              >
+                {sourceOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </label>
             <LabelledInput
               label="Проверил"
               value={session.evidence.checkedBy}
@@ -332,6 +368,10 @@ export function EngineeringReviewPage() {
               />
             ))}
           </div>
+          <p className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm font-medium text-amber-900">
+            Expected values must come from a trusted source, not copied blindly from app output. Use mm, MPa, or
+            dimensionless values as indicated by each field label.
+          </p>
           <div className="grid gap-2">
             <p className="text-sm font-semibold text-slate-900">Метаданные приложений</p>
             <textarea
@@ -401,7 +441,16 @@ export function EngineeringReviewPage() {
             <Button type="button" variant="outline" onClick={handleRunCurrentDraft}>
               Пересчитать текущий черновик
             </Button>
-            {(['pending-review', 'reviewed', 'accepted', 'rejected', 'needs-investigation'] as ReviewStatus[]).map(
+            {(
+              [
+                'pending-review',
+                'reviewed',
+                'reviewed-needs-evidence',
+                'accepted',
+                'rejected',
+                'needs-investigation',
+              ] as ReviewStatus[]
+            ).map(
               (status) => (
                 <Button
                   key={status}
@@ -487,7 +536,6 @@ export function EngineeringReviewPage() {
               <Button
                 type="button"
                 variant="outline"
-                disabled={!candidatePreview.validation.valid}
                 onClick={handleCreateCandidate}
               >
                 <FileJson />
@@ -496,7 +544,7 @@ export function EngineeringReviewPage() {
               <Button
                 type="button"
                 variant="outline"
-                disabled={!candidateResult}
+                disabled={!exportableCandidate}
                 onClick={handleExportCandidate}
               >
                 <FileDown />
@@ -505,7 +553,7 @@ export function EngineeringReviewPage() {
               <Button
                 type="button"
                 variant="outline"
-                disabled={!candidateResult}
+                disabled={!exportableCandidate}
                 onClick={handleCopyCandidateSummary}
               >
                 <ClipboardCopy />
@@ -518,6 +566,9 @@ export function EngineeringReviewPage() {
                   <li key={error}>{error}</li>
                 ))}
               </ul>
+            ) : null}
+            {candidateResult?.candidate.candidateStatus === 'incomplete' ? (
+              <p className="text-sm font-semibold text-amber-900">Incomplete candidate cannot be exported.</p>
             ) : null}
           </div>
           <textarea
@@ -615,6 +666,7 @@ function formatReviewStatus(status: ReviewStatus) {
   const labels: Record<ReviewStatus, string> = {
     'pending-review': 'ожидает проверки',
     reviewed: 'проверено',
+    'reviewed-needs-evidence': 'проверено, нужны доказательства',
     accepted: 'принято',
     rejected: 'отклонено',
     'needs-investigation': 'нужно расследование',

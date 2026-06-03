@@ -20,7 +20,7 @@ export const pilotQuickStartSteps = [
   },
   {
     title: 'Проверить отчет',
-    description: 'Выгрузите или просмотрите отчет расчета и зафиксируйте все допущения.',
+    description: 'Preview report in app or download HTML/Markdown, then record all assumptions.',
     href: '/',
   },
   {
@@ -55,7 +55,7 @@ export const pilotReadinessNotes = [
 
 export const pilotUsableItems = [
   'Тестировать расчетный UI и сравнивать результат с доверенными инженерными материалами.',
-  'Выгружать HTML/Markdown отчеты для пакетов проверки.',
+  'Preview report in app or download HTML/Markdown reports for validation packages.',
   'Использовать режим проверки для фиксации принятия, отклонения и расхождений.',
   'Готовить сессии валидации, релизные материалы и пакеты отзывов пилота.',
   'Использовать центральный прямоугольный случай только от силы как текущую доверенную пилотную базу.',

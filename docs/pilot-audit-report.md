@@ -279,10 +279,34 @@ Notes:
 - scenarios checked: 10
 - issues found: 13
 - severity breakdown:
-  - Critical: 1
-  - High: 4
-  - Medium: 5
-  - Low: 3
-- pilot readiness: 58/100
+  - Critical: 0 open
+  - High: 0 open
+  - Medium: 1 open risk
+  - Low: 0 open
+- pilot readiness: 84/100
 
-Pilot can continue for controlled internal evidence collection, but it is not ready for broad pilot use until the critical validation-session issue and high-severity candidate/review/UX blockers are addressed.
+Pilot is ready for controlled engineer rollout focused on evidence collection. Draft geometry remains explicitly non-design-use and still requires trusted review evidence before any promotion workflow.
+
+## Remediation
+
+Commit: final remediation commit hash is reported with the task completion output.
+
+| # | Severity | Status | Verification |
+| --- | --- | --- | --- |
+| 1 | Critical | fixed | `validationSession.test.ts`: PASS is blocked without candidate, incomplete candidate, or missing CLI PASS; ready candidate + CLI PASS succeeds. |
+| 2 | High | fixed | UI blocks incomplete candidate JSON export; candidate validation errors are shown near export controls. |
+| 3 | High | fixed | Edge, corner, and opening are selectable in the form with DRAFT GEOMETRY ONLY / NOT FOR DESIGN USE warnings. |
+| 4 | High | fixed | `scripts/check-mojibake.mjs` and `npm run check:mojibake` guard the requested mojibake signatures. |
+| 5 | High | fixed | Review `accepted` is gated by candidate evidence requirements; incomplete evidence moves to `reviewed-needs-evidence`. |
+| 6 | Medium | fixed | Store-level `activeCalculationId` is reused by copy, HTML export, Markdown export, review, and validation package metadata. |
+| 7 | Medium | fixed | Round edge/corner positions are disabled in the round-column UI; center remains available. |
+| 8 | Medium | fixed | Result panel includes in-app `Preview HTML report` using the same report metadata/calculationId. |
+| 9 | Medium | fixed | Review evidence source is a controlled select with trusted-source warning and expected-value unit/source hints. |
+| 10 | Medium | fixed | Normal validation package export is disabled with blockers; incomplete debug export includes a manifest warning. |
+| 11 | Low | fixed | Pilot quick-start now says: preview report in app or download HTML/Markdown. |
+| 12 | Low | fixed | Validation session label maps cover partial, ready-for-validation, incomplete, rejected, needs-investigation, reviewed-needs-evidence, draft, verified, and ready-for-verification wording. |
+| 13 | Low | fixed | `src/shared/labels/featureLabels.ts` centralizes known feature labels and reports/result panel use it. |
+
+Remaining risk:
+
+- The pilot still depends on trusted external/manual evidence for draft and partial features. This remediation did not change formulas, auto-promotion, verification logic, or draft warnings.

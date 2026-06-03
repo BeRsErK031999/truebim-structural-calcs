@@ -14,11 +14,13 @@ import {
 
 import {
   buildValidationSessionPackage,
+  canExportValidationSessionPackage,
   buildValidationSessionReviewerSummary,
   createValidationSession,
   freezeValidationRegressionSnapshot,
   getValidationChecklistProgress,
   markValidationCandidateValidated,
+  setValidationCandidateCliResult,
   setValidationSessionEngineerNotes,
   setValidationSessionExportStatus,
 } from '../index'
@@ -108,6 +110,89 @@ describe('validation session workflow', () => {
     expect(summary.recommendation).toBe('keep partial')
     expect(summary.missingTrustedEvidence).toContain('ready verification candidate')
   })
+
+  it('cannot mark PASS without a candidate', () => {
+    const session = createValidationSession({
+      input: defaultPunchingShearInput,
+      result: calculatePunchingShear(defaultPunchingShearInput),
+    })
+
+    expect(markValidationCandidateValidated(session, true).candidateValidated).toBe(false)
+  })
+
+  it('cannot mark PASS with an incomplete candidate', () => {
+    const result = calculatePunchingShear(defaultPunchingShearInput)
+    const reviewSession = {
+      ...createAcceptedReviewSession(result),
+      evidence: {
+        ...createAcceptedReviewSession(result).evidence,
+        checkedBy: '',
+      },
+    }
+    const candidate = createVerificationCandidateFromReview(reviewSession).candidate
+    const session = setValidationCandidateCliResult(
+      createValidationSession({
+        input: defaultPunchingShearInput,
+        result,
+        reviewSession,
+        candidate,
+      }),
+      'PASS',
+    )
+
+    expect(candidate.candidateStatus).toBe('incomplete')
+    expect(markValidationCandidateValidated(session, true).candidateValidated).toBe(false)
+  })
+
+  it('cannot mark PASS without a CLI validation result', () => {
+    const result = calculatePunchingShear(defaultPunchingShearInput)
+    const reviewSession = createAcceptedReviewSession(result)
+    const candidate = createVerificationCandidateFromReview(reviewSession).candidate
+    const session = createValidationSession({
+      input: defaultPunchingShearInput,
+      result,
+      reviewSession,
+      candidate,
+    })
+
+    expect(candidate.candidateStatus).toBe('ready-for-validation')
+    expect(markValidationCandidateValidated(session, true).candidateValidated).toBe(false)
+  })
+
+  it('can mark PASS only with a ready candidate and CLI PASS result', () => {
+    const result = calculatePunchingShear(defaultPunchingShearInput)
+    const reviewSession = createAcceptedReviewSession(result)
+    const candidate = createVerificationCandidateFromReview(reviewSession).candidate
+    const session = setValidationCandidateCliResult(
+      createValidationSession({
+        input: defaultPunchingShearInput,
+        result,
+        reviewSession,
+        candidate,
+      }),
+      'PASS',
+    )
+
+    const passed = markValidationCandidateValidated(session, true)
+
+    expect(passed.candidateValidated).toBe(true)
+    expect(getValidationChecklistProgress(passed).items.find((item) => item.key === 'candidateCliValidationPassed')?.complete).toBe(true)
+  })
+
+  it('blocks normal package export with checklist blockers and marks incomplete debug packages', () => {
+    const session = createValidationSession({
+      input: defaultPunchingShearInput,
+      result: calculatePunchingShear(defaultPunchingShearInput),
+    })
+    const debugPackage = buildValidationSessionPackage(session, '2026-05-28T01:00:00.000Z', {
+      incompleteDebug: true,
+    })
+    const metadata = debugPackage.files.find((file) => file.path.endsWith('package.json'))?.content ?? ''
+
+    expect(canExportValidationSessionPackage(session)).toBe(false)
+    expect(metadata).toContain('INCOMPLETE PACKAGE')
+    expect(metadata).toContain('reportExported')
+  })
 })
 
 function prepareReadySession() {
@@ -143,8 +228,15 @@ function prepareReadySession() {
     ],
   })
 
-  return markValidationCandidateValidated(
+  const withCliPass = setValidationCandidateCliResult(
     freezeValidationRegressionSnapshot(withNotes, '2026-05-28T01:00:00.000Z'),
+    'PASS',
+    '',
+    '2026-05-28T01:00:00.000Z',
+  )
+
+  return markValidationCandidateValidated(
+    withCliPass,
     true,
     '2026-05-28T01:00:00.000Z',
   )

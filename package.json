@@ -10,6 +10,7 @@
     "preview": "vite preview",
     "typecheck": "tsc -b",
     "test": "vitest run",
+    "check:mojibake": "node scripts/check-mojibake.mjs",
     "verification:validate": "node scripts/create-verified-case.mjs",
     "verification:candidate": "node scripts/validate-verification-candidate.mjs",
     "verification:stress": "node scripts/run-stress-regression.mjs",

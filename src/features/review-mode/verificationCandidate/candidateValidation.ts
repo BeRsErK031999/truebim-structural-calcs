@@ -6,6 +6,7 @@ export const trustedVerificationCandidateSourceMarkers = [
   'manual',
   'webcad',
   'excel',
+  'hand-calculation',
   'нормативный пример',
 ] as const
 

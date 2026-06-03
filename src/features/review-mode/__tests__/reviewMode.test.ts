@@ -61,6 +61,13 @@ describe('engineering review mode', () => {
     expect(transitionReviewStatus(accepted, 'needs-investigation')).toBe('needs-investigation')
   })
 
+  it('allows reviewed-needs-evidence before accepted evidence is complete', () => {
+    const needsEvidence = transitionReviewStatus('pending-review', 'reviewed-needs-evidence')
+
+    expect(needsEvidence).toBe('reviewed-needs-evidence')
+    expect(transitionReviewStatus(needsEvidence, 'needs-investigation')).toBe('needs-investigation')
+  })
+
   it('detects drift against frozen review snapshots', () => {
     const result = calculatePunchingShear(defaultPunchingShearInput)
     const comparison = buildReviewComparison(result, createEmptyReviewEvidence())

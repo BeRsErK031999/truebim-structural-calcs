@@ -1,6 +1,7 @@
 export type ReviewStatus =
   | 'pending-review'
   | 'reviewed'
+  | 'reviewed-needs-evidence'
   | 'accepted'
   | 'rejected'
   | 'needs-investigation'
@@ -12,8 +13,9 @@ export type ReviewDecisionMetadata = {
 }
 
 const allowedTransitions: Record<ReviewStatus, ReviewStatus[]> = {
-  'pending-review': ['reviewed', 'accepted', 'rejected', 'needs-investigation'],
-  reviewed: ['accepted', 'rejected', 'needs-investigation', 'pending-review'],
+  'pending-review': ['reviewed', 'reviewed-needs-evidence', 'accepted', 'rejected', 'needs-investigation'],
+  reviewed: ['reviewed-needs-evidence', 'accepted', 'rejected', 'needs-investigation', 'pending-review'],
+  'reviewed-needs-evidence': ['accepted', 'needs-investigation', 'rejected', 'pending-review'],
   accepted: ['needs-investigation', 'rejected'],
   rejected: ['needs-investigation', 'pending-review'],
   'needs-investigation': ['reviewed', 'accepted', 'rejected', 'pending-review'],

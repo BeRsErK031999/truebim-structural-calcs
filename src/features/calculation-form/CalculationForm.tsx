@@ -24,9 +24,9 @@ import { ToggleField } from './components/ToggleField'
 
 const caseOptions: Array<{ value: PunchingShearCaseType; label: string; disabled?: boolean }> = [
   { value: 'center', label: 'Центральная прямоугольная колонна' },
-  { value: 'edge', label: 'Крайняя колонна - скоро', disabled: true },
-  { value: 'corner', label: 'Угловая колонна - скоро', disabled: true },
-  { value: 'opening', label: 'Отверстие рядом с колонной - скоро', disabled: true },
+  { value: 'edge', label: 'Крайняя колонна - draft geometry' },
+  { value: 'corner', label: 'Угловая колонна - draft geometry' },
+  { value: 'opening', label: 'Отверстие рядом с колонной - draft geometry' },
   { value: 'round', label: 'Round column - draft center only' },
   { value: 'wall-end', label: 'Wall end punching - draft geometry' },
   { value: 'wall-corner', label: 'Wall corner punching - draft geometry' },
@@ -72,6 +72,7 @@ export function CalculationForm() {
   const caseType = useWatch({ control, name: 'caseType' })
   const concreteClass = useWatch({ control, name: 'concrete.className' })
   const wallCornerOrientation = useWatch({ control, name: 'wallCorner.orientation' })
+  const openings = useWatch({ control, name: 'openings' })
   const roundColumnPosition = useWatch({ control, name: 'roundColumn.position' })
   const multipleContoursEnabled = useWatch({ control, name: 'multipleContours.enabled' })
   const multipleContoursOffsetStep = useWatch({ control, name: 'multipleContours.offsetStep' })
@@ -91,6 +92,16 @@ export function CalculationForm() {
   useEffect(() => {
     void trigger()
   }, [trigger])
+
+  useEffect(() => {
+    if (caseType === 'opening' && (!openings || openings.length === 0)) {
+      setValue(
+        'openings',
+        [{ id: 'opening-1', widthXMm: 250, widthYMm: 250, centerXMm: 650, centerYMm: 0 }],
+        { shouldDirty: true, shouldValidate: true },
+      )
+    }
+  }, [caseType, openings, setValue])
 
   useEffect(() => {
     reset(structuredClone(draft))
@@ -145,7 +156,7 @@ export function CalculationForm() {
     <form className="grid gap-5" onSubmit={handleSubmit(runCalculation)}>
       <FormSection
         title="Расчетный случай"
-        helperText="Сейчас расчетный движок поддерживает только центральную прямоугольную колонну без отверстий и краев плиты."
+        helperText="Center force-only behavior is verified in the current evidence set. Edge, corner, opening, wall, reinforcement, moment, and round-column workflows are draft/pilot geometry and require review evidence."
       >
         <SelectField
           label="Тип случая"
@@ -160,6 +171,11 @@ export function CalculationForm() {
             })
           }
         />
+        {caseType === 'edge' || caseType === 'corner' || caseType === 'opening' ? (
+          <p className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm font-semibold text-amber-900">
+            DRAFT GEOMETRY ONLY. NOT FOR DESIGN USE. Requires engineering review and trusted evidence.
+          </p>
+        ) : null}
       </FormSection>
 
       <FormSection
@@ -245,8 +261,8 @@ export function CalculationForm() {
             value={roundColumnPosition ?? 'center'}
             options={[
               { value: 'center', label: 'center' },
-              { value: 'edge', label: 'edge' },
-              { value: 'corner', label: 'corner' },
+              { value: 'edge', label: 'edge', disabled: true },
+              { value: 'corner', label: 'corner', disabled: true },
             ]}
             error={errors.roundColumn?.position?.message}
             onValueChange={(value) =>
@@ -280,6 +296,40 @@ export function CalculationForm() {
             unit="mm"
             registration={register('wall.wallThickness', { valueAsNumber: true })}
             error={errors.wall?.wallThickness?.message}
+          />
+        </FormSection>
+      ) : null}
+
+      {caseType === 'opening' ? (
+        <FormSection
+          title="Opening Geometry"
+          helperText="Draft-only opening geometry. The opening is used for tangent subtraction and requires review/evidence."
+        >
+          <NumberField
+            label="Opening width X"
+            min={1}
+            unit="mm"
+            registration={register('openings.0.widthXMm', { valueAsNumber: true })}
+            error={errors.openings?.[0]?.widthXMm?.message}
+          />
+          <NumberField
+            label="Opening width Y"
+            min={1}
+            unit="mm"
+            registration={register('openings.0.widthYMm', { valueAsNumber: true })}
+            error={errors.openings?.[0]?.widthYMm?.message}
+          />
+          <NumberField
+            label="Opening center X"
+            unit="mm"
+            registration={register('openings.0.centerXMm', { valueAsNumber: true })}
+            error={errors.openings?.[0]?.centerXMm?.message}
+          />
+          <NumberField
+            label="Opening center Y"
+            unit="mm"
+            registration={register('openings.0.centerYMm', { valueAsNumber: true })}
+            error={errors.openings?.[0]?.centerYMm?.message}
           />
         </FormSection>
       ) : null}

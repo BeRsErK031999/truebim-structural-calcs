@@ -6,6 +6,7 @@ import type {
   PunchingShearReportModel,
   PunchingShearResult,
 } from '@/calculations/punching-shear'
+import { createCalculationId } from '@/features/report-export/reportMetadata'
 
 import {
   exportCalculationToJson,
@@ -23,6 +24,7 @@ type CalculationState = {
   draft: PunchingShearInput
   punchingShearResult: PunchingShearResult | null
   punchingShearReport: PunchingShearReportModel | null
+  activeCalculationId: string | null
   savedCalculations: SavedCalculationSummary[]
   activeSavedCalculationId: string | null
   setDraft: (draft: PunchingShearInput) => void
@@ -44,11 +46,12 @@ export const useCalculationStore = create<CalculationState>((set, get) => ({
   draft: defaultCalculationDraft,
   punchingShearResult: null,
   punchingShearReport: null,
+  activeCalculationId: null,
   savedCalculations: [],
   activeSavedCalculationId: null,
   setDraft: (draft) => set({ draft, activeSavedCalculationId: null }),
   setPunchingShearResult: (result, report) =>
-    set({ punchingShearResult: result, punchingShearReport: report }),
+    set({ punchingShearResult: result, punchingShearReport: report, activeCalculationId: createCalculationId() }),
   loadSavedCalculations: () =>
     set({
       savedCalculations: listSavedCalculations(),
@@ -65,7 +68,7 @@ export const useCalculationStore = create<CalculationState>((set, get) => ({
       : null
     const now = new Date().toISOString()
     const savedCalculation = saveCalculation({
-      id: existingCalculation?.id ?? createCalculationId(),
+      id: existingCalculation?.id ?? createSavedCalculationId(),
       title: title?.trim() || existingCalculation?.title || createDefaultTitle(),
       createdAt: existingCalculation?.createdAt ?? now,
       updatedAt: now,
@@ -78,6 +81,7 @@ export const useCalculationStore = create<CalculationState>((set, get) => ({
 
     set({
       savedCalculations: listSavedCalculations(),
+      activeCalculationId: savedCalculation.id,
       activeSavedCalculationId: savedCalculation.id,
     })
 
@@ -94,6 +98,7 @@ export const useCalculationStore = create<CalculationState>((set, get) => ({
       draft: savedCalculation.input,
       punchingShearResult: savedCalculation.result,
       punchingShearReport: savedCalculation.report,
+      activeCalculationId: savedCalculation.id,
       activeSavedCalculationId: savedCalculation.id,
     })
 
@@ -119,6 +124,7 @@ export const useCalculationStore = create<CalculationState>((set, get) => ({
       draft: savedCalculation.input,
       punchingShearResult: savedCalculation.result,
       punchingShearReport: savedCalculation.report,
+      activeCalculationId: savedCalculation.id,
       savedCalculations: listSavedCalculations(),
       activeSavedCalculationId: savedCalculation.id,
     })
@@ -135,7 +141,7 @@ export const useCalculationStore = create<CalculationState>((set, get) => ({
   },
 }))
 
-function createCalculationId() {
+function createSavedCalculationId() {
   return globalThis.crypto?.randomUUID?.() ?? `calc-${Date.now()}-${Math.random()}`
 }
 
@@ -146,7 +152,7 @@ function createDefaultTitle() {
 function createUnsavedCurrentCalculation(
   state: Pick<
     CalculationState,
-    'draft' | 'punchingShearResult' | 'punchingShearReport'
+    'draft' | 'punchingShearResult' | 'punchingShearReport' | 'activeCalculationId'
   >,
 ): SavedCalculation | null {
   if (!state.punchingShearResult || !state.punchingShearReport) {
@@ -156,7 +162,7 @@ function createUnsavedCurrentCalculation(
   const now = new Date().toISOString()
 
   return {
-    id: createCalculationId(),
+    id: state.activeCalculationId ?? createSavedCalculationId(),
     title: createDefaultTitle(),
     createdAt: now,
     updatedAt: now,

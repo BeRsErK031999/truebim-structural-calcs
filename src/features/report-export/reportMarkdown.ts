@@ -5,6 +5,7 @@ import type {
   PunchingShearResult,
 } from '@/calculations/punching-shear'
 import { getRelatedKnowledgeEntries } from '@/features/knowledge-base'
+import { formatFeatureLabel } from '@/shared/labels/featureLabels'
 
 import {
   formatUtilization,
@@ -353,7 +354,7 @@ export function buildPunchingShearMarkdownReport(
 }
 
 function formatFeatureList(features: string[]) {
-  return features.length > 0 ? features.map((feature) => `- ${feature}`) : ['- none']
+  return features.length > 0 ? features.map((feature) => `- ${formatFeatureLabel(feature)}`) : ['- none']
 }
 
 function renderCalculationTrace(report: PunchingShearReportModel) {
@@ -373,7 +374,7 @@ function renderCalculationTrace(report: PunchingShearReportModel) {
 }
 
 function formatInlineFeatures(features: string[]) {
-  return features.length > 0 ? features.join(', ') : 'none'
+  return features.length > 0 ? features.map(formatFeatureLabel).join(', ') : 'none'
 }
 
 function getPartialReportFeatures(result: PunchingShearResult) {

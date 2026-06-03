@@ -25,6 +25,7 @@ describe('calculation local storage', () => {
       draft: defaultPunchingShearInput,
       punchingShearResult: null,
       punchingShearReport: null,
+      activeCalculationId: null,
       savedCalculations: [],
       activeSavedCalculationId: null,
     })
@@ -79,6 +80,7 @@ describe('calculation local storage', () => {
       draft: defaultPunchingShearInput,
       punchingShearResult: result,
       punchingShearReport: report,
+      activeCalculationId: 'calc-storage-test',
     })
 
     const savedCalculation = useCalculationStore
@@ -94,6 +96,7 @@ describe('calculation local storage', () => {
       },
       punchingShearResult: null,
       punchingShearReport: null,
+      activeCalculationId: null,
     })
 
     useCalculationStore.getState().loadSavedCalculation(savedCalculation.id)

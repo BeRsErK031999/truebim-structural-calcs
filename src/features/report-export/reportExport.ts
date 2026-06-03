@@ -18,7 +18,7 @@ export function exportCurrentCalculationAsHtml(): ExportCalculationResult {
   }
 
   try {
-    const reportMetadata = createReportMetadata()
+    const reportMetadata = createReportMetadata(new Date(), state.activeCalculationId ?? undefined)
     const content = buildPunchingShearHtmlReport(
       state.draft,
       state.punchingShearResult,
@@ -43,7 +43,7 @@ export function exportCurrentCalculationAsMarkdown(): ExportCalculationResult {
   }
 
   try {
-    const reportMetadata = createReportMetadata()
+    const reportMetadata = createReportMetadata(new Date(), state.activeCalculationId ?? undefined)
     const content = buildPunchingShearMarkdownReport(
       state.draft,
       state.punchingShearResult,

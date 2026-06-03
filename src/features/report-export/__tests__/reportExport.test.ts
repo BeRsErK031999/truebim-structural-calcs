@@ -13,6 +13,7 @@ import {
   createCalculationId,
   formatUtilization,
   exportCurrentCalculationAsHtml,
+  exportCurrentCalculationAsMarkdown,
   sanitizeFileName,
 } from '../index'
 
@@ -29,6 +30,7 @@ describe('report export', () => {
       draft: defaultPunchingShearInput,
       punchingShearResult: null,
       punchingShearReport: null,
+      activeCalculationId: null,
       activeSavedCalculationId: null,
     })
   })
@@ -326,15 +328,38 @@ describe('report export', () => {
       draft: defaultPunchingShearInput,
       punchingShearResult: result,
       punchingShearReport: report,
+      activeCalculationId: 'calc-stable-report-id',
     })
 
     expect(exportCurrentCalculationAsHtml()).toEqual({
       ok: true,
-      filename: expect.stringMatching(
-        /^truebim-punching-shear-report-ps-center-\d{8}-\d{6}-[a-zA-Z0-9-]+\.html$/,
-      ),
+      filename: 'truebim-punching-shear-report-calc-stable-report-id.html',
     })
     expect(mockedDownloadTextFile).toHaveBeenCalledOnce()
+    expect(mockedDownloadTextFile.mock.calls[0][1]).toContain('calc-stable-report-id')
+  })
+
+  it('uses the same stable calculation ID for HTML and Markdown exports', () => {
+    const result = calculatePunchingShear(defaultPunchingShearInput)
+    const report = buildPunchingShearReport(defaultPunchingShearInput, result)
+
+    useCalculationStore.setState({
+      draft: defaultPunchingShearInput,
+      punchingShearResult: result,
+      punchingShearReport: report,
+      activeCalculationId: 'calc-shared-id',
+    })
+
+    expect(exportCurrentCalculationAsHtml()).toMatchObject({
+      ok: true,
+      filename: 'truebim-punching-shear-report-calc-shared-id.html',
+    })
+    expect(exportCurrentCalculationAsMarkdown()).toMatchObject({
+      ok: true,
+      filename: 'truebim-punching-shear-report-calc-shared-id.md',
+    })
+    expect(mockedDownloadTextFile.mock.calls[0][1]).toContain('calc-shared-id')
+    expect(mockedDownloadTextFile.mock.calls[1][1]).toContain('calc-shared-id')
   })
 
   it('guards export when no calculation exists', () => {
