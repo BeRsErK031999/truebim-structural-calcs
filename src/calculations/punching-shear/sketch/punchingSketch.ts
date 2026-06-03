@@ -6,6 +6,7 @@ import type {
   PunchingShearInput,
 } from '../types'
 import type { Point2D } from '../domain/point'
+import { createCircleVertices, createRoundColumnGeometry } from '../round/roundGeometry'
 import { createWallCornerGeometry } from '../wall/wallCornerGeometry'
 import { createPaddedViewBox } from './viewport'
 import type { PunchingSketchModel, SvgSketchElement } from './svg'
@@ -18,10 +19,13 @@ export function buildPunchingSketchModel(
   selectedContourId: string | null = null,
 ): PunchingSketchModel {
   const columnVertices = getColumnVertices(input)
+  const roundColumnElement = getRoundColumnElement(input)
+  const roundColumnPoints = getRoundColumnPoints(input)
   const wallVertices = getWallVertices(input)
   const openingElements = input.openings.map((opening) => createOpeningElement(opening))
   const allPoints = [
     ...columnVertices,
+    ...roundColumnPoints,
     ...wallVertices,
     ...perimeter.vertices,
     ...controlContours.flatMap((contour) => contour.vertices),
@@ -34,7 +38,7 @@ export function buildPunchingSketchModel(
   const slabElement = createSlabElement(viewBox)
   const elements: SvgSketchElement[] = [
     slabElement,
-    ...createSupportElements(columnVertices, wallVertices),
+    ...createSupportElements(columnVertices, wallVertices, roundColumnElement),
     ...createBoundaryElements(perimeter),
     ...createMultiContourElements(controlContours, selectedContourId),
     ...createControlPerimeterElements(perimeter),
@@ -43,7 +47,7 @@ export function buildPunchingSketchModel(
     ...createOpeningTangentElements(perimeter),
     ...createReinforcementElements(input, perimeter),
     ...createStressElements(perimeter, momentTransfer),
-    ...createDimensionElements(input, columnVertices, wallVertices, perimeter, viewBox),
+    ...createDimensionElements(input, columnVertices, roundColumnPoints, wallVertices, perimeter, viewBox),
     ...createBoundaryLabels(perimeter),
     ...createMultiContourLabels(controlContours, selectedContourId),
     {
@@ -56,7 +60,9 @@ export function buildPunchingSketchModel(
           ? 'Draft wall corner punching geometry'
           : input.caseType === 'wall-end'
             ? 'Draft wall punching geometry'
-            : 'Control perimeter draft geometry',
+            : input.caseType === 'round'
+              ? 'Draft round column control perimeter'
+              : 'Control perimeter draft geometry',
     },
   ]
 
@@ -223,6 +229,7 @@ function createMultiContourLabels(
 function createSupportElements(
   columnVertices: Point2D[],
   wallVertices: Point2D[],
+  roundColumnElement: SvgSketchElement | null,
 ): SvgSketchElement[] {
   const elements: SvgSketchElement[] = []
 
@@ -242,6 +249,10 @@ function createSupportElements(
       type: 'polygon',
       points: wallVertices,
     })
+  }
+
+  if (roundColumnElement) {
+    elements.push(roundColumnElement)
   }
 
   return elements
@@ -332,7 +343,7 @@ function createBoundaryLabels(perimeter: ControlPerimeterResult): SvgSketchEleme
 }
 
 function getColumnVertices(input: PunchingShearInput): Point2D[] {
-  if (!input.rectColumn) {
+  if (input.caseType === 'round' || !input.rectColumn) {
     return []
   }
 
@@ -345,6 +356,31 @@ function getColumnVertices(input: PunchingShearInput): Point2D[] {
     { x: halfWidth, y: halfHeight },
     { x: -halfWidth, y: halfHeight },
   ]
+}
+
+function getRoundColumnElement(input: PunchingShearInput): SvgSketchElement | null {
+  if (input.caseType !== 'round' || !input.roundColumn) {
+    return null
+  }
+
+  const geometry = createRoundColumnGeometry(input.roundColumn)
+
+  return {
+    id: 'round-column',
+    role: 'column',
+    type: 'circle',
+    center: geometry.center,
+    radius: geometry.radiusMm,
+    label: 'round column',
+  }
+}
+
+function getRoundColumnPoints(input: PunchingShearInput): Point2D[] {
+  if (input.caseType !== 'round' || !input.roundColumn) {
+    return []
+  }
+
+  return createCircleVertices(input.roundColumn.diameterMm / 2, 32)
 }
 
 function getWallVertices(input: PunchingShearInput): Point2D[] {
@@ -393,6 +429,7 @@ function createSlabElement(viewBox: PunchingSketchModel['viewBox']): SvgSketchEl
 function createDimensionElements(
   input: PunchingShearInput,
   columnVertices: Point2D[],
+  roundColumnPoints: Point2D[],
   wallVertices: Point2D[],
   perimeter: ControlPerimeterResult,
   viewBox: PunchingSketchModel['viewBox'],
@@ -403,6 +440,10 @@ function createDimensionElements(
 
   if (input.caseType === 'wall-corner' && input.wallCorner && wallVertices.length > 0) {
     return createWallCornerDimensionElements(input, wallVertices, perimeter, viewBox)
+  }
+
+  if (input.caseType === 'round' && input.roundColumn && roundColumnPoints.length > 0) {
+    return createRoundDimensionElements(input, perimeter, viewBox)
   }
 
   if (columnVertices.length === 0) {
@@ -464,6 +505,88 @@ function createDimensionElements(
       start: { x: perimeterHeightX, y: perimeter.boundingBox.minY },
       end: { x: perimeterHeightX, y: perimeter.boundingBox.maxY },
       label: `${formatMm(perimeter.boundingBox.height)} contour Y`,
+    },
+    {
+      id: 'axis-x',
+      role: 'dimension',
+      type: 'line',
+      start: axisStart,
+      end: { x: axisStart.x + 90, y: axisStart.y },
+      label: 'X',
+    },
+    {
+      id: 'axis-y',
+      role: 'dimension',
+      type: 'line',
+      start: axisStart,
+      end: { x: axisStart.x, y: axisStart.y + 90 },
+      label: 'Y',
+    },
+    {
+      id: 'label-scale',
+      role: 'label',
+      type: 'text',
+      position: { x: viewBox.minX + 36, y: viewBox.maxY - 36 },
+      text: 'Scale: 1 unit = 1 mm, fit-to-view',
+    },
+  ]
+}
+
+function createRoundDimensionElements(
+  input: PunchingShearInput,
+  perimeter: ControlPerimeterResult,
+  viewBox: PunchingSketchModel['viewBox'],
+): SvgSketchElement[] {
+  const roundColumn = input.roundColumn
+
+  if (!roundColumn) {
+    return []
+  }
+
+  const columnRadius = roundColumn.diameterMm / 2
+  const axisStart = {
+    x: viewBox.minX + 36,
+    y: viewBox.minY + 36,
+  }
+
+  return [
+    {
+      id: 'dimension-round-column-diameter',
+      role: 'dimension',
+      type: 'line',
+      start: { x: -columnRadius, y: columnRadius + 42 },
+      end: { x: columnRadius, y: columnRadius + 42 },
+      label: `${formatMm(roundColumn.diameterMm)} diameter`,
+    },
+    {
+      id: 'dimension-round-contour-offset',
+      role: 'dimension',
+      type: 'line',
+      start: { x: columnRadius, y: 0 },
+      end: { x: perimeter.boundingBox.maxX, y: 0 },
+      label: `${formatMm(perimeter.draftOffsetMm)} draft offset`,
+    },
+    {
+      id: 'dimension-round-control-perimeter-diameter',
+      role: 'dimension',
+      type: 'line',
+      start: { x: perimeter.boundingBox.minX, y: perimeter.boundingBox.maxY + 72 },
+      end: { x: perimeter.boundingBox.maxX, y: perimeter.boundingBox.maxY + 72 },
+      label: `${formatMm(perimeter.boundingBox.width)} contour diameter`,
+    },
+    {
+      id: 'label-round-contour',
+      role: 'label',
+      type: 'text',
+      position: { x: perimeter.boundingBox.minX, y: perimeter.boundingBox.maxY + 36 },
+      text: 'round control contour draft',
+    },
+    {
+      id: 'label-round-position',
+      role: 'label',
+      type: 'text',
+      position: { x: -columnRadius, y: -columnRadius - 24 },
+      text: `round column ${roundColumn.position}`,
     },
     {
       id: 'axis-x',

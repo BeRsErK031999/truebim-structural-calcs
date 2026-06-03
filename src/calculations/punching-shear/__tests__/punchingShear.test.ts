@@ -271,6 +271,22 @@ describe('punching shear draft center check', () => {
     expect(punchingShearInputSchema.safeParse(input).success).toBe(true)
   })
 
+  it('validates round schema input', () => {
+    const input: PunchingShearInput = {
+      ...defaultPunchingShearInput,
+      caseType: 'round',
+      roundColumn: {
+        diameterMm: 450,
+        slabThickness: 240,
+        effectiveDepth: 205,
+        cover: 35,
+        position: 'center',
+      },
+    }
+
+    expect(punchingShearInputSchema.safeParse(input).success).toBe(true)
+  })
+
   it('creates draft wall-corner geometry without verified promotion', () => {
     const input: PunchingShearInput = {
       ...defaultPunchingShearInput,
@@ -372,19 +388,92 @@ describe('punching shear draft center check', () => {
     )
   })
 
-  it.each(['round'] as const)(
-    'returns not_implemented for %s cases',
-    (caseType) => {
-      const input: PunchingShearInput = {
-        ...defaultPunchingShearInput,
-        caseType,
-        roundColumn: { diameterMm: 400 },
-        slabEdges: undefined,
-      }
+  it('creates draft round center geometry without verified promotion', () => {
+    const input: PunchingShearInput = {
+      ...defaultPunchingShearInput,
+      caseType: 'round',
+      roundColumn: {
+        diameterMm: 400,
+        slabThickness: 220,
+        effectiveDepth: 190,
+        cover: 30,
+        position: 'center',
+      },
+      slabEdges: undefined,
+    }
+    const result = calculatePunchingShear(input)
 
-      expect(calculatePunchingShear(input).status).toBe('not_implemented')
+    expect(['draft_ok', 'draft_failed']).toContain(result.status)
+    expect(result.verificationLevel).toBe('draft')
+    expect(result.verifiedFeatures).toEqual([])
+    expect(result.draftFeatures).toContain('round-columns')
+    expect(result.perimeter.perimeterMm).toBeGreaterThan(0)
+    expect(result.perimeter.segments).toHaveLength(32)
+    expect(result.perimeter.warnings).toContain(
+      'Round column perimeter is draft-only and requires SP63 verification.',
+    )
+  })
+
+  it.each(['edge', 'corner'] as const)(
+    'keeps round %s not implemented',
+    (position) => {
+      const result = calculatePunchingShear({
+        ...defaultPunchingShearInput,
+        caseType: 'round',
+        roundColumn: {
+          diameterMm: 400,
+          slabThickness: 220,
+          effectiveDepth: 190,
+          cover: 30,
+          position,
+        },
+      })
+
+      expect(result.status).toBe('not_implemented')
+      expect(result.verificationLevel).toBe('draft')
+      expect(result.warnings).toContain('Round edge/corner is not implemented yet.')
     },
   )
+
+  it('generates round SVG elements and labels', () => {
+    const result = calculatePunchingShear({
+      ...defaultPunchingShearInput,
+      caseType: 'round',
+      roundColumn: {
+        diameterMm: 400,
+        slabThickness: 220,
+        effectiveDepth: 190,
+        cover: 30,
+        position: 'center',
+      },
+    })
+
+    expect(result.svgModel.elements).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ role: 'column', type: 'circle', radius: 200 }),
+        expect.objectContaining({
+          role: 'label',
+          type: 'text',
+          text: 'Draft round column control perimeter',
+        }),
+        expect.objectContaining({
+          role: 'dimension',
+          type: 'line',
+          label: '400 mm diameter',
+        }),
+        expect.objectContaining({
+          role: 'dimension',
+          type: 'line',
+          label: '95 mm draft offset',
+        }),
+        expect.objectContaining({
+          role: 'label',
+          type: 'text',
+          text: 'round control contour draft',
+        }),
+      ]),
+    )
+  })
 
   it('returns invalid_input for negative dimensions', () => {
     const input = {

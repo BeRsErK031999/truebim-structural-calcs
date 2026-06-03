@@ -121,7 +121,7 @@ export function detectInputFeatures(input: PunchingShearInput): VerifiedFeatureI
     features.add('shear-reinforcement')
   }
 
-  if (input.caseType === 'round' || input.roundColumn) {
+  if (input.caseType === 'round') {
     features.add('round-columns')
   }
 

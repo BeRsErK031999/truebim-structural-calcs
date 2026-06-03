@@ -38,8 +38,14 @@ export const rectColumnInputSchema = z.object({
   widthYMm: positiveNumber,
 })
 
+export const roundColumnPositionSchema = z.enum(['center', 'edge', 'corner'])
+
 export const roundColumnInputSchema = z.object({
   diameterMm: positiveNumber,
+  slabThickness: positiveNumber,
+  effectiveDepth: positiveNumber,
+  cover: positiveNumber,
+  position: roundColumnPositionSchema,
 })
 
 export const wallInputSchema = z.object({

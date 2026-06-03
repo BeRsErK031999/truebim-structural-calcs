@@ -47,6 +47,9 @@ describe('diagnostics helpers', () => {
       openingsSupport: 'draft-geometry',
       wallPunchingSupport: 'draft',
       wallCornerSupport: 'draft',
+      roundColumnSupport: 'draft-center-only',
+      roundEdgeSupport: 'not-implemented',
+      roundCornerSupport: 'not-implemented',
       multipleContourSupport: 'draft',
       shearReinforcementInputSupport: 'draft',
       shearReinforcementCapacitySupport: 'draft',
@@ -84,6 +87,7 @@ describe('diagnostics helpers', () => {
         expect.objectContaining({ id: 'openings', status: 'draft' }),
         expect.objectContaining({ id: 'wall-end', status: 'draft' }),
         expect.objectContaining({ id: 'wall-corner', status: 'draft' }),
+        expect.objectContaining({ id: 'round-columns', status: 'draft' }),
       ]),
     )
   })

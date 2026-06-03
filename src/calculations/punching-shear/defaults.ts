@@ -19,6 +19,13 @@ export const defaultPunchingShearInput: PunchingShearInput = {
     widthXMm: 400,
     widthYMm: 400,
   },
+  roundColumn: {
+    diameterMm: 400,
+    slabThickness: 220,
+    effectiveDepth: 190,
+    cover: 30,
+    position: 'center',
+  },
   wall: {
     wallLength: 1200,
     wallThickness: 200,

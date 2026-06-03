@@ -215,6 +215,36 @@ describe('report export', () => {
     expect(markdown).toContain('Wall-corner punching support is draft geometry only.')
   })
 
+  it('includes round column geometry section in exported reports', () => {
+    const input = {
+      ...defaultPunchingShearInput,
+      caseType: 'round' as const,
+      roundColumn: {
+        diameterMm: 400,
+        slabThickness: 220,
+        effectiveDepth: 190,
+        cover: 30,
+        position: 'center' as const,
+      },
+    }
+    const result = calculatePunchingShear(input)
+    const report = buildPunchingShearReport(input, result)
+    const html = buildPunchingShearHtmlReport(input, result, report)
+    const markdown = buildPunchingShearMarkdownReport(input, result, report)
+
+    expect(report.roundGeometrySummary).toMatchObject({
+      enabled: true,
+      diameterMm: 400,
+      position: 'center',
+      applicability: 'draft-only',
+    })
+    expect(html).toContain('Round Column Geometry')
+    expect(html).toContain('400 mm diameter')
+    expect(markdown).toContain('## Round Column Geometry')
+    expect(markdown).toContain('| diameter | 400 mm |')
+    expect(markdown).toContain('Round column perimeter is draft-only and requires SP63 verification.')
+  })
+
   it('includes multiple control perimeter section in exported reports', () => {
     const input = {
       ...defaultPunchingShearInput,

@@ -52,6 +52,8 @@ Multiple control perimeters now have a draft foundation behind an explicit form 
 
 Shear reinforcement now has a draft foundation behind an explicit form toggle. When enabled, the app captures steel class, layout type, bar diameter, spacing, row count, legs per row and row distances, then reports draft area, contribution, reinforced capacity and reinforced utilization. This is not verified SP63 shear reinforcement support. See `docs/shear-reinforcement-draft.md`.
 
+Round columns now have a draft center-only geometry foundation. The app captures diameter and position, generates a 32-segment circular control perimeter approximation, shows round SVG labels, and exports a Round Column Geometry report section. Edge/corner round positions remain not implemented. This is not verified SP63 support. See `docs/round-column-draft.md`.
+
 Moment transfer trusted validation templates, stress comparison and snapshot review workflow are documented in `docs/verified-moment-transfer-workflow.md`.
 
 Stress regression evidence collection is documented in `docs/stress-regression-workflow.md`. Draft templates for trusted moment stress evidence live in `examples/verification/moments/` and cover low/high Mx, low/high My and combined Mx/My cases.

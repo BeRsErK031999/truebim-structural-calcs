@@ -41,8 +41,14 @@ export type RectColumnInput = {
   widthYMm: number
 }
 
+export type RoundColumnPosition = 'center' | 'edge' | 'corner'
+
 export type RoundColumnInput = {
   diameterMm: number
+  slabThickness: number
+  effectiveDepth: number
+  cover: number
+  position: RoundColumnPosition
 }
 
 export type WallInput = {
@@ -290,6 +296,7 @@ export type PunchingShearReportModel = {
   inputSummary: Record<string, string | number | boolean>
   resultSummary: Record<string, string | number | null>
   geometrySummary: Record<string, string | number>
+  roundGeometrySummary: Record<string, string | number | boolean>
   wallGeometrySummary: Record<string, string | number | boolean>
   wallCornerGeometrySummary: Record<string, string | number | boolean>
   boundaryEffectsSummary: Record<string, string | number | boolean>

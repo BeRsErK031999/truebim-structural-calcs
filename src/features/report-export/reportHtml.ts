@@ -88,6 +88,8 @@ export function buildPunchingShearHtmlReport(
       ['wall thickness X', formatValueWithUnit(input.wallCorner?.wallThicknessX, 'mm')],
       ['wall thickness Y', formatValueWithUnit(input.wallCorner?.wallThicknessY, 'mm')],
       ['wall corner orientation', input.wallCorner?.orientation ?? 'n/a'],
+      ['round diameter', formatValueWithUnit(input.roundColumn?.diameterMm, 'mm')],
+      ['round position', input.roundColumn?.position ?? 'n/a'],
       ['concrete class', input.concrete.className],
       ['shear reinforcement enabled', String(input.shearReinforcement.enabled)],
     ])}
@@ -101,6 +103,16 @@ export function buildPunchingShearHtmlReport(
       ['bounding box minY', formatValueWithUnit(result.perimeter.boundingBox.minY, 'mm')],
       ['bounding box width', formatValueWithUnit(result.perimeter.boundingBox.width, 'mm')],
       ['bounding box height', formatValueWithUnit(result.perimeter.boundingBox.height, 'mm')],
+    ])}
+    <h2>Round Column Geometry</h2>
+    ${renderTable([
+      ['enabled', String(input.caseType === 'round')],
+      ['diameter', formatValueWithUnit(input.roundColumn?.diameterMm, 'mm')],
+      ['position', input.roundColumn?.position ?? 'n/a'],
+      ['control perimeter', formatValueWithUnit(result.controlPerimeterMm, 'mm')],
+      ['draft formula', 'v = N / (u * h0)'],
+      ['applicability', 'draft-only'],
+      ['warnings', result.perimeter.warnings.join('; ') || 'none'],
     ])}
     <h2>Wall Geometry</h2>
     ${renderTable([
@@ -419,6 +431,7 @@ function createReportWarnings(result: PunchingShearResult) {
       ...result.warnings,
       'Moment transfer is draft-only where Mx/My are provided',
       'Openings and boundary clipping are draft geometry only.',
+      'Round column perimeter is draft-only and requires SP63 verification.',
       'Wall-end punching support is draft geometry only.',
       'Wall-corner punching support is draft geometry only.',
       'Multiple contour selection is draft-only and requires SP63 verification.',

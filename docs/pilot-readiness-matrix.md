@@ -20,6 +20,7 @@ This matrix separates what engineers can safely test in the office pilot from wh
 | center moment transfer | Partial workflow only; moment formulas and stress redistribution need trusted SP63 evidence. |
 | edge/corner/opening draft geometry | Useful for comparison and feedback, not verified design behavior. |
 | wall-end/wall-corner draft geometry | Useful for geometry review, report export, and verification preparation only. |
+| round center draft geometry | Useful for diameter input, circular perimeter review, SVG/report export, and verification preparation only. |
 | multiple control perimeters | Draft generation and selection trace is available for review, not verified SP63 contour selection. |
 | shear reinforcement draft foundation | Useful for input review, report/SVG trace, and verification preparation only; draft capacity is not SP63 verified. |
 | stress visualization | Draft visualization/regression aid, not verified engineering output. |
@@ -35,7 +36,7 @@ This matrix separates what engineers can safely test in the office pilot from wh
 | verified openings | Opening behavior is draft geometry only. |
 | verified edge/corner | Boundary behavior is draft geometry only. |
 | verified shear reinforcement | Draft contribution is available for review, but SP63 reinforcement formulas, steel values, and layout assumptions are not verified. |
-| round columns | Round-column geometry is outside the verified transition scope. |
+| verified round columns | Center round geometry exists as draft preparation only; round edge/corner are not implemented and SP63 formulas are not verified. |
 
 ## Production Blockers
 

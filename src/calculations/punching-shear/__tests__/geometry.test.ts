@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 
 import { defaultPunchingShearInput } from '../defaults'
 import { calculateControlPerimeter } from '../geometry/perimeter'
+import { getRoundControlPerimeterSegmentCount } from '../round/roundPerimeter'
 import { createBoundingBox } from '../domain/point'
 import { classifyEdgeCornerCondition } from '../edge-corner/edgeClassification'
 import { clipSegmentsToSlabBox } from '../edge-corner/perimeterClipping'
@@ -51,6 +52,28 @@ describe('geometry primitives', () => {
     expect(perimeter.segments).toHaveLength(4)
     expect(perimeter.vertices).toHaveLength(4)
     expect(perimeter.perimeterMm).toBeGreaterThan(0)
+  })
+
+  it('generates round center control perimeter with stable segment count', () => {
+    const perimeter = calculateControlPerimeter({
+      ...defaultPunchingShearInput,
+      caseType: 'round',
+      roundColumn: {
+        diameterMm: 400,
+        slabThickness: 220,
+        effectiveDepth: 190,
+        cover: 30,
+        position: 'center',
+      },
+    })
+
+    expect(perimeter.segments).toHaveLength(getRoundControlPerimeterSegmentCount())
+    expect(perimeter.vertices).toHaveLength(getRoundControlPerimeterSegmentCount())
+    expect(perimeter.perimeterMm).toBeGreaterThan(0)
+    expect(perimeter.svgPath).toContain('M')
+    expect(perimeter.warnings).toContain(
+      'Round column perimeter is draft-only and requires SP63 verification.',
+    )
   })
 
   it('generates bounding boxes from points', () => {

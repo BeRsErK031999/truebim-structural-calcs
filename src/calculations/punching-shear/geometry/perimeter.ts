@@ -11,6 +11,7 @@ import { subtractOpeningsFromContour } from '../openings/contourSubtraction'
 import { createOpeningWarnings } from '../openings/openingWarnings'
 import { polygonToPath } from '../sketch/svg'
 import type { ControlPerimeterResult, ControlPerimeterSegment, PunchingShearInput } from '../types'
+import { calculateRoundControlPerimeter } from '../round/roundPerimeter'
 import { calculateWallCornerControlPerimeter } from '../wall/wallCornerPerimeter'
 import { calculateWallEndControlPerimeter } from '../wall/wallPerimeter'
 
@@ -28,6 +29,10 @@ export function calculateControlPerimeter(
 
   if (input.caseType === 'wall-corner') {
     return calculateWallCornerControlPerimeter(input, options)
+  }
+
+  if (input.caseType === 'round') {
+    return calculateRoundControlPerimeter(input, options)
   }
 
   if (isRectangularDraftGeometryCase(input)) {

@@ -38,6 +38,19 @@ export function buildPunchingShearReport(
       boundingBoxWidthMm: result.perimeter.boundingBox.width,
       boundingBoxHeightMm: result.perimeter.boundingBox.height,
     },
+    roundGeometrySummary: {
+      enabled: input.caseType === 'round',
+      diameterMm: input.roundColumn?.diameterMm ?? 'n/a',
+      position: input.roundColumn?.position ?? 'n/a',
+      slabThicknessMm: input.roundColumn?.slabThickness ?? input.slab.thicknessMm,
+      effectiveDepthMm: input.roundColumn?.effectiveDepth ?? input.slab.effectiveDepthMm,
+      coverMm: input.roundColumn?.cover ?? input.slab.concreteCoverMm,
+      controlPerimeterMm: result.perimeter.perimeterMm,
+      segmentCount: result.perimeter.segments.length,
+      draftFormula: 'v = N / (u * h0)',
+      applicability: 'draft-only',
+      warningCount: result.perimeter.warnings.length,
+    },
     wallGeometrySummary: {
       enabled: input.caseType === 'wall-end',
       wallLengthMm: input.wall?.wallLength ?? 'n/a',
@@ -194,6 +207,9 @@ export function buildPunchingShearReport(
       'Units normalized into the current internal DTO shape.',
       'Draft material resistance selected.',
       'Control perimeter draft geometry generated.',
+      input.caseType === 'round'
+        ? 'Draft round center geometry generated without SP63 round-column verification.'
+        : 'Round column geometry not selected.',
       input.caseType === 'wall-end'
         ? 'Draft wall-end geometry generated without SP63 wall punching coefficients.'
         : 'Wall-end geometry not selected.',

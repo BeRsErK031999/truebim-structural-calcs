@@ -31,6 +31,9 @@ export type DiagnosticsModel = {
   openingsSupport: 'draft-geometry'
   wallPunchingSupport: 'draft'
   wallCornerSupport: 'draft'
+  roundColumnSupport: 'draft-center-only'
+  roundEdgeSupport: 'not-implemented'
+  roundCornerSupport: 'not-implemented'
   multipleContourSupport: 'draft'
   shearReinforcementInputSupport: 'draft'
   shearReinforcementCapacitySupport: 'draft'
@@ -148,6 +151,9 @@ export function buildDiagnosticsModel({
     openingsSupport: 'draft-geometry',
     wallPunchingSupport: 'draft',
     wallCornerSupport: 'draft',
+    roundColumnSupport: 'draft-center-only',
+    roundEdgeSupport: 'not-implemented',
+    roundCornerSupport: 'not-implemented',
     multipleContourSupport: 'draft',
     shearReinforcementInputSupport: 'draft',
     shearReinforcementCapacitySupport: 'draft',

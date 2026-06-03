@@ -25,6 +25,7 @@ const draftScopeWarnings = [
   'Openings and boundary clipping are draft geometry only',
   'Wall-end punching support is draft geometry only',
   'Wall-corner punching support is draft geometry only',
+  'Round column support is draft center-only geometry',
   'Shear reinforcement contribution is draft-only when enabled',
   'Draft formula must be verified before design use',
 ]
@@ -66,7 +67,7 @@ export function calculatePunchingShear(input: PunchingShearInput): PunchingShear
       warnings: [
         ...draftScopeWarnings,
         ...perimeter.warnings,
-        'Only rectangular center, edge, corner, opening, wall-end, and wall-corner draft geometry cases are implemented',
+        'Only rectangular center, edge, corner, opening, wall-end, wall-corner, and round-center draft geometry cases are implemented',
       ],
     })
   }
@@ -192,8 +193,12 @@ function isSupportedDraftGeometryCase(input: PunchingShearInput) {
     Boolean(input.rectColumn)
   const wallEndDraftCase = input.caseType === 'wall-end' && Boolean(input.wall)
   const wallCornerDraftCase = input.caseType === 'wall-corner' && Boolean(input.wallCorner)
+  const roundCenterDraftCase =
+    input.caseType === 'round' &&
+    Boolean(input.roundColumn) &&
+    input.roundColumn?.position === 'center'
 
-  return rectangularDraftCase || wallEndDraftCase || wallCornerDraftCase
+  return rectangularDraftCase || wallEndDraftCase || wallCornerDraftCase || roundCenterDraftCase
 }
 
 function createInvalidInputResult(input: PunchingShearInput, validationWarnings: string[]) {

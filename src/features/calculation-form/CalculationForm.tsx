@@ -27,7 +27,7 @@ const caseOptions: Array<{ value: PunchingShearCaseType; label: string; disabled
   { value: 'edge', label: 'Крайняя колонна - скоро', disabled: true },
   { value: 'corner', label: 'Угловая колонна - скоро', disabled: true },
   { value: 'opening', label: 'Отверстие рядом с колонной - скоро', disabled: true },
-  { value: 'round', label: 'Круглая колонна - скоро', disabled: true },
+  { value: 'round', label: 'Round column - draft center only' },
   { value: 'wall-end', label: 'Wall end punching - draft geometry' },
   { value: 'wall-corner', label: 'Wall corner punching - draft geometry' },
 ]
@@ -72,6 +72,7 @@ export function CalculationForm() {
   const caseType = useWatch({ control, name: 'caseType' })
   const concreteClass = useWatch({ control, name: 'concrete.className' })
   const wallCornerOrientation = useWatch({ control, name: 'wallCorner.orientation' })
+  const roundColumnPosition = useWatch({ control, name: 'roundColumn.position' })
   const multipleContoursEnabled = useWatch({ control, name: 'multipleContours.enabled' })
   const multipleContoursOffsetStep = useWatch({ control, name: 'multipleContours.offsetStep' })
   const shearReinforcementEnabled = useWatch({
@@ -226,6 +227,42 @@ export function CalculationForm() {
           error={errors.rectColumn?.widthYMm?.message}
         />
       </FormSection>
+
+      {caseType === 'round' ? (
+        <FormSection
+          title="Round Column Geometry"
+          helperText="Draft-only round column geometry. Center position is supported for pilot geometry/report preparation only."
+        >
+          <NumberField
+            label="Diameter"
+            unit="mm"
+            registration={register('roundColumn.diameterMm', { valueAsNumber: true })}
+            error={errors.roundColumn?.diameterMm?.message}
+          />
+          <SelectField
+            label="Position"
+            placeholder="Select position"
+            value={roundColumnPosition ?? 'center'}
+            options={[
+              { value: 'center', label: 'center' },
+              { value: 'edge', label: 'edge' },
+              { value: 'corner', label: 'corner' },
+            ]}
+            error={errors.roundColumn?.position?.message}
+            onValueChange={(value) =>
+              setValue('roundColumn.position', value as NonNullable<PunchingShearInput['roundColumn']>['position'], {
+                shouldDirty: true,
+                shouldValidate: true,
+              })
+            }
+          />
+          {roundColumnPosition === 'edge' || roundColumnPosition === 'corner' ? (
+            <p className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm font-medium text-amber-800">
+              Round edge/corner is not implemented yet.
+            </p>
+          ) : null}
+        </FormSection>
+      ) : null}
 
       {caseType === 'wall-end' ? (
         <FormSection
