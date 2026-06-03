@@ -5,6 +5,9 @@ export { calculateDraftEccentricity } from './moments/eccentricity'
 export { calculateDraftMomentTransfer } from './moments/momentTransfer'
 export { calculateDraftPerimeterInertia } from './moments/polarInertia'
 export { calculateDraftStressDistribution } from './moments/stressDistribution'
+export { draftSteelClassData, calculateShearReinforcementCapacity } from './reinforcement/reinforcementCapacity'
+export { normalizeShearReinforcement } from './reinforcement/reinforcementLayout'
+export { summarizeShearReinforcement } from './reinforcement/shearReinforcement'
 export { compareGeometryVerification } from './verification/geometryComparison'
 export { compareRemovedSegments } from './verification/segmentComparison'
 export { compareOpeningVerification } from './verification/openingComparison'
@@ -37,7 +40,9 @@ export {
   punchingShearInputSchema,
   rectColumnInputSchema,
   roundColumnInputSchema,
+  shearReinforcementLayoutTypeSchema,
   shearReinforcementInputSchema,
+  shearReinforcementSteelClassSchema,
   slabEdgesInputSchema,
   slabGeometryInputSchema,
   wallCornerInputSchema,
@@ -74,6 +79,9 @@ export type {
   RectColumnInput,
   RoundColumnInput,
   ShearReinforcementInput,
+  ShearReinforcementLayoutType,
+  ShearReinforcementSteelClass,
+  ShearReinforcementSummary,
   MultipleControlContoursInput,
   SlabEdgesInput,
   SlabGeometryInput,

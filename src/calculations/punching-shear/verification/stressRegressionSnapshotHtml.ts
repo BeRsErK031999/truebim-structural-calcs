@@ -123,6 +123,8 @@ function getStroke(role: SvgSketchElement['role']) {
     'stress-marker': '#dc2626',
     'moment-arrow': '#7c3aed',
     eccentricity: '#0891b2',
+    'reinforcement-marker': '#047857',
+    'reinforcement-row': '#059669',
   }[role]
 }
 
@@ -144,6 +146,8 @@ function getFill(role: SvgSketchElement['role']) {
     'stress-marker': '#dc2626',
     'moment-arrow': 'none',
     eccentricity: '#cffafe',
+    'reinforcement-marker': '#34d399',
+    'reinforcement-row': 'none',
   }[role]
 }
 

@@ -85,11 +85,43 @@ export type ConcreteInput = {
   className: ConcreteClassName
 }
 
+export type ShearReinforcementSteelClass = 'A240' | 'A400' | 'A500' | 'B500'
+
+export type ShearReinforcementLayoutType =
+  | 'closed-stirrups'
+  | 'studs'
+  | 'links'
+  | 'custom'
+
 export type ShearReinforcementInput = {
   enabled: boolean
   barDiameterMm?: number
   barSpacingMm?: number
+  rowCount?: number
+  legsPerRow?: number
+  steelClass?: ShearReinforcementSteelClass
+  firstRowDistanceMm?: number
+  rowSpacingMm?: number
+  layoutType?: ShearReinforcementLayoutType
   rows?: number
+}
+
+export type ShearReinforcementSummary = {
+  enabled: boolean
+  steelClass: ShearReinforcementSteelClass | null
+  layoutType: ShearReinforcementLayoutType | null
+  barDiameterMm: number | null
+  barSpacingMm: number | null
+  rowCount: number
+  legsPerRow: number
+  totalLegs: number
+  firstRowDistanceMm: number | null
+  rowSpacingMm: number | null
+  reinforcementAreaMm2: number | null
+  reinforcementContributionN: number | null
+  draftCapacityWithReinforcementN: number | null
+  utilizationWithReinforcement: number | null
+  warnings: string[]
 }
 
 export type MultipleControlContoursInput = {
@@ -233,6 +265,12 @@ export type PunchingShearResult = {
   draftCriticalContour: ControlContourSelectionResult | null
   contourComparison: ContourComparisonRow[]
   contourWarnings: string[]
+  shearReinforcement: ShearReinforcementSummary
+  reinforcementAreaMm2: number | null
+  reinforcementContributionN: number | null
+  draftCapacityWithReinforcementN: number | null
+  utilizationWithReinforcement: number | null
+  reinforcementWarnings: string[]
   svgModel: PunchingSketchModel
   momentTransfer: MomentTransferResult
   verifiedMode: VerificationLevel
@@ -258,6 +296,7 @@ export type PunchingShearReportModel = {
   openingsSummary: Record<string, string | number | boolean>
   geometryVerificationSummary: Record<string, string | number | boolean>
   multipleControlPerimetersSummary: Array<Record<string, string | number | boolean | null>>
+  shearReinforcementSummary: Record<string, string | number | boolean | null>
   segments: Array<Record<string, string | number>>
   svgMetadata: Record<string, string | number>
   formulaSummary: string[]

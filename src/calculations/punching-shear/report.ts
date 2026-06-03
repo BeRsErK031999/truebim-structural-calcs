@@ -89,6 +89,23 @@ export function buildPunchingShearReport(
       selected: contour.selected,
       warnings: contour.warnings.join('; ') || 'none',
     })),
+    shearReinforcementSummary: {
+      enabled: result.shearReinforcement.enabled,
+      steelClass: result.shearReinforcement.steelClass ?? 'n/a',
+      layoutType: result.shearReinforcement.layoutType ?? 'n/a',
+      barDiameterMm: result.shearReinforcement.barDiameterMm,
+      barSpacingMm: result.shearReinforcement.barSpacingMm,
+      rowCount: result.shearReinforcement.rowCount,
+      legsPerRow: result.shearReinforcement.legsPerRow,
+      totalLegs: result.shearReinforcement.totalLegs,
+      firstRowDistanceMm: result.shearReinforcement.firstRowDistanceMm,
+      rowSpacingMm: result.shearReinforcement.rowSpacingMm,
+      reinforcementAreaMm2: result.reinforcementAreaMm2,
+      reinforcementContributionN: result.reinforcementContributionN,
+      draftCapacityWithReinforcementN: result.draftCapacityWithReinforcementN,
+      utilizationWithReinforcement: result.utilizationWithReinforcement,
+      warnings: result.reinforcementWarnings.join('; ') || 'none',
+    },
     segments: result.perimeter.segments.map((segment) => ({
       id: segment.id,
       kind: segment.kind,
@@ -113,6 +130,7 @@ export function buildPunchingShearReport(
       'h0 = effective depth',
       'DRAFT moment redistribution: v(point) = vbase * (1 + ex*x/rx^2 + ey*y/ry^2)',
       'DRAFT multiple contour selection: evaluate v = N / (u * h0) per contour and select max utilization',
+      'DRAFT shear reinforcement: Vsw = Asw,total * Rsw,draft',
     ],
     calculationValues: {
       N: result.designShearForceN,
@@ -123,6 +141,10 @@ export function buildPunchingShearReport(
       vmin: result.minShearStressMpa,
       R: result.draftConcreteResistanceMpa,
       utilization: result.utilizationRatio,
+      reinforcementAreaMm2: result.reinforcementAreaMm2,
+      reinforcementContributionN: result.reinforcementContributionN,
+      draftCapacityWithReinforcementN: result.draftCapacityWithReinforcementN,
+      utilizationWithReinforcement: result.utilizationWithReinforcement,
       passed: result.passed,
     },
     momentTransferSummary: {
@@ -185,7 +207,9 @@ export function buildPunchingShearReport(
         ? 'Multiple draft control perimeters generated and draftCriticalContour selected by maximum utilization.'
         : 'Multiple draft control perimeters disabled.',
       'Draft openings and slab edge clipping geometry generated where provided.',
-      'Shear reinforcement intentionally skipped.',
+      result.shearReinforcement.enabled
+        ? 'Draft shear reinforcement area, contribution, capacity, and utilization generated for engineer review.'
+        : 'Shear reinforcement disabled.',
     ],
   }
 }

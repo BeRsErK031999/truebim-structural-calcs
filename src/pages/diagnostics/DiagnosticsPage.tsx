@@ -109,6 +109,14 @@ export function DiagnosticsPage() {
               value={formatDiagnosticValue(diagnostics.multipleContourSupport)}
             />
             <DiagnosticItem
+              label="shear reinforcement input support"
+              value={formatDiagnosticValue(diagnostics.shearReinforcementInputSupport)}
+            />
+            <DiagnosticItem
+              label="shear reinforcement capacity support"
+              value={formatDiagnosticValue(diagnostics.shearReinforcementCapacitySupport)}
+            />
+            <DiagnosticItem
               label="contour selection support"
               value={formatDiagnosticValue(diagnostics.contourSelectionSupport)}
             />
@@ -284,6 +292,10 @@ export function DiagnosticsPage() {
             <DiagnosticItem
               label="Проверенные случаи с отверстиями"
               value={diagnostics.verifiedOpeningCount.toString()}
+            />
+            <DiagnosticItem
+              label="verified shear reinforcement cases"
+              value={diagnostics.reinforcementVerifiedCasesCount.toString()}
             />
           </dl>
           {diagnostics.verification.warning ? (

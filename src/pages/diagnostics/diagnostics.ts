@@ -32,6 +32,8 @@ export type DiagnosticsModel = {
   wallPunchingSupport: 'draft'
   wallCornerSupport: 'draft'
   multipleContourSupport: 'draft'
+  shearReinforcementInputSupport: 'draft'
+  shearReinforcementCapacitySupport: 'draft'
   contourSelectionSupport: 'draft'
   clippedPerimeterSupport: 'draft'
   geometryVerificationSupport: 'draft'
@@ -44,6 +46,7 @@ export type DiagnosticsModel = {
   openingDraftCasesCount: number
   verifiedEdgeCount: number
   verifiedOpeningCount: number
+  reinforcementVerifiedCasesCount: number
   verifiedMomentCasesCount: number
   draftMomentCasesCount: number
   verifiedMomentEvidenceCount: number
@@ -146,6 +149,8 @@ export function buildDiagnosticsModel({
     wallPunchingSupport: 'draft',
     wallCornerSupport: 'draft',
     multipleContourSupport: 'draft',
+    shearReinforcementInputSupport: 'draft',
+    shearReinforcementCapacitySupport: 'draft',
     contourSelectionSupport: 'draft',
     clippedPerimeterSupport: 'draft',
     geometryVerificationSupport: 'draft',
@@ -160,6 +165,7 @@ export function buildDiagnosticsModel({
     openingDraftCasesCount: openingDraftCases.length,
     verifiedEdgeCount: verifiedEdgeCases.length,
     verifiedOpeningCount: verifiedOpeningCases.length,
+    reinforcementVerifiedCasesCount: 0,
     verifiedMomentCasesCount: momentCases.filter((verificationCase) => verificationCase.status === 'verified').length,
     draftMomentCasesCount: momentCases.filter((verificationCase) => verificationCase.status === 'draft').length,
     verifiedMomentEvidenceCount: momentCases.filter((verificationCase) => verificationCase.status === 'verified').length,

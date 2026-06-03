@@ -18,7 +18,7 @@ export const reportAssumptions = [
   'Openings use draft tangent subtraction geometry',
   'Slab edges use draft control perimeter clipping geometry',
   'Wall-end and wall-corner support geometry is draft-only where provided',
-  'No shear reinforcement contribution',
+  'Shear reinforcement contribution is draft-only when enabled',
   'Moments use draft redistribution where provided',
   'Draft concrete resistance values',
   'Draft perimeter geometry',
@@ -30,7 +30,7 @@ export const unsupportedDraftFeatures = [
   'verified corner column formulas',
   'verified wall-corner formulas',
   'round columns',
-  'shear reinforcement contribution',
+  'verified shear reinforcement contribution',
   'verified moment transfer',
   'verified SP63 coefficients',
 ]

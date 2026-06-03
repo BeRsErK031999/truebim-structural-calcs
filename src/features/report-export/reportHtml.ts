@@ -148,6 +148,22 @@ export function buildPunchingShearHtmlReport(
     <h2>Multiple Control Perimeters</h2>
     <p class="draft">Multiple contour selection is draft-only and requires SP63 verification.</p>
     ${renderMultipleControlPerimeters(result)}
+    <h2>Shear Reinforcement</h2>
+    ${renderTable([
+      ['enabled', String(input.shearReinforcement.enabled)],
+      ['steel class', result.shearReinforcement.steelClass ?? 'n/a'],
+      ['layout type', result.shearReinforcement.layoutType ?? 'n/a'],
+      ['bar diameter', formatValueWithUnit(result.shearReinforcement.barDiameterMm, 'mm')],
+      ['bar spacing', formatValueWithUnit(result.shearReinforcement.barSpacingMm, 'mm')],
+      ['rows', String(result.shearReinforcement.rowCount)],
+      ['legs per row', String(result.shearReinforcement.legsPerRow)],
+      ['total legs', String(result.shearReinforcement.totalLegs)],
+      ['area', formatValueWithUnit(result.reinforcementAreaMm2, 'mm2', 2)],
+      ['draft contribution', formatValueWithUnit(result.reinforcementContributionN, 'N', 2)],
+      ['draft capacity with reinforcement', formatValueWithUnit(result.draftCapacityWithReinforcementN, 'N', 2)],
+      ['utilization with reinforcement', formatUtilization(result.utilizationWithReinforcement)],
+      ['warnings', result.reinforcementWarnings.join('; ') || 'none'],
+    ])}
     <h2>Verification Readiness</h2>
     ${renderTable([
       ['geometry draft-ready', String(result.perimeter.perimeterMm > 0)],
@@ -176,6 +192,7 @@ export function buildPunchingShearHtmlReport(
       ['v', formatValueWithUnit(result.shearStressMpa, 'MPa', 3)],
       ['draft resistance', formatValueWithUnit(result.draftConcreteResistanceMpa, 'MPa', 3)],
       ['utilization ratio', formatUtilization(result.utilizationRatio)],
+      ['utilization with reinforcement', formatUtilization(result.utilizationWithReinforcement)],
       ['passed', result.passed === null ? 'not evaluated' : String(result.passed)],
     ])}
 
@@ -405,7 +422,7 @@ function createReportWarnings(result: PunchingShearResult) {
       'Wall-end punching support is draft geometry only.',
       'Wall-corner punching support is draft geometry only.',
       'Multiple contour selection is draft-only and requires SP63 verification.',
-      'Shear reinforcement is unsupported in this draft',
+      'Shear reinforcement contribution is draft-only when enabled',
       'Verify against SP63 before design use',
     ]),
   )
@@ -438,6 +455,8 @@ function getStroke(role: SvgSketchElement['role']) {
     'stress-marker': '#dc2626',
     'moment-arrow': '#7c3aed',
     eccentricity: '#0891b2',
+    'reinforcement-marker': '#047857',
+    'reinforcement-row': '#059669',
   }
 
   return colors[role]
@@ -461,6 +480,8 @@ function getFill(role: SvgSketchElement['role']) {
     'stress-marker': '#dc2626',
     'moment-arrow': 'none',
     eccentricity: '#cffafe',
+    'reinforcement-marker': '#34d399',
+    'reinforcement-row': 'none',
   }
 
   return colors[role]

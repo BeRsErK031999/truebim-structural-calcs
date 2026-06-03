@@ -235,6 +235,33 @@ describe('report export', () => {
     expect(markdown).toContain('draft-contour-1')
   })
 
+  it('includes shear reinforcement section in exported reports', () => {
+    const input = {
+      ...defaultPunchingShearInput,
+      shearReinforcement: {
+        ...defaultPunchingShearInput.shearReinforcement,
+        enabled: true,
+      },
+    }
+    const result = calculatePunchingShear(input)
+    const report = buildPunchingShearReport(input, result)
+    const html = buildPunchingShearHtmlReport(input, result, report)
+    const markdown = buildPunchingShearMarkdownReport(input, result, report)
+
+    expect(report.shearReinforcementSummary).toMatchObject({
+      enabled: true,
+      steelClass: 'A400',
+      layoutType: 'closed-stirrups',
+      rowCount: 2,
+      legsPerRow: 4,
+    })
+    expect(html).toContain('Shear Reinforcement')
+    expect(html).toContain('Draft reinforcement layout: closed-stirrups')
+    expect(markdown).toContain('## Shear Reinforcement')
+    expect(markdown).toContain('| steel class | A400 |')
+    expect(markdown).toContain('Shear reinforcement contribution is DRAFT-only.')
+  })
+
   it('formats copy report summary', () => {
     const result = calculatePunchingShear(defaultPunchingShearInput)
 

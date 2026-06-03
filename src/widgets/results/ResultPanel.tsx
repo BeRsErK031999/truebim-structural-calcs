@@ -171,6 +171,8 @@ export function ResultPanel() {
           <Metric label="v min" value={formatDecimal(result?.minShearStressMpa)} unit="МПа" />
           <Metric label="R черн." value={formatDecimal(result?.draftConcreteResistanceMpa)} unit="МПа" />
           <Metric label="Использование" value={formatDecimal(result?.utilizationRatio)} unit="η" />
+          <Metric label="Asw draft" value={formatNumber(result?.reinforcementAreaMm2)} unit="mm2" />
+          <Metric label="η reinf." value={formatDecimal(result?.utilizationWithReinforcement)} unit="draft" />
           <Metric label="Результат" value={formatPassed(result?.passed)} unit="" />
         </div>
 
@@ -414,6 +416,8 @@ function getElementClassName(role: SvgSketchElement['role']) {
     'stress-marker': 'fill-red-600 stroke-white stroke-2',
     'moment-arrow': 'stroke-violet-600 stroke-2 stroke-dasharray-[8_6]',
     eccentricity: 'fill-cyan-100 stroke-cyan-600 stroke-2 stroke-dasharray-[5_5]',
+    'reinforcement-marker': 'fill-emerald-500 stroke-emerald-900 stroke-2',
+    'reinforcement-row': 'fill-transparent stroke-emerald-600 stroke-2 stroke-dasharray-[7_5]',
   }
 
   return classes[role]

@@ -19,6 +19,8 @@ export type SvgElementBase = {
     | 'stress-marker'
     | 'moment-arrow'
     | 'eccentricity'
+    | 'reinforcement-marker'
+    | 'reinforcement-row'
 }
 
 export type SvgPolygonElement = SvgElementBase & {

@@ -42,7 +42,10 @@ export function normalizePunchingShearInput(input: PunchingShearInput): Punching
       : undefined,
     slabEdges: input.slabEdges ? { ...input.slabEdges } : undefined,
     openings: input.openings.map((opening) => ({ ...opening })),
-    shearReinforcement: { ...input.shearReinforcement },
+    shearReinforcement: {
+      ...input.shearReinforcement,
+      rowCount: input.shearReinforcement.rowCount ?? input.shearReinforcement.rows,
+    },
     multipleContours: input.multipleContours
       ? { ...input.multipleContours }
       : {

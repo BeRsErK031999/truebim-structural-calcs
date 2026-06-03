@@ -28,6 +28,7 @@ export function buildPunchingSketchModel(
     ...perimeter.removedSegments.flatMap((segment) => [segment.start, segment.end]),
     ...perimeter.openingTangents.flatMap((tangent) => [tangent.start, tangent.end]),
     ...openingElements.flatMap((element) => rectToPoints(element)),
+    ...createReinforcementElements(input, perimeter).flatMap(elementToPoints),
   ]
   const viewBox = createPaddedViewBox(allPoints, 140)
   const slabElement = createSlabElement(viewBox)
@@ -40,6 +41,7 @@ export function buildPunchingSketchModel(
     ...createRemovedPerimeterElements(perimeter),
     ...openingElements,
     ...createOpeningTangentElements(perimeter),
+    ...createReinforcementElements(input, perimeter),
     ...createStressElements(perimeter, momentTransfer),
     ...createDimensionElements(input, columnVertices, wallVertices, perimeter, viewBox),
     ...createBoundaryLabels(perimeter),
@@ -71,6 +73,115 @@ export function buildPunchingSketchModel(
       stressDiagram: momentTransfer?.stressDistribution ? 'draft' : 'disabled',
     },
   }
+}
+
+function createReinforcementElements(
+  input: PunchingShearInput,
+  perimeter: ControlPerimeterResult,
+): SvgSketchElement[] {
+  if (!input.shearReinforcement.enabled) {
+    return []
+  }
+
+  const rowCount = input.shearReinforcement.rowCount ?? input.shearReinforcement.rows ?? 2
+  const legsPerRow = input.shearReinforcement.legsPerRow ?? 4
+  const firstRowDistanceMm = input.shearReinforcement.firstRowDistanceMm ?? 80
+  const rowSpacingMm = input.shearReinforcement.rowSpacingMm ?? input.shearReinforcement.barSpacingMm ?? 100
+  const markerRadius = Math.max(6, Math.min(14, (input.shearReinforcement.barDiameterMm ?? 10) * 0.9))
+  const center = {
+    x: (perimeter.boundingBox.minX + perimeter.boundingBox.maxX) / 2,
+    y: (perimeter.boundingBox.minY + perimeter.boundingBox.maxY) / 2,
+  }
+  const elements: SvgSketchElement[] = []
+
+  for (let row = 0; row < rowCount; row += 1) {
+    const inset = firstRowDistanceMm + row * rowSpacingMm
+    const width = Math.max(40, perimeter.boundingBox.width - inset * 2)
+    const height = Math.max(40, perimeter.boundingBox.height - inset * 2)
+    const left = center.x - width / 2
+    const right = center.x + width / 2
+    const top = center.y - height / 2
+    const bottom = center.y + height / 2
+    const rowIndex = row + 1
+
+    elements.push({
+      id: `reinforcement-row-${rowIndex}`,
+      role: 'reinforcement-row',
+      type: 'rect',
+      x: left,
+      y: top,
+      width,
+      height,
+    })
+    elements.push({
+      id: `label-reinforcement-row-${rowIndex}`,
+      role: 'label',
+      type: 'text',
+      position: { x: right + 16, y: top + 20 },
+      text: `shear reinforcement row ${rowIndex}`,
+    })
+
+    createRowMarkers(left, right, top, bottom, legsPerRow, rowIndex, markerRadius).forEach(
+      (marker) => elements.push(marker),
+    )
+  }
+
+  if (rowCount > 1) {
+    elements.push({
+      id: 'dimension-reinforcement-row-spacing',
+      role: 'dimension',
+      type: 'line',
+      start: {
+        x: perimeter.boundingBox.minX - firstRowDistanceMm,
+        y: perimeter.boundingBox.minY + firstRowDistanceMm,
+      },
+      end: {
+        x: perimeter.boundingBox.minX - firstRowDistanceMm,
+        y: perimeter.boundingBox.minY + firstRowDistanceMm + rowSpacingMm,
+      },
+      label: `${formatMm(rowSpacingMm)} row spacing`,
+    })
+  }
+
+  elements.push({
+    id: 'label-reinforcement-layout',
+    role: 'label',
+    type: 'text',
+    position: { x: perimeter.boundingBox.minX, y: perimeter.boundingBox.maxY + 96 },
+    text: `Draft reinforcement layout: ${input.shearReinforcement.layoutType ?? 'closed-stirrups'}`,
+  })
+
+  return elements
+}
+
+function createRowMarkers(
+  left: number,
+  right: number,
+  top: number,
+  bottom: number,
+  legsPerRow: number,
+  rowIndex: number,
+  radius: number,
+): SvgSketchElement[] {
+  const perimeterPoints = [
+    { x: left, y: top },
+    { x: right, y: top },
+    { x: right, y: bottom },
+    { x: left, y: bottom },
+  ]
+
+  return Array.from({ length: legsPerRow }, (_, index) => {
+    const point = perimeterPoints[index % perimeterPoints.length]
+
+    return {
+      id: `reinforcement-marker-r${rowIndex}-${index + 1}`,
+      role: 'reinforcement-marker',
+      type: 'circle',
+      center: point,
+      radius,
+      label: `leg ${index + 1}`,
+    } satisfies SvgSketchElement
+  })
 }
 
 function createMultiContourElements(
@@ -743,4 +854,24 @@ function rectToPoints(element: SvgSketchElement): Point2D[] {
     { x: element.x + element.width, y: element.y + element.height },
     { x: element.x, y: element.y + element.height },
   ]
+}
+
+function elementToPoints(element: SvgSketchElement): Point2D[] {
+  if (element.type === 'circle') {
+    return [element.center]
+  }
+
+  if (element.type === 'line') {
+    return [element.start, element.end]
+  }
+
+  if (element.type === 'text') {
+    return [element.position]
+  }
+
+  if (element.type === 'polygon') {
+    return element.points
+  }
+
+  return rectToPoints(element)
 }

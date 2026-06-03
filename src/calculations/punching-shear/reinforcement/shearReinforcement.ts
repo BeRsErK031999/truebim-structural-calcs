@@ -1,8 +1,16 @@
 import type { ShearReinforcementInput } from '../types'
 
-export function summarizeShearReinforcement(reinforcement: ShearReinforcementInput) {
-  return {
-    enabled: reinforcement.enabled,
-    warnings: reinforcement.enabled ? ['Shear reinforcement contribution is not implemented yet'] : [],
-  }
+import { calculateShearReinforcementCapacity } from './reinforcementCapacity'
+import { normalizeShearReinforcement } from './reinforcementLayout'
+
+export function summarizeShearReinforcement(
+  reinforcement: ShearReinforcementInput,
+  concreteCapacityN: number | null = null,
+  designDemandN: number | null = null,
+) {
+  return calculateShearReinforcementCapacity({
+    reinforcement: normalizeShearReinforcement(reinforcement),
+    concreteCapacityN,
+    designDemandN,
+  })
 }

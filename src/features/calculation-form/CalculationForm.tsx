@@ -10,6 +10,8 @@ import {
   type ConcreteClassName,
   type PunchingShearCaseType,
   type PunchingShearInput,
+  type ShearReinforcementLayoutType,
+  type ShearReinforcementSteelClass,
 } from '@/calculations/punching-shear'
 import { defaultCalculationDraft, useCalculationStore } from '@/entities/calculation/model/store'
 import { Button } from '@/shared/ui/button'
@@ -31,6 +33,16 @@ const caseOptions: Array<{ value: PunchingShearCaseType; label: string; disabled
 ]
 
 const concreteClassOptions: ConcreteClassName[] = ['B15', 'B20', 'B25', 'B30', 'B35', 'B40']
+const steelClassOptions: ShearReinforcementSteelClass[] = ['A240', 'A400', 'A500', 'B500']
+const reinforcementLayoutOptions: Array<{
+  value: ShearReinforcementLayoutType
+  label: string
+}> = [
+  { value: 'closed-stirrups', label: 'closed stirrups' },
+  { value: 'studs', label: 'studs' },
+  { value: 'links', label: 'links' },
+  { value: 'custom', label: 'custom' },
+]
 
 export function CalculationForm() {
   const draft = useCalculationStore((state) => state.draft)
@@ -65,6 +77,14 @@ export function CalculationForm() {
   const shearReinforcementEnabled = useWatch({
     control,
     name: 'shearReinforcement.enabled',
+  })
+  const shearReinforcementSteelClass = useWatch({
+    control,
+    name: 'shearReinforcement.steelClass',
+  })
+  const shearReinforcementLayoutType = useWatch({
+    control,
+    name: 'shearReinforcement.layoutType',
   })
 
   useEffect(() => {
@@ -349,13 +369,13 @@ export function CalculationForm() {
       </FormSection>
 
       <FormSection
-        title="Поперечная арматура"
-        helperText="Переключатель сохраняет состояние во входных данных. Вклад поперечной арматуры пока не реализован."
+        title="Shear Reinforcement"
+        helperText="Draft-only punching shear reinforcement input. Contribution, steel data, and layout assumptions require engineer review."
       >
         <ToggleField
           checked={shearReinforcementEnabled}
-          label="Учитывать поперечную арматуру"
-          helperText="Для текущего чернового расчета оставьте выключенным, чтобы получить результат без неподдерживаемого сценария."
+          label="Enable shear reinforcement"
+          helperText="Disabled preserves the current center force-only verified behavior."
           onCheckedChange={(checked) =>
             setValue('shearReinforcement.enabled', checked, {
               shouldDirty: true,
@@ -363,6 +383,84 @@ export function CalculationForm() {
             })
           }
         />
+        {shearReinforcementEnabled ? (
+          <>
+            <SelectField
+              label="Steel class"
+              placeholder="Select steel class"
+              value={shearReinforcementSteelClass ?? 'A400'}
+              options={steelClassOptions.map((value) => ({ value, label: value }))}
+              error={errors.shearReinforcement?.steelClass?.message}
+              onValueChange={(value) =>
+                setValue('shearReinforcement.steelClass', value as ShearReinforcementSteelClass, {
+                  shouldDirty: true,
+                  shouldValidate: true,
+                })
+              }
+            />
+            <SelectField
+              label="Layout type"
+              placeholder="Select layout type"
+              value={shearReinforcementLayoutType ?? 'closed-stirrups'}
+              options={reinforcementLayoutOptions}
+              error={errors.shearReinforcement?.layoutType?.message}
+              onValueChange={(value) =>
+                setValue('shearReinforcement.layoutType', value as ShearReinforcementLayoutType, {
+                  shouldDirty: true,
+                  shouldValidate: true,
+                })
+              }
+            />
+            <NumberField
+              label="Bar diameter"
+              min={1}
+              step={1}
+              unit="mm"
+              registration={register('shearReinforcement.barDiameterMm', { valueAsNumber: true })}
+              error={errors.shearReinforcement?.barDiameterMm?.message}
+            />
+            <NumberField
+              label="Bar spacing"
+              min={1}
+              step={1}
+              unit="mm"
+              registration={register('shearReinforcement.barSpacingMm', { valueAsNumber: true })}
+              error={errors.shearReinforcement?.barSpacingMm?.message}
+            />
+            <NumberField
+              label="Row count"
+              min={1}
+              step={1}
+              unit="rows"
+              registration={register('shearReinforcement.rowCount', { valueAsNumber: true })}
+              error={errors.shearReinforcement?.rowCount?.message}
+            />
+            <NumberField
+              label="Legs per row"
+              min={1}
+              step={1}
+              unit="legs"
+              registration={register('shearReinforcement.legsPerRow', { valueAsNumber: true })}
+              error={errors.shearReinforcement?.legsPerRow?.message}
+            />
+            <NumberField
+              label="First row distance"
+              min={1}
+              step={1}
+              unit="mm"
+              registration={register('shearReinforcement.firstRowDistanceMm', { valueAsNumber: true })}
+              error={errors.shearReinforcement?.firstRowDistanceMm?.message}
+            />
+            <NumberField
+              label="Row spacing"
+              min={1}
+              step={1}
+              unit="mm"
+              registration={register('shearReinforcement.rowSpacingMm', { valueAsNumber: true })}
+              error={errors.shearReinforcement?.rowSpacingMm?.message}
+            />
+          </>
+        ) : null}
       </FormSection>
 
       <div className="flex flex-wrap gap-3">

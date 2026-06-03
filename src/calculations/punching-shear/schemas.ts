@@ -87,10 +87,24 @@ export const concreteInputSchema = z.object({
   className: z.enum(['B15', 'B20', 'B25', 'B30', 'B35', 'B40']),
 })
 
+export const shearReinforcementSteelClassSchema = z.enum(['A240', 'A400', 'A500', 'B500'])
+export const shearReinforcementLayoutTypeSchema = z.enum([
+  'closed-stirrups',
+  'studs',
+  'links',
+  'custom',
+])
+
 export const shearReinforcementInputSchema = z.object({
   enabled: z.boolean(),
   barDiameterMm: positiveNumber.optional(),
   barSpacingMm: positiveNumber.optional(),
+  rowCount: z.number().int().positive().optional(),
+  legsPerRow: z.number().int().positive().optional(),
+  steelClass: shearReinforcementSteelClassSchema.optional(),
+  firstRowDistanceMm: positiveNumber.optional(),
+  rowSpacingMm: positiveNumber.optional(),
+  layoutType: shearReinforcementLayoutTypeSchema.optional(),
   rows: z.number().int().positive().optional(),
 })
 

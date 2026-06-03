@@ -48,6 +48,8 @@ describe('diagnostics helpers', () => {
       wallPunchingSupport: 'draft',
       wallCornerSupport: 'draft',
       multipleContourSupport: 'draft',
+      shearReinforcementInputSupport: 'draft',
+      shearReinforcementCapacitySupport: 'draft',
       contourSelectionSupport: 'draft',
       clippedPerimeterSupport: 'draft',
       geometryVerificationSupport: 'draft',
@@ -73,6 +75,7 @@ describe('diagnostics helpers', () => {
       openingDraftCasesCount: 2,
       verifiedEdgeCount: 0,
       verifiedOpeningCount: 0,
+      reinforcementVerifiedCasesCount: 0,
     })
     expect(model.verifiedCapabilityMatrix).toEqual(
       expect.arrayContaining([

@@ -39,6 +39,14 @@ export const defaultPunchingShearInput: PunchingShearInput = {
   openings: [],
   shearReinforcement: {
     enabled: false,
+    barDiameterMm: 10,
+    barSpacingMm: 100,
+    rowCount: 2,
+    legsPerRow: 4,
+    steelClass: 'A400',
+    firstRowDistanceMm: 80,
+    rowSpacingMm: 100,
+    layoutType: 'closed-stirrups',
   },
   multipleContours: {
     enabled: false,

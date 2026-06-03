@@ -506,4 +506,103 @@ describe('punching shear draft center check', () => {
     expect(result.controlContours).toEqual([])
     expect(result.controlPerimeterMm).toBe(2360)
   })
+
+  it('validates shear reinforcement input schema with the draft DTO fields', () => {
+    expect(
+      punchingShearInputSchema.safeParse({
+        ...defaultPunchingShearInput,
+        shearReinforcement: {
+          enabled: true,
+          barDiameterMm: 12,
+          barSpacingMm: 100,
+          rowCount: 3,
+          legsPerRow: 4,
+          steelClass: 'A500',
+          firstRowDistanceMm: 70,
+          rowSpacingMm: 90,
+          layoutType: 'studs',
+        },
+      }).success,
+    ).toBe(true)
+  })
+
+  it('calculates deterministic draft shear reinforcement area and contribution', () => {
+    const result = calculatePunchingShear({
+      ...defaultPunchingShearInput,
+      shearReinforcement: {
+        enabled: true,
+        barDiameterMm: 10,
+        barSpacingMm: 100,
+        rowCount: 2,
+        legsPerRow: 4,
+        steelClass: 'A400',
+        firstRowDistanceMm: 80,
+        rowSpacingMm: 100,
+        layoutType: 'closed-stirrups',
+      },
+    })
+
+    expect(result.reinforcementAreaMm2).toBeCloseTo(628.3185307)
+    expect(result.reinforcementContributionN).toBeCloseTo(175929.1886)
+    expect(result.draftCapacityWithReinforcementN).toBeGreaterThan(result.designShearForceN ?? 0)
+    expect(result.utilizationWithReinforcement).toBeLessThan(result.utilizationRatio ?? 1)
+    expect(result.reinforcementWarnings).toContain(
+      'Shear reinforcement contribution is DRAFT-only.',
+    )
+  })
+
+  it('keeps disabled shear reinforcement on the existing verified center behavior', () => {
+    const result = calculatePunchingShear({
+      ...defaultPunchingShearInput,
+      shearReinforcement: {
+        ...defaultPunchingShearInput.shearReinforcement,
+        enabled: false,
+      },
+    })
+
+    expect(result.verificationLevel).toBe('verified')
+    expect(result.verifiedFeatures).toContain('center-force-only')
+    expect(result.draftFeatures).toEqual([])
+    expect(result.reinforcementAreaMm2).toBeNull()
+    expect(result.controlPerimeterMm).toBe(2360)
+  })
+
+  it('marks enabled shear reinforcement as a draft feature without auto verification', () => {
+    const result = calculatePunchingShear({
+      ...defaultPunchingShearInput,
+      shearReinforcement: {
+        ...defaultPunchingShearInput.shearReinforcement,
+        enabled: true,
+      },
+    })
+
+    expect(['draft_ok', 'draft_failed']).toContain(result.status)
+    expect(result.verificationLevel).toBe('draft')
+    expect(result.verifiedFeatures).toEqual([])
+    expect(result.draftFeatures).toContain('shear-reinforcement')
+  })
+
+  it('adds shear reinforcement markers to the SVG model', () => {
+    const result = calculatePunchingShear({
+      ...defaultPunchingShearInput,
+      shearReinforcement: {
+        ...defaultPunchingShearInput.shearReinforcement,
+        enabled: true,
+        rowCount: 2,
+        legsPerRow: 4,
+      },
+    })
+
+    expect(result.svgModel.elements.some((element) => element.role === 'reinforcement-row')).toBe(true)
+    expect(result.svgModel.elements.filter((element) => element.role === 'reinforcement-marker')).toHaveLength(8)
+    expect(result.svgModel.elements).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          role: 'label',
+          type: 'text',
+          text: 'Draft reinforcement layout: closed-stirrups',
+        }),
+      ]),
+    )
+  })
 })

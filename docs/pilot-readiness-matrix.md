@@ -21,6 +21,7 @@ This matrix separates what engineers can safely test in the office pilot from wh
 | edge/corner/opening draft geometry | Useful for comparison and feedback, not verified design behavior. |
 | wall-end/wall-corner draft geometry | Useful for geometry review, report export, and verification preparation only. |
 | multiple control perimeters | Draft generation and selection trace is available for review, not verified SP63 contour selection. |
+| shear reinforcement draft foundation | Useful for input review, report/SVG trace, and verification preparation only; draft capacity is not SP63 verified. |
 | stress visualization | Draft visualization/regression aid, not verified engineering output. |
 | candidate workflow | Candidate export records evidence intent; it does not auto-promote a case to VERIFIED. |
 
@@ -33,12 +34,12 @@ This matrix separates what engineers can safely test in the office pilot from wh
 | verified multiple contours | Draft generation and selection trace exists, but SP63 contour rules and trusted expected values are not verified. |
 | verified openings | Opening behavior is draft geometry only. |
 | verified edge/corner | Boundary behavior is draft geometry only. |
-| shear reinforcement | Reinforcement contribution is not included in verified arithmetic. |
+| verified shear reinforcement | Draft contribution is available for review, but SP63 reinforcement formulas, steel values, and layout assumptions are not verified. |
 | round columns | Round-column geometry is outside the verified transition scope. |
 
 ## Production Blockers
 
 - Trusted SP63 verification for formulas, coefficients, rounding, and applicability limits.
-- Golden examples pack covering center moments, edge/corner, openings, wall cases, and multiple contours.
+- Golden examples pack covering center moments, edge/corner, openings, wall cases, shear reinforcement, and multiple contours.
 - Official report format with stable traceability and case-specific limitations.
 - Engineer-reviewed evidence flow for promoting candidates without hiding draft warnings.

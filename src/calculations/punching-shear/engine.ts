@@ -11,6 +11,7 @@ import {
 } from './moments/momentTransfer'
 import { punchingShearInputSchema } from './schemas'
 import { buildPunchingSketchModel } from './sketch/punchingSketch'
+import { summarizeShearReinforcement } from './reinforcement/shearReinforcement'
 import { knToN, normalizePunchingShearInput } from './units'
 import { applyVerifiedStatus, buildVerifiedStatus } from './verified/verifiedStatus'
 import type { PunchingShearInput, PunchingShearResult } from './types'
@@ -24,7 +25,7 @@ const draftScopeWarnings = [
   'Openings and boundary clipping are draft geometry only',
   'Wall-end punching support is draft geometry only',
   'Wall-corner punching support is draft geometry only',
-  'Shear reinforcement is not included in this draft',
+  'Shear reinforcement contribution is draft-only when enabled',
   'Draft formula must be verified before design use',
 ]
 
@@ -107,10 +108,20 @@ export function calculatePunchingShear(input: PunchingShearInput): PunchingShear
   const minShearStressMpa = momentTransfer.stressDistribution?.minStressMpa ?? shearStressMpa
   const designStressMpa = momentTransfer.enabled ? maxShearStressMpa : shearStressMpa
   const utilizationRatio = designStressMpa / draftConcreteResistanceMpa
-  const passed = utilizationRatio <= 1
+  const concreteCapacityN =
+    draftConcreteResistanceMpa * selectedPerimeter.perimeterMm * selectedPerimeter.effectiveDepthMm
+  const designDemandN = designStressMpa * selectedPerimeter.perimeterMm * selectedPerimeter.effectiveDepthMm
+  const shearReinforcement = summarizeShearReinforcement(
+    normalizedInput.shearReinforcement,
+    concreteCapacityN,
+    designDemandN,
+  )
+  const effectiveUtilization =
+    shearReinforcement.utilizationWithReinforcement ?? utilizationRatio
+  const passed = effectiveUtilization <= 1
 
   return withVerifiedStatus(normalizedInput, {
-    ...createBaseResult(normalizedInput, selectedPerimeter, svgModel, momentTransfer),
+    ...createBaseResult(normalizedInput, selectedPerimeter, svgModel, momentTransfer, shearReinforcement),
     ...contourBundle,
     status: passed ? 'draft_ok' : 'draft_failed',
     utilization: utilizationRatio,
@@ -128,15 +139,21 @@ export function calculatePunchingShear(input: PunchingShearInput): PunchingShear
     draftConcreteResistanceMpa,
     utilizationRatio,
     passed,
+    shearReinforcement,
+    reinforcementAreaMm2: shearReinforcement.reinforcementAreaMm2,
+    reinforcementContributionN: shearReinforcement.reinforcementContributionN,
+    draftCapacityWithReinforcementN: shearReinforcement.draftCapacityWithReinforcementN,
+    utilizationWithReinforcement: shearReinforcement.utilizationWithReinforcement,
+    reinforcementWarnings: shearReinforcement.warnings,
     warnings: [
       ...draftScopeWarnings,
       ...selectedPerimeter.warnings,
       ...momentTransfer.warnings,
       ...contourBundle.contourWarnings,
+      ...shearReinforcement.warnings,
     ],
     placeholders: [
       'moment contribution',
-      'shear reinforcement contribution',
       'openings subtraction',
       'edge and corner behavior',
     ],
@@ -176,10 +193,7 @@ function isSupportedDraftGeometryCase(input: PunchingShearInput) {
   const wallEndDraftCase = input.caseType === 'wall-end' && Boolean(input.wall)
   const wallCornerDraftCase = input.caseType === 'wall-corner' && Boolean(input.wallCorner)
 
-  return (
-    (rectangularDraftCase || wallEndDraftCase || wallCornerDraftCase) &&
-    !input.shearReinforcement.enabled
-  )
+  return rectangularDraftCase || wallEndDraftCase || wallCornerDraftCase
 }
 
 function createInvalidInputResult(input: PunchingShearInput, validationWarnings: string[]) {
@@ -211,6 +225,7 @@ function createBaseResult(
   perimeter: ReturnType<typeof calculateControlPerimeter>,
   svgModel: ReturnType<typeof buildPunchingSketchModel>,
   momentTransfer: ReturnType<typeof createDisabledMomentTransfer> | ReturnType<typeof calculateDraftMomentTransfer>,
+  shearReinforcement = summarizeShearReinforcement(input.shearReinforcement),
 ): PunchingShearResult {
   const material = getConcreteClassData(input.concrete.className)
 
@@ -242,6 +257,12 @@ function createBaseResult(
     draftCriticalContour: null,
     contourComparison: [],
     contourWarnings: [],
+    shearReinforcement,
+    reinforcementAreaMm2: shearReinforcement.reinforcementAreaMm2,
+    reinforcementContributionN: shearReinforcement.reinforcementContributionN,
+    draftCapacityWithReinforcementN: shearReinforcement.draftCapacityWithReinforcementN,
+    utilizationWithReinforcement: shearReinforcement.utilizationWithReinforcement,
+    reinforcementWarnings: shearReinforcement.warnings,
     svgModel,
     momentTransfer,
     verifiedMode: 'draft',
@@ -250,11 +271,10 @@ function createBaseResult(
     draftFeatures: [],
     verificationEvidenceIds: [],
     verificationEvidence: [],
-    warnings: [...draftScopeWarnings, ...perimeter.warnings],
+    warnings: [...draftScopeWarnings, ...perimeter.warnings, ...shearReinforcement.warnings],
     placeholders: [
       'utilization',
       'moment contribution',
-      'shear reinforcement contribution',
       'openings subtraction',
     ],
   }
