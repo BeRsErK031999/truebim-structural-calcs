@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import { defaultPunchingShearInput } from '../defaults'
+import { createSafeBoundingBox, isFiniteBoundingBox } from '../domain/boundingBox'
 import { calculateControlPerimeter } from '../geometry/perimeter'
 import { getRoundControlPerimeterSegmentCount } from '../round/roundPerimeter'
 import { createBoundingBox } from '../domain/point'
@@ -89,6 +90,17 @@ describe('geometry primitives', () => {
     })
   })
 
+  it('uses a finite fallback for empty safe bounding box input', () => {
+    const fallback = createBoundingBox(rectangle.vertices)
+    const safeBox = createSafeBoundingBox([], fallback)
+
+    expect(safeBox.boundingBox).toEqual(fallback)
+    expect(isFiniteBoundingBox(safeBox.boundingBox)).toBe(true)
+    expect(safeBox.warnings).toContain(
+      'Bounding box used finite fallback because no finite points were available.',
+    )
+  })
+
   it('classifies edge and corner boundary conditions', () => {
     expect(classifyEdgeCornerCondition('edge', { leftMm: 0 })).toMatchObject({
       boundaryCondition: 'edge',
@@ -100,6 +112,73 @@ describe('geometry primitives', () => {
       edgeAffected: true,
       cornerAffected: true,
     })
+  })
+
+  it('keeps edge clipping metadata slabBox finite for pilot edge-01 geometry', () => {
+    const perimeter = calculateControlPerimeter({
+      ...defaultPunchingShearInput,
+      caseType: 'edge',
+      forces: {
+        axialForceKn: 320,
+        momentXKnM: 0,
+        momentYKnM: 0,
+      },
+      slab: {
+        thicknessMm: 200,
+        effectiveDepthMm: 170,
+        concreteCoverMm: 30,
+      },
+      concrete: {
+        className: 'B20',
+      },
+      rectColumn: {
+        widthXMm: 300,
+        widthYMm: 350,
+      },
+      slabEdges: {
+        leftMm: 160,
+      },
+    })
+
+    expect(isFiniteBoundingBox(perimeter.clippingMetadata.slabBox)).toBe(true)
+    expect(findNonFinitePaths(perimeter)).toEqual([])
+    expect(perimeter.warnings).toContain(
+      'Slab boundary metadata used finite fallback extents for unbounded draft clipping sides.',
+    )
+  })
+
+  it('keeps corner clipping metadata slabBox finite for pilot corner-01 geometry', () => {
+    const perimeter = calculateControlPerimeter({
+      ...defaultPunchingShearInput,
+      caseType: 'corner',
+      forces: {
+        axialForceKn: 320,
+        momentXKnM: 0,
+        momentYKnM: 0,
+      },
+      slab: {
+        thicknessMm: 200,
+        effectiveDepthMm: 170,
+        concreteCoverMm: 30,
+      },
+      concrete: {
+        className: 'B20',
+      },
+      rectColumn: {
+        widthXMm: 300,
+        widthYMm: 350,
+      },
+      slabEdges: {
+        leftMm: 150,
+        topMm: 150,
+      },
+    })
+
+    expect(isFiniteBoundingBox(perimeter.clippingMetadata.slabBox)).toBe(true)
+    expect(findNonFinitePaths(perimeter)).toEqual([])
+    expect(perimeter.warnings).toContain(
+      'Slab boundary metadata used finite fallback extents for unbounded draft clipping sides.',
+    )
   })
 
   it('clips rectangular perimeter against slab boundary', () => {
@@ -177,3 +256,19 @@ describe('geometry primitives', () => {
     expect(perimeter.segments).toHaveLength(4)
   })
 })
+
+function findNonFinitePaths(value: unknown, path = 'value'): string[] {
+  if (typeof value === 'number') {
+    return Number.isFinite(value) ? [] : [path]
+  }
+
+  if (Array.isArray(value)) {
+    return value.flatMap((item, index) => findNonFinitePaths(item, `${path}[${index}]`))
+  }
+
+  if (value !== null && typeof value === 'object') {
+    return Object.entries(value).flatMap(([key, item]) => findNonFinitePaths(item, `${path}.${key}`))
+  }
+
+  return []
+}

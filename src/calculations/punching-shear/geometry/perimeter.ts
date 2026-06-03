@@ -1,5 +1,10 @@
 import { createContourLoop } from '../domain/contour'
-import { createBoundingBox, type Point2D } from '../domain/point'
+import {
+  createBoundingBoxFromPoints,
+  createSafeBoundingBox,
+  isFiniteBoundingBox,
+} from '../domain/boundingBox'
+import type { BoundingBox, Point2D } from '../domain/point'
 import { normalizePolygon, polygonPerimeter } from '../domain/polygon'
 import { segmentLength } from '../domain/segment'
 import { createBoundaryWarnings } from '../edge-corner/boundaryWarnings'
@@ -110,7 +115,13 @@ function calculateRectangularControlPerimeter(
   const removedSegments = [...boundaryClipping.removedSegments, ...openingSubtraction.removedSegments]
   const vertices = collectSegmentPoints(segments)
   const activeContour = createContourLoop(`${polygon.id}-active`, vertices)
-  const boundingBox = createBoundingBox(vertices)
+  const fallbackBox = createBoundingBoxFromPoints([
+    ...polygon.vertices,
+    ...collectSegmentPoints([...baseSegments, ...segments, ...removedSegments]),
+  ])
+  const safeActiveBox = createSafeBoundingBox(vertices, fallbackBox)
+  const boundingBox = safeActiveBox.boundingBox
+  const safeSlabBox = createSafeSlabMetadataBox(boundary.slabBox, fallbackBox)
   const perimeterMm = sumSegmentLengths(segments)
   const removedPerimeterMm = sumSegmentLengths(removedSegments)
   const clippedPerimeterMm = boundaryClipping.clippedPerimeterMm
@@ -131,7 +142,7 @@ function calculateRectangularControlPerimeter(
     openingTangents: openingSubtraction.openingTangents,
     clippingMetadata: {
       caseType: input.caseType,
-      slabBox: boundary.slabBox,
+      slabBox: safeSlabBox.boundingBox,
       originalPerimeterMm,
       clippedPerimeterMm,
       removedPerimeterMm,
@@ -148,6 +159,8 @@ function calculateRectangularControlPerimeter(
       'Draft offset uses geometry placeholder values pending SP63 verification',
       ...createBoundaryWarnings(classification),
       ...createOpeningWarnings(openingSubtraction.openingAffected),
+      ...safeActiveBox.warnings,
+      ...safeSlabBox.warnings,
     ],
   }
 }
@@ -189,5 +202,46 @@ function addUniquePoint(points: Point2D[], point: Point2D) {
 
   if (!exists) {
     points.push(point)
+  }
+}
+
+function createSafeSlabMetadataBox(
+  slabBox: BoundingBox | null,
+  fallbackBox: BoundingBox,
+) {
+  if (!slabBox) {
+    return {
+      boundingBox: null,
+      warnings: [],
+    }
+  }
+
+  if (isFiniteBoundingBox(slabBox)) {
+    return {
+      boundingBox: slabBox,
+      warnings: [],
+    }
+  }
+
+  const resolvedBox = {
+    minX: Number.isFinite(slabBox.minX) ? slabBox.minX : fallbackBox.minX,
+    minY: Number.isFinite(slabBox.minY) ? slabBox.minY : fallbackBox.minY,
+    maxX: Number.isFinite(slabBox.maxX) ? slabBox.maxX : fallbackBox.maxX,
+    maxY: Number.isFinite(slabBox.maxY) ? slabBox.maxY : fallbackBox.maxY,
+  }
+  const safeBox = createSafeBoundingBox(
+    [
+      { x: resolvedBox.minX, y: resolvedBox.minY },
+      { x: resolvedBox.maxX, y: resolvedBox.maxY },
+    ],
+    fallbackBox,
+  )
+
+  return {
+    boundingBox: safeBox.boundingBox,
+    warnings: [
+      'Slab boundary metadata used finite fallback extents for unbounded draft clipping sides.',
+      ...safeBox.warnings,
+    ],
   }
 }

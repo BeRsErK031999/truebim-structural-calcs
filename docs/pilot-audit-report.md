@@ -285,6 +285,13 @@ Notes:
   - Low: 0 open
 - pilot readiness: 84/100
 
+Pilot validation campaign rerun after edge/corner clipping metadata remediation:
+
+- cases run: 100
+- non-finite failures: 0
+- crashes: 0
+- campaign readiness estimate: 84/100
+
 Pilot is ready for controlled engineer rollout focused on evidence collection. Draft geometry remains explicitly non-design-use and still requires trusted review evidence before any promotion workflow.
 
 ## Remediation

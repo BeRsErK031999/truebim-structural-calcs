@@ -286,5 +286,49 @@ function createBaseResult(
 }
 
 function withVerifiedStatus(input: PunchingShearInput, result: PunchingShearResult) {
-  return applyVerifiedStatus(result, buildVerifiedStatus(input, result))
+  return sanitizePunchingShearResult(applyVerifiedStatus(result, buildVerifiedStatus(input, result)))
+}
+
+function sanitizePunchingShearResult(result: PunchingShearResult): PunchingShearResult {
+  const nonFinitePaths: string[] = []
+  const sanitizedResult = sanitizeNonFiniteValues(result, 'result', nonFinitePaths) as PunchingShearResult
+
+  if (nonFinitePaths.length === 0) {
+    return result
+  }
+
+  return {
+    ...sanitizedResult,
+    warnings: [
+      ...sanitizedResult.warnings,
+      `Non-finite result values were sanitized before export/report generation: ${nonFinitePaths.slice(0, 8).join(', ')}.`,
+    ],
+  }
+}
+
+function sanitizeNonFiniteValues(value: unknown, path: string, nonFinitePaths: string[]): unknown {
+  if (typeof value === 'number') {
+    if (Number.isFinite(value)) {
+      return value
+    }
+
+    nonFinitePaths.push(path)
+
+    return 0
+  }
+
+  if (Array.isArray(value)) {
+    return value.map((item, index) => sanitizeNonFiniteValues(item, `${path}[${index}]`, nonFinitePaths))
+  }
+
+  if (value !== null && typeof value === 'object') {
+    return Object.fromEntries(
+      Object.entries(value).map(([key, item]) => [
+        key,
+        sanitizeNonFiniteValues(item, `${path}.${key}`, nonFinitePaths),
+      ]),
+    )
+  }
+
+  return value
 }

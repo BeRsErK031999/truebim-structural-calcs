@@ -203,6 +203,85 @@ describe('punching shear draft center check', () => {
     },
   )
 
+  it('does not produce Infinity or NaN in the full edge result for pilot edge-01', () => {
+    const result = calculatePunchingShear({
+      ...defaultPunchingShearInput,
+      caseType: 'edge',
+      forces: {
+        axialForceKn: 320,
+        momentXKnM: 0,
+        momentYKnM: 0,
+      },
+      slab: {
+        thicknessMm: 200,
+        effectiveDepthMm: 170,
+        concreteCoverMm: 30,
+      },
+      concrete: {
+        className: 'B20',
+      },
+      rectColumn: {
+        widthXMm: 300,
+        widthYMm: 350,
+      },
+      slabEdges: {
+        leftMm: 160,
+      },
+    })
+
+    expect(findNonFinitePaths(result)).toEqual([])
+    expect(result.perimeter.clippingMetadata.slabBox).toEqual(
+      expect.objectContaining({
+        maxX: expect.any(Number),
+        maxY: expect.any(Number),
+        width: expect.any(Number),
+        height: expect.any(Number),
+      }),
+    )
+    expect(result.verificationLevel).toBe('draft')
+    expect(result.draftFeatures).toContain('edge')
+  })
+
+  it('does not produce Infinity or NaN in the full corner result for pilot corner-01', () => {
+    const result = calculatePunchingShear({
+      ...defaultPunchingShearInput,
+      caseType: 'corner',
+      forces: {
+        axialForceKn: 320,
+        momentXKnM: 0,
+        momentYKnM: 0,
+      },
+      slab: {
+        thicknessMm: 200,
+        effectiveDepthMm: 170,
+        concreteCoverMm: 30,
+      },
+      concrete: {
+        className: 'B20',
+      },
+      rectColumn: {
+        widthXMm: 300,
+        widthYMm: 350,
+      },
+      slabEdges: {
+        leftMm: 150,
+        topMm: 150,
+      },
+    })
+
+    expect(findNonFinitePaths(result)).toEqual([])
+    expect(result.perimeter.clippingMetadata.slabBox).toEqual(
+      expect.objectContaining({
+        maxX: expect.any(Number),
+        maxY: expect.any(Number),
+        width: expect.any(Number),
+        height: expect.any(Number),
+      }),
+    )
+    expect(result.verificationLevel).toBe('draft')
+    expect(result.draftFeatures).toContain('corner')
+  })
+
   it('keeps openings as DRAFT verification scope', () => {
     const result = calculatePunchingShear({
       ...defaultPunchingShearInput,
@@ -504,6 +583,7 @@ describe('punching shear draft center check', () => {
     expect(result.verificationLevel).toBe('verified')
     expect(result.verifiedFeatures).toContain('center-force-only')
     expect(result.draftFeatures).toEqual([])
+    expect(findNonFinitePaths(result)).toEqual([])
   })
 
   it('creates draft multiple control contours with expected offsets', () => {
@@ -695,3 +775,19 @@ describe('punching shear draft center check', () => {
     )
   })
 })
+
+function findNonFinitePaths(value: unknown, path = 'result'): string[] {
+  if (typeof value === 'number') {
+    return Number.isFinite(value) ? [] : [path]
+  }
+
+  if (Array.isArray(value)) {
+    return value.flatMap((item, index) => findNonFinitePaths(item, `${path}[${index}]`))
+  }
+
+  if (value !== null && typeof value === 'object') {
+    return Object.entries(value).flatMap(([key, item]) => findNonFinitePaths(item, `${path}.${key}`))
+  }
+
+  return []
+}
