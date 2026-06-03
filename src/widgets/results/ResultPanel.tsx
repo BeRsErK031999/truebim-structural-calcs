@@ -1,9 +1,10 @@
 import { useMemo, useState } from 'react'
-import { Copy, Download } from 'lucide-react'
+import { ChevronDown, Copy, Download } from 'lucide-react'
 
 import {
   pointsToSvg,
   type PunchingShearCheckStatus,
+  type PunchingShearReportModel,
   type PunchingSketchModel,
   type SvgSketchElement,
   viewBoxToString,
@@ -38,6 +39,7 @@ export function ResultPanel() {
   const report = useCalculationStore((state) => state.punchingShearReport)
   const [exportMessage, setExportMessage] = useState<string | null>(null)
   const [copyMessage, setCopyMessage] = useState<string | null>(null)
+  const [showTrace, setShowTrace] = useState(false)
   const canExport = Boolean(result && report)
   const calculationId = useMemo(() => (result ? createCalculationId() : null), [result])
 
@@ -201,8 +203,83 @@ export function ResultPanel() {
             </p>
           </div>
         ) : null}
+
+        {report ? (
+          <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full justify-between"
+              onClick={() => setShowTrace((value) => !value)}
+            >
+              Show Trace
+              <ChevronDown className={showTrace ? 'rotate-180 transition-transform' : 'transition-transform'} />
+            </Button>
+            {showTrace ? <TraceSteps report={report} /> : null}
+          </div>
+        ) : null}
       </CardContent>
     </Card>
+  )
+}
+
+function TraceSteps({ report }: { report: PunchingShearReportModel }) {
+  const steps = report.calculationTrace.flatMap((section) => section.steps)
+
+  return (
+    <div className="mt-4 grid gap-3">
+      {steps.map((step, index) => (
+        <div key={step.id} className="rounded-lg border border-slate-200 bg-white p-3">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <p className="text-sm font-semibold text-slate-950">
+                {index + 1}. {step.title}
+              </p>
+              <p className="mt-1 text-xs leading-5 text-slate-600">{step.description}</p>
+            </div>
+            <TraceSourceBadge sourceType={step.sourceType} />
+          </div>
+          <dl className="mt-3 grid gap-2 text-xs text-slate-700">
+            <TraceLine label="Formula" value={step.formula} />
+            <TraceLine label="Substitution" value={step.substitutedFormula} />
+            <TraceLine label="Result" value={`${step.result} ${step.units}`} />
+            <TraceLine label="Source" value={step.sourceReference} />
+          </dl>
+          {step.warnings.length > 0 ? (
+            <ul className="mt-3 grid gap-1 text-xs font-medium text-amber-700">
+              {step.warnings.map((warning) => (
+                <li key={warning}>- {warning}</li>
+              ))}
+            </ul>
+          ) : null}
+        </div>
+      ))}
+    </div>
+  )
+}
+
+function TraceLine({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <dt className="font-semibold uppercase tracking-[0.12em] text-slate-500">{label}</dt>
+      <dd className="mt-1 break-words font-mono text-slate-800">{value}</dd>
+    </div>
+  )
+}
+
+function TraceSourceBadge({ sourceType }: { sourceType: 'verified' | 'partial' | 'draft' | 'manual' | 'placeholder' }) {
+  const classBySource = {
+    verified: 'bg-emerald-50 text-emerald-700',
+    partial: 'bg-sky-50 text-sky-700',
+    draft: 'bg-amber-50 text-amber-700',
+    manual: 'bg-slate-100 text-slate-700',
+    placeholder: 'bg-orange-50 text-orange-700',
+  }
+
+  return (
+    <span className={`shrink-0 rounded-md px-2 py-1 text-xs font-semibold ${classBySource[sourceType]}`}>
+      {sourceType.toUpperCase()}
+    </span>
   )
 }
 

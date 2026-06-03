@@ -240,6 +240,10 @@ export function buildPunchingShearMarkdownReport(
       ['passed', result.passed === null ? 'not evaluated' : String(result.passed)],
     ]),
     '',
+    '## Calculation Trace',
+    '',
+    renderCalculationTrace(report),
+    '',
     '## Moment Transfer',
     '',
     table([
@@ -336,6 +340,22 @@ export function buildPunchingShearMarkdownReport(
 
 function formatFeatureList(features: string[]) {
   return features.length > 0 ? features.map((feature) => `- ${feature}`) : ['- none']
+}
+
+function renderCalculationTrace(report: PunchingShearReportModel) {
+  const steps = report.calculationTrace.flatMap((section) => section.steps)
+
+  if (steps.length === 0) {
+    return 'No calculation trace available.'
+  }
+
+  return table([
+    ['step', 'formula | substitution | result | verification source'],
+    ...steps.map((step) => [
+      step.title,
+      `${step.formula} | ${step.substitutedFormula} | ${step.result} ${step.units} | ${step.sourceType.toUpperCase()} - ${step.sourceReference}${step.warnings.length > 0 ? ` | warnings: ${step.warnings.join('; ')}` : ''}`,
+    ] satisfies [string, string]),
+  ])
 }
 
 function formatInlineFeatures(features: string[]) {

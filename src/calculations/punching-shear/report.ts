@@ -1,4 +1,5 @@
 import type { PunchingShearInput, PunchingShearReportModel, PunchingShearResult } from './types'
+import { buildPunchingShearTrace } from './trace/traceBuilder'
 import { defaultAxisConvention } from './verification/axisConvention'
 import { createStressDistributionChecksum } from './verification/stressDistributionComparison'
 
@@ -6,6 +7,8 @@ export function buildPunchingShearReport(
   input: PunchingShearInput,
   result: PunchingShearResult,
 ): PunchingShearReportModel {
+  const calculationTrace = buildPunchingShearTrace(input, result)
+
   return {
     title: 'Punching Shear Draft Center Check',
     standard: 'СП63.13330 - draft verification pending',
@@ -201,6 +204,7 @@ export function buildPunchingShearReport(
       ...result.warnings,
       ...result.contourWarnings,
     ],
+    calculationTrace,
     calculationSteps: [
       'DRAFT / NOT FOR DESIGN USE.',
       'Input schema validation completed.',

@@ -30,6 +30,8 @@ export { buildStressRegressionSnapshot } from './verification/stressRegressionSn
 export { buildStressRegressionSnapshotHtml } from './verification/stressRegressionSnapshotHtml'
 export { getVerifiedCapabilityMatrix } from './verified/verifiedCapabilities'
 export { buildVerifiedStatus } from './verified/verifiedStatus'
+export { buildPunchingShearTrace } from './trace/traceBuilder'
+export { traceSourceLabels } from './trace/traceMetadata'
 export { buildPunchingShearReport } from './report'
 export {
   concreteInputSchema,
@@ -101,6 +103,13 @@ export type {
   ControlContourKind,
   ControlContourSelectionResult,
 } from './contours/controlContour'
+export type {
+  TraceSourceType,
+  TraceStep,
+} from './trace/traceStep'
+export type {
+  TraceSection,
+} from './trace/traceSection'
 export type {
   VerificationEvidence,
   VerificationLevel,

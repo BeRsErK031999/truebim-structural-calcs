@@ -78,6 +78,10 @@ export function DiagnosticsPage() {
               value={formatDiagnosticValue(diagnostics.driftDetectionSupport)}
             />
             <DiagnosticItem
+              label="trace support"
+              value={formatDiagnosticValue(diagnostics.traceSupport)}
+            />
+            <DiagnosticItem
               label="Передача моментов"
               value={formatDiagnosticValue(diagnostics.momentTransferStatus)}
             />

@@ -76,6 +76,20 @@ describe('report export', () => {
     expect(markdown).toContain('v = N / (u * h0)')
   })
 
+  it('includes the calculation trace section in exported reports', () => {
+    const result = calculatePunchingShear(defaultPunchingShearInput)
+    const report = buildPunchingShearReport(defaultPunchingShearInput, result)
+    const html = buildPunchingShearHtmlReport(defaultPunchingShearInput, result, report)
+    const markdown = buildPunchingShearMarkdownReport(defaultPunchingShearInput, result, report)
+
+    expect(html).toContain('Calculation Trace')
+    expect(html).toContain('Input validation')
+    expect(html).toContain('VERIFIED - center-force-only evidence: verified-center-rect-001')
+    expect(markdown).toContain('## Calculation Trace')
+    expect(markdown).toContain('Stress')
+    expect(markdown).toContain('v = N / (u * h0)')
+  })
+
   it('includes moment transfer and stress distribution sections', () => {
     const input = {
       ...defaultPunchingShearInput,

@@ -11,6 +11,7 @@ import type { ContourLoop } from './domain/contour'
 import type { BoundingBox, Point2D } from './domain/point'
 import type { Segment2D } from './domain/segment'
 import type { PunchingSketchModel } from './sketch/svg'
+import type { TraceSection } from './trace/traceSection'
 import type { VerificationEvidence, VerificationLevel, VerifiedFeatureId } from './verified/verifiedMode'
 import type {
   ContourComparisonRow,
@@ -318,5 +319,6 @@ export type PunchingShearReportModel = {
   }
   verificationEvidence: VerificationEvidence[]
   warnings: string[]
+  calculationTrace: TraceSection[]
   calculationSteps: string[]
 }

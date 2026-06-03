@@ -22,6 +22,7 @@ export type DiagnosticsModel = {
   stressChecksumSupport: 'draft'
   axisConventionValidationSupport: 'draft'
   driftDetectionSupport: 'draft'
+  traceSupport: 'available'
   momentTransferStatus: 'draft'
   momentVerificationSupport: 'draft'
   stressComparisonSupport: 'draft'
@@ -142,6 +143,7 @@ export function buildDiagnosticsModel({
     stressChecksumSupport: 'draft',
     axisConventionValidationSupport: 'draft',
     driftDetectionSupport: 'draft',
+    traceSupport: 'available',
     momentTransferStatus: 'draft',
     momentVerificationSupport: 'draft',
     stressComparisonSupport: 'draft',

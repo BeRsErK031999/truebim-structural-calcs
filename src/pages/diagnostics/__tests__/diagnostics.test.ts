@@ -35,6 +35,7 @@ describe('diagnostics helpers', () => {
       stressChecksumSupport: 'draft',
       axisConventionValidationSupport: 'draft',
       driftDetectionSupport: 'draft',
+      traceSupport: 'available',
       momentTransferStatus: 'draft',
       momentVerificationSupport: 'draft',
       stressComparisonSupport: 'draft',

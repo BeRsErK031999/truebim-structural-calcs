@@ -208,6 +208,9 @@ export function buildPunchingShearHtmlReport(
       ['passed', result.passed === null ? 'not evaluated' : String(result.passed)],
     ])}
 
+    <h2>Calculation Trace</h2>
+    ${renderCalculationTrace(report)}
+
     <h2>Moment Transfer</h2>
     ${renderTable([
       ['status', result.momentTransfer.status],
@@ -301,6 +304,22 @@ function renderMultipleControlPerimeters(result: PunchingShearResult) {
     ...result.contourComparison.map((contour) => [
       contour.contourId,
       `${formatValueWithUnit(contour.offsetMm, 'mm')} | ${formatValueWithUnit(contour.perimeterMm, 'mm')} | ${formatValueWithUnit(contour.draftStressMpa, 'MPa', 3)} | ${formatUtilization(contour.utilization)} | ${contour.selected ? 'yes' : 'no'} | ${contour.warnings.join('; ') || 'none'}`,
+    ] satisfies [string, string]),
+  ])
+}
+
+function renderCalculationTrace(report: PunchingShearReportModel) {
+  const steps = report.calculationTrace.flatMap((section) => section.steps)
+
+  if (steps.length === 0) {
+    return '<p class="note">No calculation trace available.</p>'
+  }
+
+  return renderTable([
+    ['step', 'formula | substitution | result | verification source'],
+    ...steps.map((step) => [
+      step.title,
+      `${step.formula} | ${step.substitutedFormula} | ${step.result} ${step.units} | ${step.sourceType.toUpperCase()} - ${step.sourceReference}${step.warnings.length > 0 ? ` | warnings: ${step.warnings.join('; ')}` : ''}`,
     ] satisfies [string, string]),
   ])
 }
