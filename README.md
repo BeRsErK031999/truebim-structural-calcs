@@ -98,6 +98,12 @@ SSH key deploy setup is documented in `docs/ssh-key-deploy.md`.
 
 Release hardening checks are documented in `docs/release-checklist.md`.
 
+## Public access
+
+External engineer access should use either a Cloudflare Tunnel for a short controlled pilot or a separate VPS deployment for a permanent MVP. Do not expose the office server directly to the internet without a separate security review and explicit approval.
+
+See `docs/public-access.md` for the Cloudflare Tunnel pilot workflow, VPS production option, required domains and variables, verification checks, shutdown steps and security risks.
+
 Client-side runtime diagnostics are available at `/diagnostics`.
 
 Release Evidence is available at `/release-evidence`. It exports HTML, Markdown and JSON bundles for audit and reproducibility without changing formulas, verification logic or candidate promotion rules. The local CLI writes bundle files to `release-evidence/`:
