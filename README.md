@@ -104,6 +104,8 @@ External engineer access should use either a Cloudflare Tunnel for a short contr
 
 See `docs/public-access.md` for the Cloudflare Tunnel pilot workflow, VPS production option, required domains and variables, verification checks, shutdown steps and security risks.
 
+Free public pilot access notes for DuckDNS and the Cloudflare Tunnel DNS limitations are documented in `docs/free-public-access.md`.
+
 ## Public Pilot URL
 
 Current public pilot URL: not active.
