@@ -249,36 +249,51 @@ export function ResultPanel() {
 }
 
 function TraceSteps({ report }: { report: PunchingShearReportModel }) {
-  const steps = report.calculationTrace.flatMap((section) => section.steps)
-
   return (
     <div className="mt-4 grid gap-3">
-      {steps.map((step, index) => (
-        <div key={step.id} className="rounded-lg border border-slate-200 bg-white p-3">
-          <div className="flex items-start justify-between gap-3">
-            <div>
-              <p className="text-sm font-semibold text-slate-950">
-                {index + 1}. {step.title}
-              </p>
-              <p className="mt-1 text-xs leading-5 text-slate-600">{step.description}</p>
-            </div>
-            <TraceSourceBadge sourceType={step.sourceType} />
+      {report.calculationTrace.map((section) => (
+        <section key={section.id} className="grid gap-2">
+          <div className="flex items-center justify-between gap-3">
+            <p className="text-sm font-semibold text-slate-950">{section.title}</p>
+            <span className="rounded-md bg-slate-100 px-2 py-1 text-xs font-semibold text-slate-600">
+              {section.steps.length} steps
+            </span>
           </div>
-          <dl className="mt-3 grid gap-2 text-xs text-slate-700">
-            <TraceLine label="Formula" value={step.formula} />
-            <TraceLine label="Substitution" value={step.substitutedFormula} />
-            <TraceLine label="Result" value={`${step.result} ${step.units}`} />
-            <TraceLine label="Source" value={step.sourceReference} />
-          </dl>
-          {step.warnings.length > 0 ? (
-            <ul className="mt-3 grid gap-1 text-xs font-medium text-amber-700">
-              {step.warnings.map((warning) => (
-                <li key={warning}>- {warning}</li>
-              ))}
-            </ul>
-          ) : null}
-        </div>
+          <div className="grid max-h-96 gap-2 overflow-y-auto pr-1">
+            {section.steps.map((step, index) => (
+              <div key={step.id} className="rounded-lg border border-slate-200 bg-white p-3">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="text-sm font-semibold text-slate-950">
+                      {index + 1}. {step.title}
+                    </p>
+                    <p className="mt-1 text-xs leading-5 text-slate-600">{step.description}</p>
+                  </div>
+                  <TraceSourceBadge sourceType={step.sourceType} />
+                </div>
+                <dl className="mt-3 grid gap-2 text-xs text-slate-700">
+                  <TraceLine label="Formula" value={step.formula} />
+                  <TraceLine label="Substitution" value={step.substitutedFormula} />
+                  <TraceLine label="Result" value={`${step.result} ${step.units}`} />
+                  <TraceLine label="Source" value={step.sourceReference} />
+                </dl>
+                {step.warnings.length > 0 ? (
+                  <ul className="mt-3 grid gap-1 text-xs font-medium text-amber-700">
+                    {step.warnings.map((warning) => (
+                      <li key={warning}>- {warning}</li>
+                    ))}
+                  </ul>
+                ) : null}
+              </div>
+            ))}
+          </div>
+        </section>
       ))}
+      {report.calculationTrace.length === 0 ? (
+        <div className="rounded-lg border border-slate-200 bg-white p-3 text-sm text-slate-600">
+          No trace steps available.
+        </div>
+      ) : null}
     </div>
   )
 }

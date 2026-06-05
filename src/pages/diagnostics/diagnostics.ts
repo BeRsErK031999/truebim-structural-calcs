@@ -1,4 +1,5 @@
 import type { PunchingShearCheckStatus } from '@/calculations/punching-shear'
+import { traceBuilderRegistry } from '@/calculations/punching-shear/trace/traceBuilder'
 import { getVerifiedCapabilityMatrix } from '@/calculations/punching-shear/verified/verifiedCapabilities'
 import { punchingShearVerificationCases } from '@/calculations/punching-shear/verification/verificationDataset'
 import { runVerificationCases } from '@/calculations/punching-shear/verification/verificationRunner'
@@ -24,6 +25,13 @@ export type DiagnosticsModel = {
   axisConventionValidationSupport: 'draft'
   driftDetectionSupport: 'draft'
   traceSupport: 'available'
+  traceBuildersCount: number
+  traceCenterMomentsSupport: 'partial'
+  traceWallSupport: 'draft'
+  traceOpeningsSupport: 'draft'
+  traceContoursSupport: 'draft'
+  traceReinforcementSupport: 'draft'
+  traceRoundSupport: 'draft-center-only'
   momentTransferStatus: 'draft'
   momentVerificationSupport: 'draft'
   stressComparisonSupport: 'draft'
@@ -150,6 +158,13 @@ export function buildDiagnosticsModel({
     axisConventionValidationSupport: 'draft',
     driftDetectionSupport: 'draft',
     traceSupport: 'available',
+    traceBuildersCount: traceBuilderRegistry.length,
+    traceCenterMomentsSupport: 'partial',
+    traceWallSupport: 'draft',
+    traceOpeningsSupport: 'draft',
+    traceContoursSupport: 'draft',
+    traceReinforcementSupport: 'draft',
+    traceRoundSupport: 'draft-center-only',
     momentTransferStatus: 'draft',
     momentVerificationSupport: 'draft',
     stressComparisonSupport: 'draft',

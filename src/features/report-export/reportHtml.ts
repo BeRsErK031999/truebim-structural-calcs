@@ -328,16 +328,18 @@ function renderMultipleControlPerimeters(result: PunchingShearResult) {
 }
 
 function renderCalculationTrace(report: PunchingShearReportModel) {
-  const steps = report.calculationTrace.flatMap((section) => section.steps)
+  const steps = report.calculationTrace.flatMap((section) =>
+    section.steps.map((step) => ({ section, step })),
+  )
 
   if (steps.length === 0) {
     return '<p class="note">No calculation trace available.</p>'
   }
 
   return renderTable([
-    ['step', 'formula | substitution | result | verification source'],
-    ...steps.map((step) => [
-      step.title,
+    ['section / step', 'formula | substitution | result | verification source'],
+    ...steps.map(({ section, step }) => [
+      `${section.title} / ${step.title}`,
       `${step.formula} | ${step.substitutedFormula} | ${step.result} ${step.units} | ${step.sourceType.toUpperCase()} - ${step.sourceReference}${step.warnings.length > 0 ? ` | warnings: ${step.warnings.join('; ')}` : ''}`,
     ] satisfies [string, string]),
   ])

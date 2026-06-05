@@ -88,8 +88,38 @@ describe('report export', () => {
     expect(html).toContain('Input validation')
     expect(html).toContain('VERIFIED - center-force-only evidence: verified-center-rect-001')
     expect(markdown).toContain('## Calculation Trace')
-    expect(markdown).toContain('Stress')
+    expect(markdown).toContain('Calculation Trace / Stress')
     expect(markdown).toContain('v = N / (u * h0)')
+  })
+
+  it('includes scenario trace steps in exported reports', () => {
+    const input = {
+      ...defaultPunchingShearInput,
+      forces: {
+        axialForceKn: 420,
+        momentXKnM: 12,
+        momentYKnM: 8,
+      },
+      multipleContours: {
+        enabled: true,
+        count: 2,
+        offsetStep: 'h0/2' as const,
+      },
+      shearReinforcement: {
+        ...defaultPunchingShearInput.shearReinforcement,
+        enabled: true,
+      },
+    }
+    const result = calculatePunchingShear(input)
+    const report = buildPunchingShearReport(input, result)
+    const html = buildPunchingShearHtmlReport(input, result, report)
+    const markdown = buildPunchingShearMarkdownReport(input, result, report)
+
+    expect(html).toContain('Center Moment Trace / Moment eccentricity')
+    expect(html).toContain('Multiple Contours Trace / Draft critical contour selection')
+    expect(html).toContain('Shear Reinforcement Trace / Draft reinforcement contribution')
+    expect(markdown).toContain('Center Moment Trace / Moment eccentricity')
+    expect(markdown).toContain('Moment transfer is partial/draft and requires trusted evidence.')
   })
 
   it('includes moment transfer and stress distribution sections', () => {

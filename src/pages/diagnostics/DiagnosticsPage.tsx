@@ -82,6 +82,34 @@ export function DiagnosticsPage() {
               value={formatDiagnosticValue(diagnostics.traceSupport)}
             />
             <DiagnosticItem
+              label="trace builders count"
+              value={diagnostics.traceBuildersCount.toString()}
+            />
+            <DiagnosticItem
+              label="trace center moments support"
+              value={formatDiagnosticValue(diagnostics.traceCenterMomentsSupport)}
+            />
+            <DiagnosticItem
+              label="trace wall support"
+              value={formatDiagnosticValue(diagnostics.traceWallSupport)}
+            />
+            <DiagnosticItem
+              label="trace openings support"
+              value={formatDiagnosticValue(diagnostics.traceOpeningsSupport)}
+            />
+            <DiagnosticItem
+              label="trace contours support"
+              value={formatDiagnosticValue(diagnostics.traceContoursSupport)}
+            />
+            <DiagnosticItem
+              label="trace reinforcement support"
+              value={formatDiagnosticValue(diagnostics.traceReinforcementSupport)}
+            />
+            <DiagnosticItem
+              label="trace round support"
+              value={formatDiagnosticValue(diagnostics.traceRoundSupport)}
+            />
+            <DiagnosticItem
               label="Передача моментов"
               value={formatDiagnosticValue(diagnostics.momentTransferStatus)}
             />
