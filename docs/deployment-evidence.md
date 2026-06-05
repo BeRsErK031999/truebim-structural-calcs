@@ -10,7 +10,7 @@
 - SSH user: `admin_devops`
 - Container name: `truebim-structural-calcs`
 - Port mapping: `127.0.0.1:3000->80/tcp`
-- Public URL by IP: `http://192.168.22.37`
+- Office URL by IP: `http://192.168.22.37`
 - Hostname URL: `http://truebim-calc.local` when DNS or hosts file resolves it to `192.168.22.37`
 
 ## Deployment Flow Used
@@ -306,7 +306,7 @@ nginx.service - A high performance web server and a reverse proxy server
 Active: active (running)
 ```
 
-After direct `curl.exe` checks from Windows, both public routes returned 200:
+After direct `curl.exe` checks from Windows, both office routes returned 200:
 
 ```text
 curl.exe -I http://192.168.22.37/

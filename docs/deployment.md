@@ -8,7 +8,7 @@ This project is deployed as a static Vite frontend served by an nginx Docker con
 - Exported image archive: `truebim-structural-calcs.tar`
 - Container port: `80`
 - Host binding: `127.0.0.1:3000:80`
-- Public office hostname: `truebim-calc.local`
+- Office hostname: `truebim-calc.local`
 
 ## Local Windows Flow
 

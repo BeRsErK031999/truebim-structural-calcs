@@ -98,21 +98,11 @@ SSH key deploy setup is documented in `docs/ssh-key-deploy.md`.
 
 Release hardening checks are documented in `docs/release-checklist.md`.
 
-## Public access
+## Current deployment mode
 
-External engineer access should use either a Cloudflare Tunnel for a short controlled pilot or a separate VPS deployment for a permanent MVP. Do not expose the office server directly to the internet without a separate security review and explicit approval.
+Office deployment only.
 
-See `docs/public-access.md` for the Cloudflare Tunnel pilot workflow, VPS production option, required domains and variables, verification checks, shutdown steps and security risks.
-
-Free public pilot access notes for DuckDNS and the Cloudflare Tunnel DNS limitations are documented in `docs/free-public-access.md`.
-
-## Public Pilot URL
-
-Current public pilot URL: not active.
-
-An account-less Cloudflare quick tunnel was attempted on 2026-06-05, but public HTTPS checks returned Cloudflare `530` responses. The temporary tunnel was stopped and the URL is not approved for engineer use. See `docs/public-pilot-access-evidence.md`.
-
-Pilot scope warning: the app is verified only for center rectangular force-only punching shear behavior. Moment transfer, openings, boundary clipping, edge/corner behavior, shear reinforcement, round columns and wall cases remain partial or draft unless the app and verification evidence explicitly say otherwise. Failed public access, route issues or unclear verification status should be escalated to the project maintainer before sharing a link.
+The app is currently used inside the office network through the office server, or through local network/VPN access when needed. Public access exploration is archived in `docs/archive/public-access/` until an external rollout is approved.
 
 Client-side runtime diagnostics are available at `/diagnostics`.
 
@@ -174,7 +164,7 @@ npm run deploy:package
 ## Production notes
 
 - The app is served by an nginx container with SPA fallback, gzip, static asset caching and basic security headers.
-- Docker Compose binds the app to `127.0.0.1:3000:80`; public access should go through host nginx only.
+- Docker Compose binds the app to `127.0.0.1:3000:80`; access should go through host nginx only.
 - The container uses `restart: unless-stopped` and includes an HTTP healthcheck.
 - Do not store SSH passwords or server secrets in this repository.
 
