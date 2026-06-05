@@ -4,6 +4,7 @@ import type {
   PunchingShearReportModel,
   PunchingShearResult,
 } from '@/calculations/punching-shear'
+import { formatTraceSourceLabel } from '@/calculations/punching-shear/trace/traceLabels'
 import { getRelatedKnowledgeEntries } from '@/features/knowledge-base'
 import { formatFeatureLabel } from '@/shared/labels/featureLabels'
 
@@ -370,7 +371,7 @@ function renderCalculationTrace(report: PunchingShearReportModel) {
     ['section / step', 'formula | substitution | result | verification source'],
     ...steps.map(({ section, step }) => [
       `${section.title} / ${step.title}`,
-      `${step.formula} | ${step.substitutedFormula} | ${step.result} ${step.units} | ${step.sourceType.toUpperCase()} - ${step.sourceReference}${step.warnings.length > 0 ? ` | warnings: ${step.warnings.join('; ')}` : ''}`,
+      `${step.formula} | ${step.substitutedFormula} | ${step.result} ${step.units} | ${formatTraceSourceLabel(step.sourceType)} - ${step.sourceReference}${step.warnings.length > 0 ? ` | warnings: ${step.warnings.join('; ')}` : ''}`,
     ] satisfies [string, string]),
   ])
 }

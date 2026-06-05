@@ -138,6 +138,10 @@ export function getArithmeticSource(
   input: PunchingShearInput,
   result: PunchingShearResult,
 ): Extract<TraceSourceType, 'verified' | 'partial' | 'draft'> {
+  if (input.multipleContours?.enabled) {
+    return 'draft'
+  }
+
   if (result.verificationLevel === 'verified' && result.verifiedFeatures.includes('center-force-only')) {
     return 'verified'
   }

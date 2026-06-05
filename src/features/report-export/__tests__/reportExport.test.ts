@@ -86,7 +86,7 @@ describe('report export', () => {
 
     expect(html).toContain('Calculation Trace')
     expect(html).toContain('Input validation')
-    expect(html).toContain('VERIFIED - center-force-only evidence: verified-center-rect-001')
+    expect(html).toContain('Verified evidence - center-force-only evidence: verified-center-rect-001')
     expect(markdown).toContain('## Calculation Trace')
     expect(markdown).toContain('Calculation Trace / Stress')
     expect(markdown).toContain('v = N / (u * h0)')

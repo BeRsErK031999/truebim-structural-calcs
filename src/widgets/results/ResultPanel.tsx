@@ -6,9 +6,11 @@ import {
   type PunchingShearCheckStatus,
   type PunchingShearReportModel,
   type PunchingSketchModel,
+  type TraceSourceType,
   type SvgSketchElement,
   viewBoxToString,
 } from '@/calculations/punching-shear'
+import { formatTraceSourceLabel } from '@/calculations/punching-shear/trace/traceLabels'
 import { useCalculationStore } from '@/entities/calculation/model/store'
 import {
   buildReportSummary,
@@ -307,7 +309,7 @@ function TraceLine({ label, value }: { label: string; value: string }) {
   )
 }
 
-function TraceSourceBadge({ sourceType }: { sourceType: 'verified' | 'partial' | 'draft' | 'manual' | 'placeholder' }) {
+function TraceSourceBadge({ sourceType }: { sourceType: TraceSourceType }) {
   const classBySource = {
     verified: 'bg-emerald-50 text-emerald-700',
     partial: 'bg-sky-50 text-sky-700',
@@ -318,7 +320,7 @@ function TraceSourceBadge({ sourceType }: { sourceType: 'verified' | 'partial' |
 
   return (
     <span className={`shrink-0 rounded-md px-2 py-1 text-xs font-semibold ${classBySource[sourceType]}`}>
-      {sourceType.toUpperCase()}
+      {formatTraceSourceLabel(sourceType)}
     </span>
   )
 }
