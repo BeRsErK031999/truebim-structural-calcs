@@ -104,6 +104,14 @@ External engineer access should use either a Cloudflare Tunnel for a short contr
 
 See `docs/public-access.md` for the Cloudflare Tunnel pilot workflow, VPS production option, required domains and variables, verification checks, shutdown steps and security risks.
 
+## Public Pilot URL
+
+Current public pilot URL: not active.
+
+An account-less Cloudflare quick tunnel was attempted on 2026-06-05, but public HTTPS checks returned Cloudflare `530` responses. The temporary tunnel was stopped and the URL is not approved for engineer use. See `docs/public-pilot-access-evidence.md`.
+
+Pilot scope warning: the app is verified only for center rectangular force-only punching shear behavior. Moment transfer, openings, boundary clipping, edge/corner behavior, shear reinforcement, round columns and wall cases remain partial or draft unless the app and verification evidence explicitly say otherwise. Failed public access, route issues or unclear verification status should be escalated to the project maintainer before sharing a link.
+
 Client-side runtime diagnostics are available at `/diagnostics`.
 
 Release Evidence is available at `/release-evidence`. It exports HTML, Markdown and JSON bundles for audit and reproducibility without changing formulas, verification logic or candidate promotion rules. The local CLI writes bundle files to `release-evidence/`:
