@@ -116,7 +116,7 @@ describe('report export', () => {
     const markdown = buildPunchingShearMarkdownReport(input, result, report)
 
     expect(html).toContain('Center Moment Trace / Moment eccentricity')
-    expect(html).toContain('Multiple Contours Trace / Draft critical contour selection')
+    expect(html).toContain('Трассировка нескольких контуров / Выбор критического чернового контура')
     expect(html).toContain('Shear Reinforcement Trace / Draft reinforcement contribution')
     expect(markdown).toContain('Center Moment Trace / Moment eccentricity')
     expect(markdown).toContain('Moment transfer is partial/draft and requires trusted evidence.')
@@ -318,9 +318,9 @@ describe('report export', () => {
     const html = buildPunchingShearHtmlReport(input, result, report)
     const markdown = buildPunchingShearMarkdownReport(input, result, report)
 
-    expect(html).toContain('Multiple Control Perimeters')
-    expect(html).toContain('Multiple contour selection is draft-only and requires SP63 verification.')
-    expect(markdown).toContain('## Multiple Control Perimeters')
+    expect(html).toContain('Несколько контрольных контуров')
+    expect(html).toContain('Выбор нескольких контуров является черновым и требует проверки по СП 63.')
+    expect(markdown).toContain('## Несколько контрольных контуров')
     expect(markdown).toContain('draft-contour-1')
   })
 

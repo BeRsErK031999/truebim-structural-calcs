@@ -258,8 +258,8 @@ export function buildPunchingShearReport(
       'Draft moment-transfer stress distribution generated where Mx/My are present.',
       'Draft rectangular force-only check evaluated where supported.',
       result.controlContours.length > 0
-        ? 'Multiple draft control perimeters generated and draftCriticalContour selected by maximum utilization.'
-        : 'Multiple draft control perimeters disabled.',
+        ? 'Сформированы несколько черновых контрольных контуров; критический черновой контур выбран по максимальному коэффициенту использования.'
+        : 'Несколько черновых контрольных контуров отключены.',
       'Draft openings and slab edge clipping geometry generated where provided.',
       result.shearReinforcement.enabled
         ? 'Draft shear reinforcement area, contribution, capacity, and utilization generated for engineer review.'

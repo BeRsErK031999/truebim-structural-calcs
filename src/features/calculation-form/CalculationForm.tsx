@@ -495,13 +495,13 @@ export function CalculationForm() {
       </FormSection>
 
       <FormSection
-        title="Multiple Control Perimeters"
-        helperText="Draft-only geometry trace for several control contours. Disabled by default to preserve the current verified center behavior."
+        title="Несколько контрольных контуров"
+        helperText="Черновая трассировка геометрии для нескольких контрольных контуров. По умолчанию выключена, чтобы сохранить текущее проверенное поведение для центральной колонны."
       >
         <ToggleField
           checked={multipleContoursEnabled ?? false}
-          label="Enable multiple contours"
-          helperText="Generates draft contour offsets and selects a draftCriticalContour by maximum draft utilization."
+          label="Включить несколько контуров"
+          helperText="Создает черновые смещения контуров и выбирает критический черновой контур по максимальному коэффициенту использования."
           onCheckedChange={(checked) =>
             setValue('multipleContours.enabled', checked, {
               shouldDirty: true,
@@ -510,21 +510,21 @@ export function CalculationForm() {
           }
         />
         <NumberField
-          label="Number of contours"
+          label="Количество контуров"
           min={1}
           step={1}
-          unit="count"
+          unit="шт."
           registration={register('multipleContours.count', { valueAsNumber: true })}
           error={errors.multipleContours?.count?.message}
         />
         <SelectField
-          label="Offset step"
-          placeholder="Select offset step"
+          label="Шаг смещения"
+          placeholder="Выберите шаг смещения"
           value={multipleContoursOffsetStep ?? 'h0/2'}
           options={[
             { value: 'h0/2', label: 'h0/2' },
             { value: 'h0', label: 'h0' },
-            { value: 'custom', label: 'custom mm' },
+            { value: 'custom', label: 'свой шаг, мм' },
           ]}
           error={errors.multipleContours?.offsetStep?.message}
           onValueChange={(value) =>
@@ -536,10 +536,10 @@ export function CalculationForm() {
         />
         {multipleContoursOffsetStep === 'custom' ? (
           <NumberField
-            label="Custom offset step"
+            label="Свой шаг смещения"
             min={1}
             step={1}
-            unit="mm"
+            unit="мм"
             registration={register('multipleContours.customOffsetStepMm', { valueAsNumber: true })}
             error={errors.multipleContours?.customOffsetStepMm?.message}
           />

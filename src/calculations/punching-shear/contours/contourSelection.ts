@@ -18,6 +18,6 @@ export function selectDraftCriticalContour(
     selectedIndex: selected.index,
     criterion: 'max-utilization',
     status: 'draft',
-    warning: 'draftCriticalContour uses maximum draft utilization and is not SP63 verified.',
+    warning: 'Критический черновой контур выбран по максимальному черновому коэффициенту использования и не проверен по СП 63.',
   }
 }

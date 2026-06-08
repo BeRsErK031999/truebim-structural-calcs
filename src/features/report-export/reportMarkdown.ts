@@ -400,15 +400,15 @@ function renderMultipleContours(result: PunchingShearResult): string[] {
   }
 
   return [
-    '## Multiple Control Perimeters',
+    '## Несколько контрольных контуров',
     '',
-    'Multiple contour selection is draft-only and requires SP63 verification.',
+    'Выбор нескольких контуров является черновым и требует проверки по СП 63.',
     '',
     table([
-      ['contour id', 'offset | perimeter | draft stress | utilization | selected | warnings'],
+      ['id контура', 'смещение | периметр | черновое напряжение | использование | выбран | предупреждения'],
       ...result.contourComparison.map((contour) => [
         contour.contourId,
-        `${formatValueWithUnit(contour.offsetMm, 'mm')} | ${formatValueWithUnit(contour.perimeterMm, 'mm')} | ${formatValueWithUnit(contour.draftStressMpa, 'MPa', 3)} | ${formatUtilization(contour.utilization)} | ${contour.selected ? 'yes' : 'no'} | ${contour.warnings.join('; ') || 'none'}`,
+        `${formatValueWithUnit(contour.offsetMm, 'мм')} | ${formatValueWithUnit(contour.perimeterMm, 'мм')} | ${formatValueWithUnit(contour.draftStressMpa, 'МПа', 3)} | ${formatUtilization(contour.utilization)} | ${contour.selected ? 'да' : 'нет'} | ${contour.warnings.join('; ') || 'нет'}`,
       ] satisfies [string, string]),
     ]),
     '',
@@ -454,7 +454,7 @@ function createReportWarnings(result: PunchingShearResult) {
     'Round column perimeter is draft-only and requires SP63 verification.',
     'Wall-end punching support is draft geometry only.',
     'Wall-corner punching support is draft geometry only.',
-    'Multiple contour selection is draft-only and requires SP63 verification.',
+    'Выбор нескольких контуров является черновым и требует проверки по СП 63.',
     'Shear reinforcement contribution is draft-only when enabled',
     'Verify against SP63 before design use',
   ])

@@ -600,7 +600,7 @@ describe('punching shear draft center check', () => {
     expect(result.controlContours).toHaveLength(4)
     expect(result.controlContours.map((contour) => contour.offsetMm)).toEqual([95, 190, 285, 380])
     expect(result.contourWarnings).toContain(
-      'Multiple contour selection is draft-only and requires SP63 verification.',
+      'Выбор нескольких контуров является черновым и требует проверки по СП 63.',
     )
   })
 
@@ -634,7 +634,7 @@ describe('punching shear draft center check', () => {
 
     expect(report.multipleControlPerimetersSummary).toHaveLength(2)
     expect(report.warnings).toContain(
-      'Multiple contour selection is draft-only and requires SP63 verification.',
+      'Выбор нескольких контуров является черновым и требует проверки по СП 63.',
     )
   })
 

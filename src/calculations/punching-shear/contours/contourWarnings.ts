@@ -1,7 +1,7 @@
 import type { ControlContour } from './controlContour'
 
 export const multipleContourDraftWarning =
-  'Multiple contour selection is draft-only and requires SP63 verification.'
+  'Выбор нескольких контуров является черновым и требует проверки по СП 63.'
 
 export function createContourWarnings(contours: ControlContour[]) {
   if (contours.length === 0) {
@@ -10,6 +10,6 @@ export function createContourWarnings(contours: ControlContour[]) {
 
   return [
     multipleContourDraftWarning,
-    'Draft contour offsets are geometry preparation values and are not verified SP63 critical contours.',
+    'Черновые смещения контуров являются подготовительными геометрическими значениями и не являются проверенными критическими контурами по СП 63.',
   ]
 }
