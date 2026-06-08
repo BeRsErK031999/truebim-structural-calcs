@@ -45,31 +45,31 @@ export function buildValidationSessionSummaryText(session: ValidationSession) {
   const checklist = getValidationChecklistProgress(session)
 
   return [
-    '# Validation Session Summary',
+    '# Сводка сессии валидации',
     '',
-    `- Session: ${session.id}`,
-    `- Calculation: ${session.calculationId ?? 'not saved'}`,
-    `- Verification level: ${summary.currentVerificationLevel}`,
-    `- Review status: ${session.reviewSession.status}`,
-    `- Candidate status: ${session.candidate?.candidateStatus ?? 'not-created'}`,
-    `- Checklist: ${checklist.completePercent}% (${checklist.completeCount}/${checklist.totalCount})`,
-    `- Axis convention: ${summary.axisConventionStatus}`,
-    `- Drift status: ${summary.driftStatus}`,
-    `- Recommendation: ${summary.recommendation}`,
+    `- Сессия: ${session.id}`,
+    `- Расчет: ${session.calculationId ?? 'не сохранен'}`,
+    `- Уровень проверки: ${summary.currentVerificationLevel}`,
+    `- Статус проверки: ${session.reviewSession.status}`,
+    `- Статус кандидата: ${session.candidate?.candidateStatus ?? 'not-created'}`,
+    `- Чеклист: ${checklist.completePercent}% (${checklist.completeCount}/${checklist.totalCount})`,
+    `- Соглашение осей: ${summary.axisConventionStatus}`,
+    `- Статус отклонений: ${summary.driftStatus}`,
+    `- Рекомендация: ${summary.recommendation}`,
     '',
-    '## Verified Features',
+    '## Проверенные возможности',
     ...formatList(summary.verifiedFeatures),
     '',
-    '## Draft Features',
+    '## Черновые возможности',
     ...formatList(summary.draftFeatures),
     '',
-    '## Missing Trusted Evidence',
+    '## Недостающие доверенные доказательства',
     ...formatList(summary.missingTrustedEvidence),
     '',
-    '## Open Mismatches',
+    '## Открытые расхождения',
     ...formatList(summary.openMismatches),
     '',
-    '## Blocking Checklist Items',
+    '## Блокирующие пункты чеклиста',
     ...formatList(checklist.blockingItems.map((item) => item.missingText)),
     '',
   ].join('\n')
@@ -106,13 +106,13 @@ function getMissingTrustedEvidence(candidate: VerificationCandidate | null) {
 }
 
 function formatMismatch(item: ReviewDiffItem) {
-  return `${item.label}: app=${formatValue(item.appValue)}, trusted=${formatValue(item.expectedValue)}`
+  return `${item.label}: приложение=${formatValue(item.appValue)}, доверенное=${formatValue(item.expectedValue)}`
 }
 
 function formatValue(value: number | string | null) {
-  return value === null ? 'missing' : String(value)
+  return value === null ? 'не заполнено' : String(value)
 }
 
 function formatList(values: string[]) {
-  return values.length > 0 ? values.map((value) => `- ${value}`) : ['- none']
+  return values.length > 0 ? values.map((value) => `- ${value}`) : ['- нет']
 }

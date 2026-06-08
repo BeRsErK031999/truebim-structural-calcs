@@ -25,12 +25,12 @@ import { engineeringHelp } from './engineeringUx'
 
 const caseOptions: Array<{ value: PunchingShearCaseType; label: string; disabled?: boolean }> = [
   { value: 'center', label: 'Центральная прямоугольная колонна' },
-  { value: 'edge', label: 'Крайняя колонна - draft geometry' },
-  { value: 'corner', label: 'Угловая колонна - draft geometry' },
-  { value: 'opening', label: 'Отверстие рядом с колонной - draft geometry' },
-  { value: 'round', label: 'Round column - draft center only' },
-  { value: 'wall-end', label: 'Wall end punching - draft geometry' },
-  { value: 'wall-corner', label: 'Wall corner punching - draft geometry' },
+  { value: 'edge', label: 'Крайняя колонна - черновая геометрия' },
+  { value: 'corner', label: 'Угловая колонна - черновая геометрия' },
+  { value: 'opening', label: 'Отверстие рядом с колонной - черновая геометрия' },
+  { value: 'round', label: 'Круглая колонна - черновой расчет только для центра' },
+  { value: 'wall-end', label: 'Продавливание у конца стены - черновая геометрия' },
+  { value: 'wall-corner', label: 'Продавливание в углу стены - черновая геометрия' },
 ]
 
 const concreteClassOptions: ConcreteClassName[] = ['B15', 'B20', 'B25', 'B30', 'B35', 'B40']
@@ -39,10 +39,10 @@ const reinforcementLayoutOptions: Array<{
   value: ShearReinforcementLayoutType
   label: string
 }> = [
-  { value: 'closed-stirrups', label: 'closed stirrups' },
-  { value: 'studs', label: 'studs' },
-  { value: 'links', label: 'links' },
-  { value: 'custom', label: 'custom' },
+  { value: 'closed-stirrups', label: 'замкнутые хомуты' },
+  { value: 'studs', label: 'шпильки' },
+  { value: 'links', label: 'связи' },
+  { value: 'custom', label: 'своя схема' },
 ]
 
 export function CalculationForm() {
@@ -174,7 +174,7 @@ export function CalculationForm() {
         />
         {caseType === 'edge' || caseType === 'corner' || caseType === 'opening' ? (
           <p className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm font-semibold text-amber-900">
-            DRAFT GEOMETRY ONLY. NOT FOR DESIGN USE. Requires engineering review and trusted evidence.
+            ТОЛЬКО ЧЕРНОВАЯ ГЕОМЕТРИЯ. НЕ ДЛЯ ПРОЕКТНОГО ПРИМЕНЕНИЯ. Требуется инженерная проверка и доверенные доказательства.
           </p>
         ) : null}
       </FormSection>
@@ -335,23 +335,23 @@ export function CalculationForm() {
 
       {caseType === 'round' ? (
         <FormSection
-          title="Round Column Geometry"
-          helperText="Draft-only round column geometry. Center position is supported for pilot geometry/report preparation only."
+          title="Геометрия круглой колонны"
+          helperText="Черновая геометрия круглой колонны. Положение по центру поддерживается только для подготовки пилотной геометрии и отчета."
         >
           <NumberField
-            label="Diameter"
-            unit="mm"
+            label="Диаметр"
+            unit="мм"
             registration={register('roundColumn.diameterMm', { valueAsNumber: true })}
             error={errors.roundColumn?.diameterMm?.message}
           />
           <SelectField
-            label="Position"
-            placeholder="Select position"
+            label="Положение"
+            placeholder="Выберите положение"
             value={roundColumnPosition ?? 'center'}
             options={[
-              { value: 'center', label: 'center' },
-              { value: 'edge', label: 'edge', disabled: true },
-              { value: 'corner', label: 'corner', disabled: true },
+              { value: 'center', label: 'центр' },
+              { value: 'edge', label: 'край', disabled: true },
+              { value: 'corner', label: 'угол', disabled: true },
             ]}
             error={errors.roundColumn?.position?.message}
             onValueChange={(value) =>
@@ -366,18 +366,18 @@ export function CalculationForm() {
 
       {caseType === 'wall-end' ? (
         <FormSection
-          title="Wall Geometry"
-          helperText="Draft-only wall-end geometry input. No verified SP63 wall punching formulas are claimed."
+          title="Геометрия стены"
+          helperText="Черновой ввод геометрии конца стены. Проверенные формулы продавливания стен по СП 63 не заявляются."
         >
           <NumberField
-            label="Wall length"
-            unit="mm"
+            label="Длина стены"
+            unit="мм"
             registration={register('wall.wallLength', { valueAsNumber: true })}
             error={errors.wall?.wallLength?.message}
           />
           <NumberField
-            label="Wall thickness"
-            unit="mm"
+            label="Толщина стены"
+            unit="мм"
             registration={register('wall.wallThickness', { valueAsNumber: true })}
             error={errors.wall?.wallThickness?.message}
           />
@@ -386,32 +386,32 @@ export function CalculationForm() {
 
       {caseType === 'opening' ? (
         <FormSection
-          title="Opening Geometry"
-          helperText="Draft-only opening geometry. The opening is used for tangent subtraction and requires review/evidence."
+          title="Геометрия отверстия"
+          helperText="Черновая геометрия отверстия. Отверстие используется для вычитания по касательным и требует проверки/доказательств."
         >
           <NumberField
-            label="Opening width X"
+            label="Ширина отверстия по X"
             min={1}
-            unit="mm"
+            unit="мм"
             registration={register('openings.0.widthXMm', { valueAsNumber: true })}
             error={errors.openings?.[0]?.widthXMm?.message}
           />
           <NumberField
-            label="Opening width Y"
+            label="Ширина отверстия по Y"
             min={1}
-            unit="mm"
+            unit="мм"
             registration={register('openings.0.widthYMm', { valueAsNumber: true })}
             error={errors.openings?.[0]?.widthYMm?.message}
           />
           <NumberField
-            label="Opening center X"
-            unit="mm"
+            label="Центр отверстия по X"
+            unit="мм"
             registration={register('openings.0.centerXMm', { valueAsNumber: true })}
             error={errors.openings?.[0]?.centerXMm?.message}
           />
           <NumberField
-            label="Opening center Y"
-            unit="mm"
+            label="Центр отверстия по Y"
+            unit="мм"
             registration={register('openings.0.centerYMm', { valueAsNumber: true })}
             error={errors.openings?.[0]?.centerYMm?.message}
           />
@@ -420,42 +420,42 @@ export function CalculationForm() {
 
       {caseType === 'wall-corner' ? (
         <FormSection
-          title="Wall Corner Geometry"
-          helperText="Draft-only wall-corner geometry input. No verified SP63 wall punching formulas are claimed."
+          title="Геометрия угла стены"
+          helperText="Черновой ввод геометрии угла стены. Проверенные формулы продавливания стен по СП 63 не заявляются."
         >
           <NumberField
-            label="Wall length X"
-            unit="mm"
+            label="Длина стены по X"
+            unit="мм"
             registration={register('wallCorner.wallLengthX', { valueAsNumber: true })}
             error={errors.wallCorner?.wallLengthX?.message}
           />
           <NumberField
-            label="Wall length Y"
-            unit="mm"
+            label="Длина стены по Y"
+            unit="мм"
             registration={register('wallCorner.wallLengthY', { valueAsNumber: true })}
             error={errors.wallCorner?.wallLengthY?.message}
           />
           <NumberField
-            label="Wall thickness X"
-            unit="mm"
+            label="Толщина стены по X"
+            unit="мм"
             registration={register('wallCorner.wallThicknessX', { valueAsNumber: true })}
             error={errors.wallCorner?.wallThicknessX?.message}
           />
           <NumberField
-            label="Wall thickness Y"
-            unit="mm"
+            label="Толщина стены по Y"
+            unit="мм"
             registration={register('wallCorner.wallThicknessY', { valueAsNumber: true })}
             error={errors.wallCorner?.wallThicknessY?.message}
           />
           <SelectField
-            label="Corner orientation"
-            placeholder="Select orientation"
+            label="Ориентация угла"
+            placeholder="Выберите ориентацию"
             value={wallCornerOrientation ?? 'top-left'}
             options={[
-              { value: 'top-left', label: 'top-left' },
-              { value: 'top-right', label: 'top-right' },
-              { value: 'bottom-left', label: 'bottom-left' },
-              { value: 'bottom-right', label: 'bottom-right' },
+              { value: 'top-left', label: 'верхний левый' },
+              { value: 'top-right', label: 'верхний правый' },
+              { value: 'bottom-left', label: 'нижний левый' },
+              { value: 'bottom-right', label: 'нижний правый' },
             ]}
             error={errors.wallCorner?.orientation?.message}
             onValueChange={(value) =>

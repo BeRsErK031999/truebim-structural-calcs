@@ -2,7 +2,7 @@ import type { ReviewSnapshot } from './reviewSnapshot'
 
 export function buildReviewSnapshotHtml(snapshot: ReviewSnapshot) {
   return `<!doctype html>
-<html lang="en">
+<html lang="ru">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -26,29 +26,29 @@ export function buildReviewSnapshotHtml(snapshot: ReviewSnapshot) {
 <body>
   <main>
     <h1>${escapeHtml(snapshot.title)}</h1>
-    <p class="note">Exported at ${escapeHtml(snapshot.exportedAt)}. Review status: ${escapeHtml(snapshot.session.status)}.</p>
-    <div class="warning">Accepted review is manual evidence only and does not automatically promote VERIFIED.</div>
-    <h2>Metadata</h2>
+    <p class="note">Выгружено: ${escapeHtml(snapshot.exportedAt)}. Статус проверки: ${escapeHtml(snapshot.session.status)}.</p>
+    <div class="warning">Принятая проверка является только ручным доказательством и не повышает статус до VERIFIED автоматически.</div>
+    <h2>Метаданные</h2>
     ${renderTable([
-      ['verification level', snapshot.result.verificationLevel],
-      ['evidence source', snapshot.session.evidence.source],
-      ['checked by', snapshot.session.evidence.checkedBy || 'n/a'],
-      ['checked at', snapshot.session.evidence.checkedAt || 'n/a'],
-      ['axis convention notes', snapshot.session.evidence.axisConventionNotes || 'n/a'],
+      ['уровень проверки', snapshot.result.verificationLevel],
+      ['источник доказательств', snapshot.session.evidence.source],
+      ['проверил', snapshot.session.evidence.checkedBy || 'н/д'],
+      ['дата проверки', snapshot.session.evidence.checkedAt || 'н/д'],
+      ['заметки по осям', snapshot.session.evidence.axisConventionNotes || 'н/д'],
     ])}
-    <h2>Side-by-side comparison</h2>
+    <h2>Сравнение рядом</h2>
     <table>
-      <thead><tr><th>Section</th><th>Field</th><th>App result</th><th>Trusted value</th><th>Delta</th><th>Status</th></tr></thead>
+      <thead><tr><th>Раздел</th><th>Поле</th><th>Результат приложения</th><th>Доверенное значение</th><th>Отклонение</th><th>Статус</th></tr></thead>
       <tbody>
         ${snapshot.comparison.items.map(renderDiffRow).join('')}
       </tbody>
     </table>
-    <h2>Reviewer notes</h2>
-    <p class="note">${escapeHtml(snapshot.session.evidence.notes || 'No notes recorded.')}</p>
+    <h2>Заметки проверяющего</h2>
+    <p class="note">${escapeHtml(snapshot.session.evidence.notes || 'Заметок нет.')}</p>
     <ul>${snapshot.session.notes.map((note) => `<li>${escapeHtml(note.createdAt)} | ${escapeHtml(note.author)}: ${escapeHtml(note.text)}</li>`).join('')}</ul>
-    <h2>Evidence attachments</h2>
-    <ul>${snapshot.session.evidence.attachments.map((item) => `<li>${escapeHtml(item.kind)} | ${escapeHtml(item.name)} | ${escapeHtml(item.reference)}</li>`).join('') || '<li>No attachment metadata.</li>'}</ul>
-    <h2>Draft warnings</h2>
+    <h2>Приложения с доказательствами</h2>
+    <ul>${snapshot.session.evidence.attachments.map((item) => `<li>${escapeHtml(item.kind)} | ${escapeHtml(item.name)} | ${escapeHtml(item.reference)}</li>`).join('') || '<li>Метаданных приложений нет.</li>'}</ul>
+    <h2>Черновые предупреждения</h2>
     <ul>${snapshot.result.warnings.map((warning) => `<li>${escapeHtml(warning)}</li>`).join('')}</ul>
   </main>
 </body>
@@ -69,7 +69,7 @@ function renderTable(rows: Array<[string, string]>) {
 
 function formatValue(value: number | string | null) {
   if (value === null) {
-    return 'n/a'
+    return 'н/д'
   }
 
   return typeof value === 'number' ? value.toFixed(6) : value

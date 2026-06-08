@@ -209,7 +209,7 @@ export function createKnowledgeEntryFromAcceptedReview({
       },
       ...mismatches.map((item) => ({
         id: `mismatch-${item.key}`,
-        text: `${item.label}: app=${formatKnowledgeValue(item.appValue)}, expected=${formatKnowledgeValue(item.expectedValue)}`,
+        text: `${item.label}: приложение=${formatKnowledgeValue(item.appValue)}, ожидается=${formatKnowledgeValue(item.expectedValue)}`,
         status: 'unresolved-mismatch' as const,
         evidence: item.section,
       })),
@@ -223,22 +223,22 @@ export function createKnowledgeEntryFromAcceptedReview({
 
 export function createKnowledgeEntryFromVerificationCandidate(candidate: VerificationCandidate, now?: string) {
   return createKnowledgeEntry({
-    title: `Verification candidate ${candidate.id}`,
+    title: `Кандидат проверки ${candidate.id}`,
     category: mapCaseTypeToKnowledgeCategory(candidate.input.caseType),
     createdAt: now,
     tags: ['candidate', candidate.candidateStatus === 'ready-for-validation' ? 'trusted-source' : 'open-question'],
     sourceType: 'verification-candidate',
     sourceReference: candidate.source,
-    summary: candidate.comparisonNotes || 'Candidate captured for manual validation.',
+    summary: candidate.comparisonNotes || 'Кандидат сохранен для ручной валидации.',
     findings: [
       {
         id: 'candidate-status',
-        text: `Candidate status: ${candidate.candidateStatus}`,
+        text: `Статус кандидата: ${candidate.candidateStatus}`,
         status: candidate.candidateStatus === 'ready-for-validation' ? 'recommendation' : 'open-question',
         evidence: candidate.checkedAt,
       },
     ],
-    warnings: candidate.candidateStatus === 'ready-for-validation' ? [] : ['Candidate is incomplete.'],
+    warnings: candidate.candidateStatus === 'ready-for-validation' ? [] : ['Кандидат неполный.'],
     relatedVerificationCases: [],
     relatedReviews: [candidate.sourceReviewSessionId],
     relatedCandidates: [candidate.id],
@@ -247,24 +247,24 @@ export function createKnowledgeEntryFromVerificationCandidate(candidate: Verific
 
 export function createKnowledgeEntryFromValidationSession(session: ValidationSession, now?: string) {
   return createKnowledgeEntry({
-    title: `Validation session ${session.id}`,
+    title: `Сессия валидации ${session.id}`,
     category: mapCaseTypeToKnowledgeCategory(session.input.caseType),
     createdAt: now,
     tags: ['evidence', 'candidate'],
     sourceType: 'validation-session',
     sourceReference: session.id,
-    summary: session.engineerNotes.text || 'Validation session evidence captured.',
+    summary: session.engineerNotes.text || 'Доказательства сессии валидации сохранены.',
     findings: [
       {
         id: 'validation-level',
-        text: `Verification level remains ${session.result.verificationLevel}.`,
+        text: `Уровень проверки остается ${session.result.verificationLevel}.`,
         status: session.candidateValidated ? 'recommendation' : 'open-question',
         evidence: session.regressionSnapshot.status,
       },
     ],
     warnings: session.reviewComparison.items
       .filter((item) => item.severity === 'mismatch')
-      .map((item) => `${item.label}: unresolved mismatch`),
+      .map((item) => `${item.label}: неразрешенное расхождение`),
     relatedVerificationCases: [],
     relatedReviews: [session.reviewSession.id],
     relatedCandidates: session.candidate ? [session.candidate.id] : [],
@@ -273,7 +273,7 @@ export function createKnowledgeEntryFromValidationSession(session: ValidationSes
 
 export function createKnowledgeEntryFromVerifiedCase(verificationCase: VerificationCase, now?: string) {
   return createKnowledgeEntry({
-    title: `Verified case ${verificationCase.id}`,
+    title: `Проверенный случай ${verificationCase.id}`,
     category: mapCaseTypeToKnowledgeCategory(verificationCase.caseType),
     createdAt: now,
     tags: ['verification-case', verificationCase.status === 'verified' ? 'verified-finding' : 'open-question'],
@@ -283,12 +283,12 @@ export function createKnowledgeEntryFromVerifiedCase(verificationCase: Verificat
     findings: [
       {
         id: 'case-status',
-        text: `Dataset case status: ${verificationCase.status}.`,
+        text: `Статус случая в наборе данных: ${verificationCase.status}.`,
         status: verificationCase.status === 'verified' ? 'verified' : 'draft',
         evidence: verificationCase.verificationSource ?? verificationCase.source,
       },
     ],
-    warnings: verificationCase.status === 'verified' ? [] : ['Case is draft and does not provide VERIFIED support.'],
+    warnings: verificationCase.status === 'verified' ? [] : ['Случай черновой и не подтверждает статус ПРОВЕРЕНО.'],
     relatedVerificationCases: [verificationCase.id],
     relatedReviews: [],
     relatedCandidates: [],
@@ -297,17 +297,17 @@ export function createKnowledgeEntryFromVerifiedCase(verificationCase: Verificat
 
 export function createKnowledgeEntryFromReleaseEvidence(evidence: ReleaseEvidence, now?: string) {
   return createKnowledgeEntry({
-    title: `Release evidence ${evidence.commitHash}`,
+    title: `Доказательства релиза ${evidence.commitHash}`,
     category: 'verification',
     createdAt: now,
     tags: ['release', 'evidence'],
     sourceType: 'release-evidence',
     sourceReference: evidence.commitHash,
-    summary: `Release evidence captured ${evidence.counts.verified} verified and ${evidence.counts.draft} draft cases.`,
+    summary: `Доказательства релиза сохранили ${evidence.counts.verified} проверенных и ${evidence.counts.draft} черновых случаев.`,
     findings: [
       {
         id: 'release-counts',
-        text: `Verified=${evidence.counts.verified}, draft=${evidence.counts.draft}, partial=${evidence.counts.partial}.`,
+        text: `Проверено=${evidence.counts.verified}, черновик=${evidence.counts.draft}, частично=${evidence.counts.partial}.`,
         status: evidence.counts.verified > 0 ? 'recommendation' : 'open-question',
         evidence: evidence.generatedAt,
       },

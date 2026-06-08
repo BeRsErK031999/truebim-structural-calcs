@@ -29,21 +29,21 @@ export function KnowledgePage() {
       <header className="grid gap-3 rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <h1 className="text-3xl font-semibold tracking-normal text-slate-950">Engineering Knowledge Base</h1>
+            <h1 className="text-3xl font-semibold tracking-normal text-slate-950">Инженерная база знаний</h1>
             <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">
-              Local evidence memory for review lessons, SP63 clause notes, verified interpretations, open questions,
-              and unresolved mismatches. Entries support verification work without changing formulas or promotion logic.
+              Локальная база выводов по проверкам, заметок по СП 63, подтвержденных трактовок, открытых вопросов
+              и неразрешенных расхождений. Записи помогают верификации без изменения формул и логики повышения статуса.
             </p>
           </div>
           <Badge variant="secondary" className="rounded-md">
-            {summary.totalEntries} entries
+            {summary.totalEntries} записей
           </Badge>
         </div>
       </header>
 
       <Card className="rounded-lg border border-slate-200 bg-white shadow-sm">
         <CardHeader>
-          <CardTitle>Categories</CardTitle>
+          <CardTitle>Категории</CardTitle>
         </CardHeader>
         <CardContent className="flex flex-wrap gap-2">
           <button
@@ -51,7 +51,7 @@ export function KnowledgePage() {
             className={category === 'all' ? activeChipClass : chipClass}
             onClick={() => setCategory('all')}
           >
-            All
+            Все
           </button>
           {knowledgeCategories.map((item) => (
             <button
@@ -68,69 +68,69 @@ export function KnowledgePage() {
 
       <Card className="rounded-lg border border-slate-200 bg-white shadow-sm">
         <CardHeader>
-          <CardTitle>Search</CardTitle>
+          <CardTitle>Поиск</CardTitle>
         </CardHeader>
         <CardContent className="grid gap-4">
           <label className="relative block">
             <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-400" />
             <Input
               className="pl-9"
-              placeholder="Search title, tags, source, findings, warnings"
+              placeholder="Поиск по названию, тегам, источнику, выводам и предупреждениям"
               value={query}
               onChange={(event) => setQuery(event.target.value)}
             />
           </label>
           <div className="grid gap-3 md:grid-cols-3">
-            <SummaryTile label="Verified findings" value={String(summary.verifiedFindings.length)} />
-            <SummaryTile label="Open questions" value={String(summary.openQuestions.length)} />
-            <SummaryTile label="Unresolved mismatches" value={String(summary.unresolvedMismatches.length)} />
+            <SummaryTile label="Подтвержденные выводы" value={String(summary.verifiedFindings.length)} />
+            <SummaryTile label="Открытые вопросы" value={String(summary.openQuestions.length)} />
+            <SummaryTile label="Неразрешенные расхождения" value={String(summary.unresolvedMismatches.length)} />
           </div>
         </CardContent>
       </Card>
 
       <section className="grid gap-4 lg:grid-cols-2">
         <KnowledgeList
-          title="Recent Entries"
+          title="Последние записи"
           icon={<BookOpen className="size-4" />}
-          emptyText="No knowledge entries yet. Accepted reviews can create the first one."
+          emptyText="Записей пока нет. Первая может появиться после принятой инженерной проверки."
           entries={summary.recentEntries}
         />
         <FindingList
-          title="Verified Findings"
-          emptyText="No verified findings captured yet."
+          title="Подтвержденные выводы"
+          emptyText="Подтвержденных выводов пока нет."
           findings={summary.verifiedFindings}
         />
         <FindingList
-          title="Open Questions"
-          emptyText="No open questions captured yet."
+          title="Открытые вопросы"
+          emptyText="Открытых вопросов пока нет."
           findings={summary.openQuestions}
         />
         <FindingList
-          title="Unresolved Mismatches"
-          emptyText="No unresolved mismatches captured yet."
+          title="Неразрешенные расхождения"
+          emptyText="Неразрешенных расхождений пока нет."
           findings={summary.unresolvedMismatches}
         />
       </section>
 
       <Card className="rounded-lg border border-slate-200 bg-white shadow-sm">
         <CardHeader>
-          <CardTitle>Search Results</CardTitle>
+          <CardTitle>Результаты поиска</CardTitle>
         </CardHeader>
         <CardContent>
-          <KnowledgeEntries entries={filteredEntries} emptyText="No entries match the current filters." />
+          <KnowledgeEntries entries={filteredEntries} emptyText="Под текущие фильтры записи не подходят." />
         </CardContent>
       </Card>
 
       <Card className="rounded-lg border border-slate-200 bg-white shadow-sm">
         <CardHeader>
-          <CardTitle>Lessons Learned Template</CardTitle>
+          <CardTitle>Шаблон уроков проверки</CardTitle>
         </CardHeader>
         <CardContent>
           <dl className="grid gap-3 md:grid-cols-5">
-            {['issue', 'root cause', 'engineer decision', 'evidence', 'recommendation'].map((field) => (
+            {['проблема', 'причина', 'решение инженера', 'доказательства', 'рекомендация'].map((field) => (
               <div key={field} className="rounded-lg border border-slate-200 bg-slate-50 p-3">
                 <dt className="text-xs font-medium uppercase tracking-[0.12em] text-slate-500">{field}</dt>
-                <dd className="mt-2 text-sm font-semibold text-slate-900">Required</dd>
+                <dd className="mt-2 text-sm font-semibold text-slate-900">Обязательно</dd>
               </div>
             ))}
           </dl>
@@ -139,11 +139,11 @@ export function KnowledgePage() {
 
       <Card className="rounded-lg border border-slate-200 bg-white shadow-sm">
         <CardHeader>
-          <CardTitle>SP63 Notes</CardTitle>
+          <CardTitle>Заметки по СП 63</CardTitle>
         </CardHeader>
         <CardContent className="grid gap-2 text-sm leading-6 text-slate-600">
-          <p>Store clause references, internal explanations, and verified interpretations.</p>
-          <p>Do not copy standard text into the app. Keep the standard clause as a reference only.</p>
+          <p>Храните ссылки на пункты, внутренние пояснения и подтвержденные трактовки.</p>
+          <p>Не копируйте текст норматива в приложение. Оставляйте только ссылку на пункт стандарта.</p>
         </CardContent>
       </Card>
     </div>

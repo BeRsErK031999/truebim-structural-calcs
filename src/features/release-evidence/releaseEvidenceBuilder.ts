@@ -23,17 +23,17 @@ export function buildReleaseEvidence(input: ReleaseEvidenceBuildInput): ReleaseE
     appVersion: normalizeText(input.appVersion, '0.0.0'),
     buildTime: normalizeText(input.buildTime, 'unknown'),
     generatedAt: input.generatedAt ?? new Date().toISOString(),
-    testStatus: input.testStatus ?? unknownStatus('Test status', 'Attach the latest npm run test result for release audit.'),
+    testStatus: input.testStatus ?? unknownStatus('Статус тестов', 'Приложите последний результат npm run test для аудита релиза.'),
     deployPrecheckStatus:
       input.deployPrecheckStatus ??
-      unknownStatus('Deploy precheck', 'Attach the latest npm run deploy:precheck result for release audit.'),
+      unknownStatus('Предпроверка деплоя', 'Приложите последний результат npm run deploy:precheck для аудита релиза.'),
     officeUrlsStatus: input.officeUrlsStatus ?? buildUnknownOfficeUrlStatuses(),
     diagnosticsSummary: {
       appLoaded: input.diagnosticsSummary?.appLoaded ?? 'unknown',
       environment: input.diagnosticsSummary?.environment ?? 'unknown',
       localStorageAvailable: input.diagnosticsSummary?.localStorageAvailable ?? 'unknown',
       savedCalculationsCount: input.diagnosticsSummary?.savedCalculationsCount ?? 'unknown',
-      warning: input.diagnosticsSummary?.warning ?? 'Client-side diagnostics only',
+      warning: input.diagnosticsSummary?.warning ?? 'Только клиентская диагностика',
     },
     verificationSummary,
     verificationCapabilityMatrix,
@@ -57,9 +57,9 @@ export function buildReleaseEvidence(input: ReleaseEvidenceBuildInput): ReleaseE
     },
     knownWarnings,
     rollbackNotes: input.rollbackNotes ?? [
-      'Use the release evidence bundle to identify the deployed commit before rollback.',
-      'Follow docs/release-checklist.md rollback commands for the project container only.',
-      'After rollback, regenerate evidence and compare diagnostics, URLs, and verification matrix.',
+      'Используйте пакет релизных материалов, чтобы определить развернутый коммит перед откатом.',
+      'Выполняйте команды отката из docs/release-checklist.md только для контейнера проекта.',
+      'После отката заново сформируйте материалы и сравните диагностику, URL и матрицу проверки.',
     ],
   }
 }
@@ -122,8 +122,8 @@ function buildReleaseEvidenceCounts(): ReleaseEvidenceCounts {
 function buildKnownWarnings(userWarnings: string[] | undefined, verificationWarning: string | null) {
   const warnings = [
     ...(verificationWarning ? [verificationWarning] : []),
-    'Evidence bundle is audit-only and does not promote draft or partial cases to VERIFIED.',
-    'Server URL checks are warning-only and do not require backend availability.',
+    'Пакет материалов нужен только для аудита и не повышает черновые или частичные случаи до VERIFIED.',
+    'Проверки URL сервера являются только предупреждениями и не требуют доступности backend.',
     ...(userWarnings ?? []),
   ]
 
@@ -132,7 +132,7 @@ function buildKnownWarnings(userWarnings: string[] | undefined, verificationWarn
 
 function buildUnknownOfficeUrlStatuses(): ReleaseEvidenceUrlStatus[] {
   return defaultOfficeUrls.map((url) => ({
-    ...unknownStatus('Office URL', 'Not checked by the browser evidence page. Run npm run release:evidence for local URL probes.'),
+    ...unknownStatus('Офисный URL', 'Не проверено браузерной страницей материалов. Запустите npm run release:evidence для локальных проверок URL.'),
     url,
   }))
 }

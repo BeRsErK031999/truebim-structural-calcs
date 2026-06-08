@@ -10,8 +10,8 @@ export function buildPunchingShearReport(
   const calculationTrace = buildPunchingShearTrace(input, result)
 
   return {
-    title: 'Punching Shear Draft Center Check',
-    standard: 'СП63.13330 - draft verification pending',
+    title: 'Черновая проверка продавливания',
+    standard: 'СП 63.13330 - ожидается проверка черновика',
     caseType: input.caseType,
     inputSummary: {
       caseType: input.caseType,
@@ -28,7 +28,7 @@ export function buildPunchingShearReport(
       utilization: result.utilizationRatio,
       perimeterMm: result.controlPerimeterMm,
       effectiveDepthMm: result.effectiveDepthMm,
-      passed: result.passed === null ? 'not evaluated' : String(result.passed),
+      passed: result.passed === null ? 'не оценено' : String(result.passed),
       maxShearStressMpa: result.maxShearStressMpa,
       minShearStressMpa: result.minShearStressMpa,
     },
@@ -43,8 +43,8 @@ export function buildPunchingShearReport(
     },
     roundGeometrySummary: {
       enabled: input.caseType === 'round',
-      diameterMm: input.roundColumn?.diameterMm ?? 'n/a',
-      position: input.roundColumn?.position ?? 'n/a',
+      diameterMm: input.roundColumn?.diameterMm ?? 'н/д',
+      position: input.roundColumn?.position ?? 'н/д',
       slabThicknessMm: input.roundColumn?.slabThickness ?? input.slab.thicknessMm,
       effectiveDepthMm: input.roundColumn?.effectiveDepth ?? input.slab.effectiveDepthMm,
       coverMm: input.roundColumn?.cover ?? input.slab.concreteCoverMm,
@@ -56,8 +56,8 @@ export function buildPunchingShearReport(
     },
     wallGeometrySummary: {
       enabled: input.caseType === 'wall-end',
-      wallLengthMm: input.wall?.wallLength ?? 'n/a',
-      wallThicknessMm: input.wall?.wallThickness ?? 'n/a',
+      wallLengthMm: input.wall?.wallLength ?? 'н/д',
+      wallThicknessMm: input.wall?.wallThickness ?? 'н/д',
       slabThicknessMm: input.wall?.slabThickness ?? input.slab.thicknessMm,
       effectiveDepthMm: input.wall?.effectiveDepth ?? input.slab.effectiveDepthMm,
       coverMm: input.wall?.cover ?? input.slab.concreteCoverMm,
@@ -66,11 +66,11 @@ export function buildPunchingShearReport(
     },
     wallCornerGeometrySummary: {
       enabled: input.caseType === 'wall-corner',
-      wallLengthXMm: input.wallCorner?.wallLengthX ?? 'n/a',
-      wallLengthYMm: input.wallCorner?.wallLengthY ?? 'n/a',
-      wallThicknessXMm: input.wallCorner?.wallThicknessX ?? 'n/a',
-      wallThicknessYMm: input.wallCorner?.wallThicknessY ?? 'n/a',
-      orientation: input.wallCorner?.orientation ?? 'n/a',
+      wallLengthXMm: input.wallCorner?.wallLengthX ?? 'н/д',
+      wallLengthYMm: input.wallCorner?.wallLengthY ?? 'н/д',
+      wallThicknessXMm: input.wallCorner?.wallThicknessX ?? 'н/д',
+      wallThicknessYMm: input.wallCorner?.wallThicknessY ?? 'н/д',
+      orientation: input.wallCorner?.orientation ?? 'н/д',
       controlPerimeterMm: result.perimeter.perimeterMm,
       applicability: 'draft-only',
       warningCount: result.perimeter.warnings.length,
@@ -103,12 +103,12 @@ export function buildPunchingShearReport(
       draftStressMpa: contour.draftStressMpa,
       utilization: contour.utilization,
       selected: contour.selected,
-      warnings: contour.warnings.join('; ') || 'none',
+      warnings: contour.warnings.join('; ') || 'нет',
     })),
     shearReinforcementSummary: {
       enabled: result.shearReinforcement.enabled,
-      steelClass: result.shearReinforcement.steelClass ?? 'n/a',
-      layoutType: result.shearReinforcement.layoutType ?? 'n/a',
+      steelClass: result.shearReinforcement.steelClass ?? 'н/д',
+      layoutType: result.shearReinforcement.layoutType ?? 'н/д',
       barDiameterMm: result.shearReinforcement.barDiameterMm,
       barSpacingMm: result.shearReinforcement.barSpacingMm,
       rowCount: result.shearReinforcement.rowCount,
@@ -120,7 +120,7 @@ export function buildPunchingShearReport(
       reinforcementContributionN: result.reinforcementContributionN,
       draftCapacityWithReinforcementN: result.draftCapacityWithReinforcementN,
       utilizationWithReinforcement: result.utilizationWithReinforcement,
-      warnings: result.reinforcementWarnings.join('; ') || 'none',
+      warnings: result.reinforcementWarnings.join('; ') || 'нет',
     },
     segments: result.perimeter.segments.map((segment) => ({
       id: segment.id,
@@ -139,14 +139,14 @@ export function buildPunchingShearReport(
       stressDiagram: result.svgModel.metadata.stressDiagram,
     },
     formulaSummary: [
-      'DRAFT / NOT FOR DESIGN USE',
+      'ЧЕРНОВИК / НЕ ДЛЯ ПРОЕКТНОГО ПРИМЕНЕНИЯ',
       'v = N / (u * h0)',
-      'N = design shear force',
-      'u = control perimeter',
-      'h0 = effective depth',
-      'DRAFT moment redistribution: v(point) = vbase * (1 + ex*x/rx^2 + ey*y/ry^2)',
-      'DRAFT multiple contour selection: evaluate v = N / (u * h0) per contour and select max utilization',
-      'DRAFT shear reinforcement: Vsw = Asw,total * Rsw,draft',
+      'N = расчетная поперечная сила',
+      'u = контрольный периметр',
+      'h0 = рабочая высота',
+      'ЧЕРНОВОЕ перераспределение моментов: v(point) = vbase * (1 + ex*x/rx^2 + ey*y/ry^2)',
+      'ЧЕРНОВОЙ выбор нескольких контуров: вычислить v = N / (u * h0) по каждому контуру и выбрать максимальное использование',
+      'ЧЕРНОВАЯ поперечная арматура: Vsw = Asw,total * Rsw,draft',
     ],
     calculationValues: {
       N: result.designShearForceN,
@@ -183,9 +183,9 @@ export function buildPunchingShearReport(
     },
     stressRegressionSummary: {
       checksum: createStressDistributionChecksum(result.stressDistribution),
-      driftDetected: 'no expected baseline',
-      expectedVsActual: 'pending trusted stress evidence',
-      tolerance: 'not applied until expected values are populated',
+      driftDetected: 'нет ожидаемого базиса',
+      expectedVsActual: 'ожидаются доверенные доказательства по напряжениям',
+      tolerance: 'не применяется до заполнения ожидаемых значений',
       regressionStatus: result.stressDistribution ? 'draft-placeholder' : 'disabled',
     },
     axisConventionSummary: {
@@ -198,9 +198,9 @@ export function buildPunchingShearReport(
     sp63InteractionSummary: {
       available: result.sp63Interaction !== null,
       label: result.sp63Interaction
-        ? 'SP63 interaction benchmark candidate based on Mathcad fixture'
-        : 'not available',
-      benchmarkStatus: result.sp63Interaction?.benchmarkStatus ?? 'not evaluated',
+        ? 'Кандидат бенчмарка взаимодействия СП 63 на основе фикстуры Mathcad'
+        : 'недоступно',
+      benchmarkStatus: result.sp63Interaction?.benchmarkStatus ?? 'не оценено',
       RbtMpa: result.sp63Interaction?.Rbt ?? null,
       RswMpa: result.sp63Interaction?.Rsw ?? null,
       contourAM: result.sp63Interaction?.a ?? null,
@@ -240,30 +240,30 @@ export function buildPunchingShearReport(
     ],
     calculationTrace,
     calculationSteps: [
-      'DRAFT / NOT FOR DESIGN USE.',
-      'Input schema validation completed.',
-      'Units normalized into the current internal DTO shape.',
-      'Draft material resistance selected.',
-      'Control perimeter draft geometry generated.',
+      'ЧЕРНОВИК / НЕ ДЛЯ ПРОЕКТНОГО ПРИМЕНЕНИЯ.',
+      'Валидация схемы исходных данных завершена.',
+      'Единицы приведены к текущей внутренней DTO-модели.',
+      'Выбрано черновое сопротивление материала.',
+      'Черновая геометрия контрольного периметра построена.',
       input.caseType === 'round'
-        ? 'Draft round center geometry generated without SP63 round-column verification.'
-        : 'Round column geometry not selected.',
+        ? 'Черновая геометрия круглой центральной колонны построена без проверки круглых колонн по СП 63.'
+        : 'Геометрия круглой колонны не выбрана.',
       input.caseType === 'wall-end'
-        ? 'Draft wall-end geometry generated without SP63 wall punching coefficients.'
-        : 'Wall-end geometry not selected.',
+        ? 'Черновая геометрия конца стены построена без коэффициентов продавливания стен по СП 63.'
+        : 'Геометрия конца стены не выбрана.',
       input.caseType === 'wall-corner'
-        ? 'Draft wall-corner geometry generated without SP63 wall punching coefficients.'
-        : 'Wall-corner geometry not selected.',
-      'SVG sketch model generated from geometry DTOs.',
-      'Draft moment-transfer stress distribution generated where Mx/My are present.',
-      'Draft rectangular force-only check evaluated where supported.',
+        ? 'Черновая геометрия угла стены построена без коэффициентов продавливания стен по СП 63.'
+        : 'Геометрия угла стены не выбрана.',
+      'SVG-модель схемы построена из геометрических DTO.',
+      'Черновое распределение напряжений от передачи моментов построено там, где заданы Mx/My.',
+      'Черновая проверка прямоугольной колонны только от силы выполнена там, где поддерживается.',
       result.controlContours.length > 0
         ? 'Сформированы несколько черновых контрольных контуров; критический черновой контур выбран по максимальному коэффициенту использования.'
         : 'Несколько черновых контрольных контуров отключены.',
-      'Draft openings and slab edge clipping geometry generated where provided.',
+      'Черновая геометрия отверстий и обрезки по краям плиты построена там, где задана.',
       result.shearReinforcement.enabled
-        ? 'Draft shear reinforcement area, contribution, capacity, and utilization generated for engineer review.'
-        : 'Shear reinforcement disabled.',
+        ? 'Черновые площадь, вклад, несущая способность и использование поперечной арматуры построены для инженерного просмотра.'
+        : 'Поперечная арматура отключена.',
     ],
   }
 }

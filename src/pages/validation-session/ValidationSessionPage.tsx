@@ -63,7 +63,7 @@ export function ValidationSessionPage() {
   const summary = buildValidationSessionReviewerSummary(session)
   const candidateExportErrors =
     session.candidate && session.candidate.candidateStatus !== 'ready-for-validation'
-      ? ['Incomplete candidate cannot be exported.', ...createVerificationCandidateFromReview(session.reviewSession).validation.errors]
+      ? ['Неполный кандидат не может быть выгружен.', ...formatValidationErrors(createVerificationCandidateFromReview(session.reviewSession).validation.errors)]
       : []
   const canExportCandidate = session.candidate?.candidateStatus === 'ready-for-validation'
   const canExportPackage = canExportValidationSessionPackage(session)
@@ -123,7 +123,7 @@ export function ValidationSessionPage() {
 
   const handleExportCandidate = () => {
     if (!canExportCandidate || !session.candidate) {
-      setMessage(candidateExportErrors[0] ?? 'Create a ready-for-validation candidate before exporting JSON.')
+      setMessage(candidateExportErrors[0] ?? 'Создайте кандидата со статусом готовности к валидации перед выгрузкой JSON.')
       return
     }
 
@@ -165,7 +165,7 @@ export function ValidationSessionPage() {
   }
 
   const handleAttachCandidateCliPass = () => {
-    persist(setValidationCandidateCliResult(session, 'PASS'), 'CLI validation PASS attached.')
+    persist(setValidationCandidateCliResult(session, 'PASS'), 'Результат CLI-валидации PASS приложен.')
   }
 
   const handleExportPackage = () => {
@@ -177,7 +177,7 @@ export function ValidationSessionPage() {
   const handleExportIncompletePackage = () => {
     const nextSession = downloadValidationSessionPackageManifest(session, { incompleteDebug: true })
 
-    persist(nextSession, 'Incomplete debug validation package exported with warning.')
+    persist(nextSession, 'Неполный отладочный пакет валидации выгружен с предупреждением.')
   }
 
   return (
@@ -303,7 +303,7 @@ export function ValidationSessionPage() {
             </div>
             {session.candidate?.candidateStatus === 'incomplete' ? (
               <p className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm font-medium text-amber-900">
-                Incomplete candidate cannot be exported.
+                Неполный кандидат не может быть выгружен.
               </p>
             ) : null}
             {candidateExportErrors.length > 0 ? (
@@ -319,12 +319,12 @@ export function ValidationSessionPage() {
             </Button>
             {!canExportPackage ? (
               <p className="text-sm font-medium text-red-700">
-                Normal package export is blocked until checklist blocking items are complete.
+                Обычная выгрузка пакета заблокирована до завершения блокирующих пунктов чеклиста.
               </p>
             ) : null}
             <Button type="button" variant="outline" onClick={handleExportIncompletePackage}>
               <PackageCheck />
-              Export incomplete package for debugging
+              Выгрузить неполный пакет для отладки
             </Button>
           </CardContent>
         </Card>
@@ -350,7 +350,7 @@ export function ValidationSessionPage() {
                 onClick={handleAttachCandidateCliPass}
               >
                 <PackageCheck />
-                Attach CLI PASS result
+                Приложить результат CLI PASS
               </Button>
               <Button type="button" variant="outline" disabled={!canMarkValidationCandidatePass(session)} onClick={handleCandidateValidated}>
                 <PackageCheck />
@@ -543,6 +543,32 @@ function formatMissingEvidenceItem(value: string) {
   return labels[value] ?? value
 }
 
+function formatValidationErrors(errors: string[]) {
+  return errors.map((error) => {
+    if (error.includes('trusted marker')) {
+      return 'Источник должен содержать доверенную отметку.'
+    }
+
+    if (error.includes('checkedBy')) {
+      return 'Поле проверяющего обязательно.'
+    }
+
+    if (error.includes('checkedAt')) {
+      return 'Дата проверки обязательна.'
+    }
+
+    if (error.includes('axisConventionNotes')) {
+      return 'Заметки по осям обязательны.'
+    }
+
+    if (error.includes('must be a numeric value')) {
+      return 'Ожидаемые значения должны быть числовыми.'
+    }
+
+    return error
+  })
+}
+
 function formatFeature(value: string) {
   const labels: Record<string, string> = {
     'center-force-only': 'центральная колонна, только сила',
@@ -554,15 +580,15 @@ function formatFeature(value: string) {
 
 function getCandidatePassBlockingReason(session: ValidationSession) {
   if (!session.candidate) {
-    return 'Mark candidate PASS is blocked: create a candidate first.'
+    return 'Отметка PASS заблокирована: сначала создайте кандидата.'
   }
 
   if (session.candidate.candidateStatus !== 'ready-for-validation') {
-    return 'Mark candidate PASS is blocked: candidate is incomplete or rejected.'
+    return 'Отметка PASS заблокирована: кандидат неполный или отклонен.'
   }
 
   if (session.candidateCliValidation.status !== 'PASS') {
-    return 'Mark candidate PASS is blocked: attach a CLI validation result with PASS.'
+    return 'Отметка PASS заблокирована: приложите результат CLI-валидации со статусом PASS.'
   }
 
   return null

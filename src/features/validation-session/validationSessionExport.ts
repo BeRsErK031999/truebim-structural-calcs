@@ -32,7 +32,7 @@ export function buildValidationSessionPackage(
     packageStatus: checklist.blockingItems.length === 0 ? 'complete' : 'incomplete',
     warning:
       checklist.blockingItems.length > 0
-        ? 'INCOMPLETE PACKAGE: blocking checklist items remain unresolved. Use for debugging only.'
+        ? 'НЕПОЛНЫЙ ПАКЕТ: блокирующие пункты чеклиста не закрыты. Используйте только для отладки.'
         : null,
     blockingItems: checklist.blockingItems.map((item) => item.key),
     incompleteDebug: options.incompleteDebug === true,
@@ -127,17 +127,17 @@ function createPackageRoot(session: ValidationSession) {
 
 function buildEngineerNotes(session: ValidationSession) {
   return [
-    '# Engineer Notes',
+    '# Заметки инженера',
     '',
-    session.engineerNotes.text.trim() || 'No engineer notes attached.',
+    session.engineerNotes.text.trim() || 'Заметки инженера не приложены.',
     '',
-    '## Attachments',
+    '## Приложения',
     ...(
       session.engineerNotes.attachments.length > 0
         ? session.engineerNotes.attachments.map(
             (attachment) => `- ${attachment.kind}: ${attachment.name} (${attachment.reference})`,
           )
-        : ['- none']
+        : ['- нет']
     ),
     '',
   ].join('\n')

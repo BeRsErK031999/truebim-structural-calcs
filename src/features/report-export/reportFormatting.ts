@@ -10,7 +10,7 @@ export function formatValueWithUnit(
   decimals?: number,
 ) {
   if (value === null || value === undefined || !Number.isFinite(value)) {
-    return 'not evaluated'
+    return 'не оценено'
   }
 
   const formattedValue = decimals === undefined ? formatReportNumber(value) : value.toFixed(decimals)
@@ -20,7 +20,7 @@ export function formatValueWithUnit(
 
 export function formatUtilization(value: number | null | undefined) {
   if (value === null || value === undefined || !Number.isFinite(value)) {
-    return 'not evaluated'
+    return 'не оценено'
   }
 
   return `${value.toFixed(3)} (${(value * 100).toFixed(1)}%)`
@@ -38,22 +38,22 @@ export function buildReportSummary(result: PunchingShearResult) {
 
 function formatCompactKn(value: number | null | undefined) {
   return value === null || value === undefined || !Number.isFinite(value)
-    ? 'n/a'
+    ? 'н/д'
     : `${formatReportNumber(value / 1000)}kN`
 }
 
 function formatCompactMm(value: number | null | undefined) {
   return value === null || value === undefined || !Number.isFinite(value)
-    ? 'n/a'
+    ? 'н/д'
     : `${formatReportNumber(value)}mm`
 }
 
 function formatCompactMpa(value: number | null | undefined) {
   return value === null || value === undefined || !Number.isFinite(value)
-    ? 'n/a'
+    ? 'н/д'
     : `${value.toFixed(3)}MPa`
 }
 
 function formatCompactRatio(value: number | null | undefined) {
-  return value === null || value === undefined || !Number.isFinite(value) ? 'n/a' : value.toFixed(3)
+  return value === null || value === undefined || !Number.isFinite(value) ? 'н/д' : value.toFixed(3)
 }

@@ -31,36 +31,36 @@ export function validateReviewForVerificationCandidate(
   const { evidence } = reviewSession
 
   if (reviewSession.status !== 'accepted') {
-    errors.push('Review status must be accepted before creating a verification candidate.')
+    errors.push('Перед созданием кандидата проверки статус проверки должен быть принят.')
     missingRequirements.push('accepted status')
   }
 
   if (!hasTrustedVerificationCandidateSource(evidence.source)) {
     errors.push(
-      `Source must contain a trusted marker: ${trustedVerificationCandidateSourceMarkers.join(', ')}.`,
+      `Источник должен содержать доверенную отметку: ${trustedVerificationCandidateSourceMarkers.join(', ')}.`,
     )
     missingRequirements.push('trusted source')
   }
 
   if (evidence.checkedBy.trim().length === 0) {
-    errors.push('checkedBy is required.')
+    errors.push('Поле проверяющего обязательно.')
     missingRequirements.push('checkedBy')
   }
 
   if (evidence.checkedAt.trim().length === 0) {
-    errors.push('checkedAt is required.')
+    errors.push('Дата проверки обязательна.')
     missingRequirements.push('checkedAt')
   }
 
   for (const field of requiredVerificationCandidateExpectedFields) {
     if (!Number.isFinite(evidence.expectedValues[field])) {
-      errors.push(`expected.${field} must be a numeric value.`)
+      errors.push(`expected.${field} должен быть числовым значением.`)
       missingRequirements.push(`expected.${field}`)
     }
   }
 
   if (evidence.axisConventionNotes.trim().length === 0) {
-    errors.push('axisConventionNotes is required.')
+    errors.push('Заметки по осям обязательны.')
     missingRequirements.push('axis notes')
   }
 
@@ -77,40 +77,40 @@ export function validateVerificationCandidate(candidate: VerificationCandidate):
 
   if (!hasTrustedVerificationCandidateSource(candidate.source)) {
     errors.push(
-      `source must contain a trusted marker: ${trustedVerificationCandidateSourceMarkers.join(', ')}.`,
+      `Источник должен содержать доверенную отметку: ${trustedVerificationCandidateSourceMarkers.join(', ')}.`,
     )
     missingRequirements.push('trusted source')
   }
 
   if (candidate.checkedBy.trim().length === 0) {
-    errors.push('checkedBy is required.')
+    errors.push('Поле проверяющего обязательно.')
     missingRequirements.push('checkedBy')
   }
 
   if (candidate.checkedAt.trim().length === 0) {
-    errors.push('checkedAt is required.')
+    errors.push('Дата проверки обязательна.')
     missingRequirements.push('checkedAt')
   }
 
   for (const field of requiredVerificationCandidateExpectedFields) {
     if (!Number.isFinite(candidate.expected[field])) {
-      errors.push(`expected.${field} must be a numeric value.`)
+      errors.push(`expected.${field} должен быть числовым значением.`)
       missingRequirements.push(`expected.${field}`)
     }
 
     if (!candidate.tolerances[field]) {
-      errors.push(`tolerances.${field} is required.`)
+      errors.push(`tolerances.${field} обязательно.`)
       missingRequirements.push(`tolerances.${field}`)
     }
   }
 
   if (candidate.axisConventionNotes.trim().length === 0) {
-    errors.push('axisConventionNotes is required.')
+    errors.push('Заметки по осям обязательны.')
     missingRequirements.push('axis notes')
   }
 
   if (candidate.candidateStatus === 'rejected') {
-    errors.push('candidateStatus must not be rejected for CLI validation.')
+    errors.push('candidateStatus не должен быть rejected для CLI-валидации.')
   }
 
   return {

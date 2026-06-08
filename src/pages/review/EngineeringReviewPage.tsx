@@ -58,11 +58,11 @@ const expectedFields: Array<{ key: ReviewValueKey; label: string }> = [
 ]
 
 const sourceOptions = [
-  { value: 'manual', label: 'manual' },
+  { value: 'manual', label: 'ручной расчет' },
   { value: 'webcad', label: 'webcad' },
   { value: 'excel', label: 'excel' },
   { value: 'hand-calculation', label: 'нормативный пример' },
-  { value: 'other', label: 'other' },
+  { value: 'other', label: 'другое' },
 ] as const
 
 export function EngineeringReviewPage() {
@@ -93,8 +93,8 @@ export function EngineeringReviewPage() {
   const candidateChecklist = [
     { label: 'статус принятия', complete: session.status === 'accepted' },
     { label: 'доверенный источник', complete: hasTrustedVerificationCandidateSource(session.evidence.source) },
-    { label: 'checkedBy', complete: session.evidence.checkedBy.trim().length > 0 },
-    { label: 'checkedAt', complete: session.evidence.checkedAt.trim().length > 0 },
+    { label: 'проверяющий', complete: session.evidence.checkedBy.trim().length > 0 },
+    { label: 'дата проверки', complete: session.evidence.checkedAt.trim().length > 0 },
     {
       label: 'ожидаемые значения',
       complete: requiredVerificationCandidateExpectedFields.every((field) =>
@@ -160,7 +160,7 @@ export function EngineeringReviewPage() {
       true,
     )
     if (status === 'accepted' && !evidenceValidation.validation.valid) {
-      setMessage(`Accepted is blocked until trusted evidence is complete: ${evidenceValidation.validation.missingRequirements.join(', ')}`)
+      setMessage(`Принятие заблокировано до заполнения доверенных доказательств: ${formatRequirements(evidenceValidation.validation.missingRequirements).join(', ')}`)
     }
   }
 
@@ -200,9 +200,9 @@ export function EngineeringReviewPage() {
       })
 
       saveKnowledgeEntry(entry)
-      setMessage(`Knowledge entry created: ${entry.title}`)
+      setMessage(`Запись базы знаний создана: ${entry.title}`)
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : 'Could not create knowledge entry.')
+      setMessage(error instanceof Error ? error.message : 'Не удалось создать запись базы знаний.')
     }
   }
 
@@ -233,7 +233,7 @@ export function EngineeringReviewPage() {
     const candidate = candidateResult?.candidate ?? candidatePreview.candidate
 
     if (candidate.candidateStatus !== 'ready-for-validation') {
-      setMessage('Incomplete candidate cannot be exported.')
+      setMessage('Неполный кандидат не может быть выгружен.')
       return
     }
 
@@ -369,8 +369,8 @@ export function EngineeringReviewPage() {
             ))}
           </div>
           <p className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm font-medium text-amber-900">
-            Expected values must come from a trusted source, not copied blindly from app output. Use mm, MPa, or
-            dimensionless values as indicated by each field label.
+            Ожидаемые значения должны приходить из доверенного источника, а не копироваться из вывода приложения.
+            Используйте мм, МПа или безразмерные значения согласно подписи каждого поля.
           </p>
           <div className="grid gap-2">
             <p className="text-sm font-semibold text-slate-900">Метаданные приложений</p>
@@ -487,7 +487,7 @@ export function EngineeringReviewPage() {
               onClick={handleCreateKnowledgeEntry}
             >
               <BookOpen />
-              Create Knowledge Entry
+              Создать запись базы знаний
             </Button>
           </div>
           {driftItems.length > 0 ? (
@@ -568,7 +568,7 @@ export function EngineeringReviewPage() {
               </ul>
             ) : null}
             {candidateResult?.candidate.candidateStatus === 'incomplete' ? (
-              <p className="text-sm font-semibold text-amber-900">Incomplete candidate cannot be exported.</p>
+              <p className="text-sm font-semibold text-amber-900">Неполный кандидат не может быть выгружен.</p>
             ) : null}
           </div>
           <textarea
@@ -705,4 +705,16 @@ function formatValue(value: number | string | null) {
   }
 
   return typeof value === 'number' ? value.toFixed(6) : value
+}
+
+function formatRequirements(values: string[]) {
+  const labels: Record<string, string> = {
+    'accepted status': 'статус принятия',
+    'trusted source': 'доверенный источник',
+    checkedBy: 'проверяющий',
+    checkedAt: 'дата проверки',
+    'axis notes': 'заметки по осям',
+  }
+
+  return values.map((value) => labels[value] ?? value)
 }

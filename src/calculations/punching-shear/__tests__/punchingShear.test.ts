@@ -573,7 +573,7 @@ describe('punching shear draft center check', () => {
     expect(report.warnings).toContain(
       'Draft calculation. Verify formulas and coefficients against СП63.13330 before design use.',
     )
-    expect(report.formulaSummary).toContain('DRAFT / NOT FOR DESIGN USE')
+    expect(report.formulaSummary).toContain('ЧЕРНОВИК / НЕ ДЛЯ ПРОЕКТНОГО ПРИМЕНЕНИЯ')
     expect(report.verificationCapabilities.verified).toContain('center-force-only')
   })
 

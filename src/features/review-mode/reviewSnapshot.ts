@@ -11,7 +11,7 @@ export type ReviewSnapshot = {
   session: ReviewSession
   comparison: ReviewComparison
   metadata: {
-    format: 'Engineering Review Snapshot'
+    format: 'Снимок инженерной проверки'
     verificationLevel: PunchingShearResult['verificationLevel']
     acceptedDoesNotPromoteVerified: true
     draftWarnings: string[]
@@ -32,14 +32,14 @@ export function buildReviewSnapshot({
   exportedAt?: string
 }): ReviewSnapshot {
   return {
-    title: 'Engineering Review Snapshot',
+    title: 'Снимок инженерной проверки',
     exportedAt,
     input,
     result,
     session,
     comparison,
     metadata: {
-      format: 'Engineering Review Snapshot',
+      format: 'Снимок инженерной проверки',
       verificationLevel: result.verificationLevel,
       acceptedDoesNotPromoteVerified: true,
       draftWarnings: result.warnings,

@@ -190,7 +190,7 @@ describe('validation session workflow', () => {
     const metadata = debugPackage.files.find((file) => file.path.endsWith('package.json'))?.content ?? ''
 
     expect(canExportValidationSessionPackage(session)).toBe(false)
-    expect(metadata).toContain('INCOMPLETE PACKAGE')
+    expect(metadata).toContain('НЕПОЛНЫЙ ПАКЕТ')
     expect(metadata).toContain('reportExported')
   })
 })

@@ -36,13 +36,13 @@ export function downloadCandidateJson(candidate: VerificationCandidate) {
 
 export function buildCandidateSummary(candidate: VerificationCandidate) {
   return [
-    `Verification candidate: ${candidate.id}`,
-    `Status: ${candidate.candidateStatus}`,
-    `Source review session: ${candidate.sourceReviewSessionId}`,
-    `Calculation: ${candidate.calculationId ?? 'not saved'}`,
-    `Source: ${candidate.source}`,
-    `Checked by: ${candidate.checkedBy}`,
-    `Checked at: ${candidate.checkedAt}`,
-    'Candidate is not VERIFIED and is not automatically added to the verification dataset.',
+    `Кандидат проверки: ${candidate.id}`,
+    `Статус: ${candidate.candidateStatus}`,
+    `Исходная сессия проверки: ${candidate.sourceReviewSessionId}`,
+    `Расчет: ${candidate.calculationId ?? 'не сохранен'}`,
+    `Источник: ${candidate.source}`,
+    `Проверил: ${candidate.checkedBy}`,
+    `Дата проверки: ${candidate.checkedAt}`,
+    'Кандидат не является VERIFIED и не добавляется автоматически в набор проверочных данных.',
   ].join('\n')
 }

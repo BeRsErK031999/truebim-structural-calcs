@@ -21,15 +21,15 @@ export function buildReleaseEvidenceHtml(evidence: ReleaseEvidence) {
 
   return [
     '<!doctype html>',
-    '<html lang="en">',
+    '<html lang="ru">',
     '<head>',
     '<meta charset="utf-8">',
     '<meta name="viewport" content="width=device-width, initial-scale=1">',
-    `<title>Release Evidence ${escapeHtml(evidence.commitHash)}</title>`,
+    `<title>Релизные материалы ${escapeHtml(evidence.commitHash)}</title>`,
     '<style>body{font-family:Arial,sans-serif;line-height:1.5;margin:32px;color:#0f172a}pre{white-space:pre-wrap;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:16px}</style>',
     '</head>',
     '<body>',
-    `<h1>Release Evidence ${escapeHtml(evidence.commitHash)}</h1>`,
+    `<h1>Релизные материалы ${escapeHtml(evidence.commitHash)}</h1>`,
     `<pre>${escapeHtml(markdown)}</pre>`,
     '</body>',
     '</html>',

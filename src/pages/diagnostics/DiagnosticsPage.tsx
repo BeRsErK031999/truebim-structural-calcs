@@ -66,7 +66,7 @@ export function DiagnosticsPage() {
               value={formatDiagnosticValue(diagnostics.stressRegressionSupport)}
             />
             <DiagnosticItem
-              label="Checksum напряжений"
+              label="Контрольная сумма напряжений"
               value={formatDiagnosticValue(diagnostics.stressChecksumSupport)}
             />
             <DiagnosticItem
@@ -74,39 +74,39 @@ export function DiagnosticsPage() {
               value={formatDiagnosticValue(diagnostics.axisConventionValidationSupport)}
             />
             <DiagnosticItem
-              label="Поиск drift"
+              label="Поиск дрейфа"
               value={formatDiagnosticValue(diagnostics.driftDetectionSupport)}
             />
             <DiagnosticItem
-              label="trace support"
+              label="Поддержка трассировки"
               value={formatDiagnosticValue(diagnostics.traceSupport)}
             />
             <DiagnosticItem
-              label="trace builders count"
+              label="Количество построителей трассировки"
               value={diagnostics.traceBuildersCount.toString()}
             />
             <DiagnosticItem
-              label="trace center moments support"
+              label="Трассировка центральных моментов"
               value={formatDiagnosticValue(diagnostics.traceCenterMomentsSupport)}
             />
             <DiagnosticItem
-              label="trace wall support"
+              label="Трассировка стен"
               value={formatDiagnosticValue(diagnostics.traceWallSupport)}
             />
             <DiagnosticItem
-              label="trace openings support"
+              label="Трассировка отверстий"
               value={formatDiagnosticValue(diagnostics.traceOpeningsSupport)}
             />
             <DiagnosticItem
-              label="trace contours support"
+              label="Трассировка контуров"
               value={formatDiagnosticValue(diagnostics.traceContoursSupport)}
             />
             <DiagnosticItem
-              label="trace reinforcement support"
+              label="Трассировка армирования"
               value={formatDiagnosticValue(diagnostics.traceReinforcementSupport)}
             />
             <DiagnosticItem
-              label="trace round support"
+              label="Трассировка круглых колонн"
               value={formatDiagnosticValue(diagnostics.traceRoundSupport)}
             />
             <DiagnosticItem
@@ -129,31 +129,31 @@ export function DiagnosticsPage() {
             <DiagnosticItem label="Угловые колонны" value={formatDiagnosticValue(diagnostics.cornerSupport)} />
             <DiagnosticItem label="Отверстия" value={formatDiagnosticValue(diagnostics.openingsSupport)} />
             <DiagnosticItem
-              label="wall punching support"
+              label="Поддержка продавливания стен"
               value={formatDiagnosticValue(diagnostics.wallPunchingSupport)}
             />
             <DiagnosticItem
-              label="wall corner support"
+              label="Поддержка углов стен"
               value={formatDiagnosticValue(diagnostics.wallCornerSupport)}
             />
             <DiagnosticItem
-              label="multiple contour support"
+              label="Поддержка нескольких контуров"
               value={formatDiagnosticValue(diagnostics.multipleContourSupport)}
             />
             <DiagnosticItem
-              label="shear reinforcement input support"
+              label="Ввод поперечной арматуры"
               value={formatDiagnosticValue(diagnostics.shearReinforcementInputSupport)}
             />
             <DiagnosticItem
-              label="shear reinforcement capacity support"
+              label="Несущая способность поперечной арматуры"
               value={formatDiagnosticValue(diagnostics.shearReinforcementCapacitySupport)}
             />
             <DiagnosticItem
-              label="contour selection support"
+              label="Выбор контрольного контура"
               value={formatDiagnosticValue(diagnostics.contourSelectionSupport)}
             />
             <DiagnosticItem
-              label="Contour clipping"
+              label="Обрезка контура"
               value={formatDiagnosticValue(diagnostics.clippedPerimeterSupport)}
             />
             <DiagnosticItem
@@ -218,19 +218,19 @@ export function DiagnosticsPage() {
               value={diagnostics.releaseEvidenceExportFormats}
             />
             <DiagnosticItem
-              label="Knowledge base support"
+              label="Поддержка базы знаний"
               value={formatDiagnosticValue(diagnostics.knowledgeBaseSupport)}
             />
             <DiagnosticItem
-              label="Knowledge entries"
+              label="Записи базы знаний"
               value={diagnostics.knowledgeEntriesCount.toString()}
             />
             <DiagnosticItem
-              label="Verified findings"
+              label="Подтвержденные выводы"
               value={diagnostics.verifiedFindingsCount.toString()}
             />
             <DiagnosticItem
-              label="Unresolved findings"
+              label="Неразрешенные выводы"
               value={diagnostics.unresolvedFindingsCount.toString()}
             />
             <DiagnosticItem
@@ -342,7 +342,7 @@ export function DiagnosticsPage() {
               value={diagnostics.verifiedOpeningCount.toString()}
             />
             <DiagnosticItem
-              label="verified shear reinforcement cases"
+              label="Проверенные случаи с поперечной арматурой"
               value={diagnostics.reinforcementVerifiedCasesCount.toString()}
             />
           </dl>
@@ -393,6 +393,8 @@ function formatDiagnosticValue(value: string) {
     not_implemented: 'не реализовано',
     invalid_input: 'ошибка ввода',
     'Client-side diagnostics only': 'Только клиентская диагностика',
+    'draft-center-only': 'черновик только для центрального положения',
+    'not-implemented': 'не реализовано',
   }
 
   return labels[value] ?? value

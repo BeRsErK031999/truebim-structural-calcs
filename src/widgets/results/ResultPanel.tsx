@@ -113,7 +113,7 @@ export function ResultPanel() {
         <div className="grid gap-3 rounded-lg border border-slate-200 bg-slate-50 p-4">
           <p className="text-sm leading-6 text-slate-700">
             Скачайте отчет и отправьте его инженеру на проверку. После проверки значения можно
-            использовать для подготовки verified case.
+            использовать для подготовки проверенного случая.
           </p>
           <div className="grid gap-2 sm:grid-cols-2">
             <Button
@@ -124,7 +124,7 @@ export function ResultPanel() {
               onClick={() => setIsPreviewOpen(true)}
             >
               <Eye />
-              Preview HTML report
+              Предпросмотр HTML-отчета
             </Button>
             <Button
               type="button"
@@ -184,38 +184,38 @@ export function ResultPanel() {
           <Metric label="v min" value={formatDecimal(result?.minShearStressMpa)} unit="МПа" />
           <Metric label="R черн." value={formatDecimal(result?.draftConcreteResistanceMpa)} unit="МПа" />
           <Metric label="Использование" value={formatDecimal(result?.utilizationRatio)} unit="η" />
-          <Metric label="Asw draft" value={formatNumber(result?.reinforcementAreaMm2)} unit="mm2" />
-          <Metric label="η reinf." value={formatDecimal(result?.utilizationWithReinforcement)} unit="draft" />
+          <Metric label="Asw черн." value={formatNumber(result?.reinforcementAreaMm2)} unit="мм2" />
+          <Metric label="η арм." value={formatDecimal(result?.utilizationWithReinforcement)} unit="черн." />
           <Metric label="Результат" value={formatPassed(result?.passed)} unit="" />
         </div>
 
         {result?.sp63Interaction ? (
           <div className="grid gap-3 rounded-lg border border-cyan-200 bg-cyan-50 p-4">
             <div className="flex items-center justify-between gap-3">
-              <p className="text-sm font-semibold text-cyan-950">SP63 benchmark candidate</p>
+              <p className="text-sm font-semibold text-cyan-950">Кандидат бенчмарка СП 63</p>
               <span className="rounded-md bg-white px-2 py-1 text-xs font-semibold text-cyan-700">
                 {result.sp63Interaction.benchmarkStatus}
               </span>
             </div>
             <div className="grid grid-cols-3 gap-2">
               <Metric
-                label="Concrete"
+                label="Бетон"
                 value={formatDecimal(result.sp63Interaction.utilizationConcreteOnly)}
                 unit="eta"
               />
               <Metric
-                label="Reinf."
+                label="Арм."
                 value={formatDecimal(result.sp63Interaction.utilizationWithReinforcement)}
                 unit="eta"
               />
               <Metric
-                label="Outer"
+                label="Внешн."
                 value={formatDecimal(result.sp63Interaction.outerContour?.utilization)}
                 unit="eta"
               />
             </div>
             <p className="text-xs font-medium text-cyan-800">
-              Mathcad benchmark candidate. Draft warnings remain active; VERIFIED promotion is not automatic.
+              Кандидат бенчмарка Mathcad. Черновые предупреждения остаются активными; статус VERIFIED не присваивается автоматически.
             </p>
           </div>
         ) : null}
@@ -254,7 +254,7 @@ export function ResultPanel() {
               className="w-full justify-between"
               onClick={() => setShowTrace((value) => !value)}
             >
-              Show Trace
+              Показать трассировку
               <ChevronDown className={showTrace ? 'rotate-180 transition-transform' : 'transition-transform'} />
             </Button>
             {showTrace ? <TraceSteps report={report} /> : null}
@@ -265,15 +265,15 @@ export function ResultPanel() {
           <div className="fixed inset-4 z-50 grid overflow-hidden rounded-lg border border-slate-300 bg-white shadow-xl md:inset-8">
             <div className="flex items-center justify-between gap-3 border-b border-slate-200 px-4 py-3">
               <div>
-                <p className="text-sm font-semibold text-slate-950">HTML report preview</p>
-                <p className="text-xs text-slate-600">calculationId: {calculationId}</p>
+                <p className="text-sm font-semibold text-slate-950">Предпросмотр HTML-отчета</p>
+                <p className="text-xs text-slate-600">ID расчета: {calculationId}</p>
               </div>
               <Button type="button" variant="outline" onClick={() => setIsPreviewOpen(false)}>
                 <X />
-                Close
+                Закрыть
               </Button>
             </div>
-            <iframe className="h-full w-full" srcDoc={previewHtml} title="Punching shear HTML report preview" />
+            <iframe className="h-full w-full" srcDoc={previewHtml} title="Предпросмотр HTML-отчета по продавливанию" />
           </div>
         ) : null}
       </CardContent>
@@ -289,7 +289,7 @@ function TraceSteps({ report }: { report: PunchingShearReportModel }) {
           <div className="flex items-center justify-between gap-3">
             <p className="text-sm font-semibold text-slate-950">{section.title}</p>
             <span className="rounded-md bg-slate-100 px-2 py-1 text-xs font-semibold text-slate-600">
-              {section.steps.length} steps
+              {section.steps.length} шагов
             </span>
           </div>
           <div className="grid max-h-96 gap-2 overflow-y-auto pr-1">
@@ -305,10 +305,10 @@ function TraceSteps({ report }: { report: PunchingShearReportModel }) {
                   <TraceSourceBadge sourceType={step.sourceType} />
                 </div>
                 <dl className="mt-3 grid gap-2 text-xs text-slate-700">
-                  <TraceLine label="Formula" value={step.formula} />
-                  <TraceLine label="Substitution" value={step.substitutedFormula} />
-                  <TraceLine label="Result" value={`${step.result} ${step.units}`} />
-                  <TraceLine label="Source" value={step.sourceReference} />
+                  <TraceLine label="Формула" value={step.formula} />
+                  <TraceLine label="Подстановка" value={step.substitutedFormula} />
+                  <TraceLine label="Результат" value={`${step.result} ${step.units}`} />
+                  <TraceLine label="Источник" value={step.sourceReference} />
                 </dl>
                 {step.warnings.length > 0 ? (
                   <ul className="mt-3 grid gap-1 text-xs font-medium text-amber-700">
@@ -324,7 +324,7 @@ function TraceSteps({ report }: { report: PunchingShearReportModel }) {
       ))}
       {report.calculationTrace.length === 0 ? (
         <div className="rounded-lg border border-slate-200 bg-white p-3 text-sm text-slate-600">
-          No trace steps available.
+          Шагов трассировки нет.
         </div>
       ) : null}
     </div>

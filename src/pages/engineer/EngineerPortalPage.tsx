@@ -57,7 +57,7 @@ export function EngineerPortalPage() {
             <h1 className="text-3xl font-semibold tracking-normal text-slate-950">Портал инженера</h1>
             <p className="max-w-3xl text-sm leading-6 text-slate-600">
               Стартовая страница инженерной передачи: расчет, проверка доверенных материалов,
-              упаковка validation materials и выгрузка release evidence.
+              упаковка материалов валидации и выгрузка релизных материалов.
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -119,14 +119,14 @@ export function EngineerPortalPage() {
               <StatusCard label="проверенные возможности" value={formatList(result.verifiedFeatures)} />
               <StatusCard label="черновые возможности" value={formatList(result.draftFeatures)} />
               <StatusCard
-                label="статус candidate workflow"
-                value={latestSession?.candidate?.candidateStatus ?? 'not-created'}
+                label="статус процесса кандидата"
+                value={formatStatusValue(latestSession?.candidate?.candidateStatus ?? 'not-created')}
               />
               <StatusCard
-                label="готовность validation package"
-                value={checklist ? `${checklist.completePercent}% чеклиста готово` : 'нет validation session'}
+                label="готовность пакета валидации"
+                value={checklist ? `${checklist.completePercent}% чеклиста готово` : 'нет сессии валидации'}
               />
-              <StatusCard label="статус release evidence" value="готово к выгрузке: HTML, Markdown, JSON" />
+              <StatusCard label="статус релизных материалов" value="готово к выгрузке: HTML, Markdown, JSON" />
             </dl>
           </CardContent>
         </Card>
@@ -244,7 +244,7 @@ function CapabilityList({ title, items }: { title: string; items: string[] }) {
     <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
       <p className="font-semibold text-slate-900">{title}</p>
       <ul className="mt-2 grid gap-1 text-slate-700">
-        {(items.length > 0 ? items : ['none']).map((item) => (
+        {(items.length > 0 ? items : ['нет']).map((item) => (
           <li key={item}>- {item}</li>
         ))}
       </ul>
@@ -254,6 +254,17 @@ function CapabilityList({ title, items }: { title: string; items: string[] }) {
 
 function formatList(values: string[]) {
   return values.length > 0 ? values.join(', ') : 'нет'
+}
+
+function formatStatusValue(value: string) {
+  const labels: Record<string, string> = {
+    'not-created': 'не создан',
+    'ready-for-validation': 'готов к валидации',
+    incomplete: 'неполный',
+    rejected: 'отклонен',
+  }
+
+  return labels[value] ?? value
 }
 
 async function writeClipboardText(text: string) {

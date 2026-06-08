@@ -14,33 +14,33 @@ export type ReportMetadata = {
 }
 
 export const reportAssumptions = [
-  'Center, edge, corner, and opening geometry are draft-only where provided',
-  'Openings use draft tangent subtraction geometry',
-  'Slab edges use draft control perimeter clipping geometry',
-  'Wall-end and wall-corner support geometry is draft-only where provided',
-  'Shear reinforcement contribution is draft-only when enabled',
-  'Moments use draft redistribution where provided',
-  'Draft concrete resistance values',
-  'Draft perimeter geometry',
+  'Геометрия центральных, крайних, угловых колонн и отверстий остается черновой там, где она задана',
+  'Отверстия используют черновую геометрию вычитания по касательным',
+  'Края плиты используют черновую геометрию обрезки контрольного периметра',
+  'Геометрия конца стены и угла стены остается черновой там, где она задана',
+  'Вклад поперечной арматуры остается черновым при включении',
+  'Моменты используют черновое перераспределение там, где они заданы',
+  'Черновые значения сопротивления бетона',
+  'Черновая геометрия периметра',
 ]
 
 export const unsupportedDraftFeatures = [
-  'verified openings formulas',
-  'verified edge column formulas',
-  'verified corner column formulas',
-  'verified wall-corner formulas',
-  'round columns',
-  'verified shear reinforcement contribution',
-  'verified moment transfer',
-  'verified SP63 coefficients',
+  'проверенные формулы для отверстий',
+  'проверенные формулы для крайних колонн',
+  'проверенные формулы для угловых колонн',
+  'проверенные формулы для углов стен',
+  'круглые колонны',
+  'проверенный вклад поперечной арматуры',
+  'проверенная передача моментов',
+  'проверенные коэффициенты СП 63',
 ]
 
 export const reportApplicabilityItems = [
-  'Suitable for pilot review, comparison, and evidence collection.',
-  'Verified features are limited to the features listed in this report.',
-  'Partial features require trusted engineering review before use.',
-  'Draft features are not final design capabilities.',
-  'Not a final design document unless verified capability coverage matches the selected case.',
+  'Подходит для пилотной проверки, сравнения и сбора доказательств.',
+  'Проверенные возможности ограничены списком, указанным в этом отчете.',
+  'Частичные возможности требуют доверенной инженерной проверки перед применением.',
+  'Черновые возможности не являются финальными проектными расчетами.',
+  'Это не финальный проектный документ, если покрытие проверенных возможностей не соответствует выбранному случаю.',
 ]
 
 export function createReportMetadata(now = new Date(), calculationId = createCalculationId(now)): ReportMetadata {

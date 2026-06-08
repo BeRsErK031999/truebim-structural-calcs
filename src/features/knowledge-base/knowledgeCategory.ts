@@ -17,19 +17,19 @@ export const knowledgeCategories = [
 export type KnowledgeCategory = (typeof knowledgeCategories)[number]
 
 export const knowledgeCategoryLabels: Record<KnowledgeCategory, string> = {
-  center: 'Center',
-  moments: 'Moments',
-  edge: 'Edge',
-  corner: 'Corner',
-  'wall-end': 'Wall end',
-  'wall-corner': 'Wall corner',
-  openings: 'Openings',
-  contours: 'Contours',
-  reinforcement: 'Reinforcement',
-  round: 'Round',
-  verification: 'Verification',
+  center: 'Центр',
+  moments: 'Моменты',
+  edge: 'Край',
+  corner: 'Угол',
+  'wall-end': 'Конец стены',
+  'wall-corner': 'Угол стены',
+  openings: 'Отверстия',
+  contours: 'Контуры',
+  reinforcement: 'Армирование',
+  round: 'Круглая колонна',
+  verification: 'Проверка',
   SP63: 'SP63',
-  review: 'Review',
+  review: 'Ревью',
 }
 
 export function isKnowledgeCategory(value: string): value is KnowledgeCategory {

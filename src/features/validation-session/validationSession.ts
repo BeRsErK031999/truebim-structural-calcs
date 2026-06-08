@@ -48,9 +48,9 @@ const checklistDefinitions: Array<Omit<ValidationSessionChecklistItem, 'complete
   },
   {
     key: 'candidateCliValidationPassed',
-    label: 'Candidate CLI validation passed',
+    label: 'CLI-валидация кандидата пройдена',
     blocking: true,
-    missingText: 'Attach a CLI validation result with PASS before marking the candidate PASS.',
+    missingText: 'Приложите результат CLI-валидации со статусом PASS перед отметкой PASS у кандидата.',
   },
   {
     key: 'candidateValidated',
@@ -239,8 +239,8 @@ export function freezeValidationRegressionSnapshot(
       driftCount,
       notes:
         driftCount > 0
-          ? 'Frozen review snapshot differs from current result.'
-          : 'Current result is frozen for validation session drift tracking.',
+          ? 'Замороженный снимок проверки отличается от текущего результата.'
+          : 'Текущий результат заморожен для отслеживания отклонений в сессии валидации.',
     },
   }
 }
@@ -303,7 +303,7 @@ function createEmptyRegressionSnapshot(): ValidationSessionRegressionSnapshot {
     frozenAt: '',
     status: 'not-frozen',
     driftCount: 0,
-    notes: 'No regression snapshot frozen for this validation session.',
+    notes: 'Для этой сессии валидации нет замороженного снимка регрессии.',
   }
 }
 

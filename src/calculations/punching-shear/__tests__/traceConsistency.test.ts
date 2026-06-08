@@ -186,8 +186,8 @@ describe('trace consistency audit', () => {
     const html = buildPunchingShearHtmlReport(input, result, report)
     const markdown = buildPunchingShearMarkdownReport(input, result, report)
 
-    expect(html).toContain('Calculation Trace')
-    expect(markdown).toContain('## Calculation Trace')
+    expect(html).toContain('Трассировка расчета')
+    expect(markdown).toContain('## Трассировка расчета')
 
     for (const section of report.calculationTrace) {
       expect(html).toContain(section.title)

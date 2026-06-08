@@ -32,7 +32,7 @@ describe('engineer portal content', () => {
     expect(engineerReturnChecklist).toContain('JSON кандидата проверки')
     expect(engineerReturnChecklist).toContain('пакет сессии проверки')
     expect(engineerReturnChecklist).toContain('приложения с доверенными расчетами')
-    expect(engineerReturnChecklist).toContain('заполненный checklist')
+    expect(engineerReturnChecklist).toContain('заполненный чеклист')
     expect(checklistText).toContain('Что вернуть разработчику:')
   })
 

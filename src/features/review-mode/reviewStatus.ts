@@ -27,7 +27,7 @@ export function canTransitionReviewStatus(from: ReviewStatus, to: ReviewStatus) 
 
 export function transitionReviewStatus(from: ReviewStatus, to: ReviewStatus) {
   if (!canTransitionReviewStatus(from, to)) {
-    throw new Error(`Review status transition from ${from} to ${to} is not allowed`)
+    throw new Error(`Переход статуса проверки с ${from} на ${to} не разрешен`)
   }
 
   return to

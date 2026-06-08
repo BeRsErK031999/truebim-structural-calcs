@@ -47,7 +47,7 @@ describe('verification candidate workflow', () => {
     const result = createVerificationCandidateFromReview(session)
 
     expect(result.validation.valid).toBe(false)
-    expect(result.validation.errors.join('\n')).toContain('trusted marker')
+    expect(result.validation.errors.join('\n')).toContain('доверенную отметку')
     expect(result.candidate.candidateStatus).toBe('incomplete')
   })
 

@@ -46,24 +46,24 @@ export function buildPunchingShearMarkdownReport(
   const relatedKnowledge = getRelatedKnowledgeEntries({ input, result })
 
   return [
-    '# TrueBIM Structural Calculations - Punching Shear Report',
+    '# TrueBIM: отчет по продавливанию',
     '',
-    '> DRAFT CALCULATION - NOT FOR DESIGN USE',
+    '> ЧЕРНОВОЙ РАСЧЕТ - НЕ ДЛЯ ПРОЕКТНОГО ПРИМЕНЕНИЯ',
     '',
-    'This report is a draft calculation export. Verify against SP63 before any design use.',
+    'Этот отчет является черновым экспортом расчета. Проверьте его по СП 63 перед любым проектным применением.',
     '',
-    '## Metadata',
+    '## Метаданные',
     '',
     table([
       ['calculationId', reportMetadata.calculationId],
       ['generatedAt', reportMetadata.generatedAt],
-      ['app version', metadata.version],
+      ['версия приложения', metadata.version],
       ['commit', metadata.commit],
-      ['build time', metadata.buildTime],
-      ['calculation type', 'punching-shear'],
-      ['status', result.status],
-      ['verification level', result.verificationLevel],
-      ['Verification source', reportMetadata.verificationSource],
+      ['время сборки', metadata.buildTime],
+      ['тип расчета', 'продавливание'],
+      ['статус', formatStatus(result.status)],
+      ['уровень проверки', formatVerificationLevel(result.verificationLevel)],
+      ['источник проверки', formatVerificationSource(reportMetadata.verificationSource)],
     ]),
     '',
     '## Исходные данные',
@@ -71,8 +71,8 @@ export function buildPunchingShearMarkdownReport(
     '### Материалы',
     '',
     table([
-      ['concrete class', input.concrete.className],
-      ['shear reinforcement steel', result.shearReinforcement.steelClass ?? 'n/a'],
+      ['класс бетона', input.concrete.className],
+      ['сталь поперечной арматуры', result.shearReinforcement.steelClass ?? 'н/д'],
     ]),
     '',
     '### Плита',
@@ -90,11 +90,11 @@ export function buildPunchingShearMarkdownReport(
     '### Нагрузки',
     '',
     table([
-      ['N', formatValueWithUnit(input.forces.axialForceKn, 'kN')],
-      ['Mx - moment in X-axis plane', formatValueWithUnit(input.forces.momentXKnM, 'kN*m')],
-      ['My - moment in Y-axis plane', formatValueWithUnit(input.forces.momentYKnM, 'kN*m')],
-      ['Mx convention', 'direction of the smaller column dimension'],
-      ['My convention', 'direction of the larger column dimension'],
+      ['N', formatValueWithUnit(input.forces.axialForceKn, 'кН')],
+      ['Mx - момент в плоскости оси X', formatValueWithUnit(input.forces.momentXKnM, 'кН*м')],
+      ['My - момент в плоскости оси Y', formatValueWithUnit(input.forces.momentYKnM, 'кН*м')],
+      ['соглашение Mx', 'направление меньшего размера колонны'],
+      ['соглашение My', 'направление большего размера колонны'],
     ]),
     '',
     '## Справочные данные',
@@ -102,10 +102,10 @@ export function buildPunchingShearMarkdownReport(
     table([
       ['Rbt', formatValueWithUnit(result.sp63Interaction?.Rbt, 'MPa', 3)],
       ['Rsw', formatValueWithUnit(result.sp63Interaction?.Rsw, 'MPa', 3)],
-      ['assumptions', reportAssumptions.join('; ')],
+      ['допущения', reportAssumptions.join('; ')],
     ]),
     '',
-    '### Engineering Help',
+    '### Инженерная справка',
     '',
     table(helpRows),
     '',
@@ -114,12 +114,12 @@ export function buildPunchingShearMarkdownReport(
     '### Контур продавливания',
     '',
     table([
-      ['control perimeter u', formatValueWithUnit(result.controlPerimeterMm, 'mm')],
-      ['effective depth h0', formatValueWithUnit(result.effectiveDepthMm, 'mm')],
-      ['segment count', String(result.perimeter.segments.length)],
-      ['bounding box width', formatValueWithUnit(result.perimeter.boundingBox.width, 'mm')],
-      ['bounding box height', formatValueWithUnit(result.perimeter.boundingBox.height, 'mm')],
-      ['draft formula', 'v = N / (u * h0)'],
+      ['контрольный периметр u', formatValueWithUnit(result.controlPerimeterMm, 'мм')],
+      ['рабочая высота h0', formatValueWithUnit(result.effectiveDepthMm, 'мм')],
+      ['количество сегментов', String(result.perimeter.segments.length)],
+      ['ширина габарита', formatValueWithUnit(result.perimeter.boundingBox.width, 'мм')],
+      ['высота габарита', formatValueWithUnit(result.perimeter.boundingBox.height, 'мм')],
+      ['черновая формула', 'v = N / (u * h0)'],
     ]),
     '',
     '### Ab / Ix / Iy / Wx / Wy',
@@ -147,70 +147,70 @@ export function buildPunchingShearMarkdownReport(
     renderOuterContourCheck(result),
     '',
     ...renderMultipleContours(result),
-    '## Calculation Summary',
+    '## Сводка расчета',
     '',
     table([
-      ['formula', 'v = N / (u * h0)'],
+      ['формула', 'v = N / (u * h0)'],
       ['N', formatValueWithUnit(result.designShearForceN, 'N')],
       ['u', formatValueWithUnit(result.controlPerimeterMm, 'mm')],
       ['h0', formatValueWithUnit(result.effectiveDepthMm, 'mm')],
       ['v', formatValueWithUnit(result.shearStressMpa, 'MPa', 3)],
-      ['draft resistance', formatValueWithUnit(result.draftConcreteResistanceMpa, 'MPa', 3)],
-      ['utilization ratio', formatUtilization(result.utilizationRatio)],
-      ['utilization with reinforcement', formatUtilization(result.utilizationWithReinforcement)],
-      ['passed', result.passed === null ? 'not evaluated' : String(result.passed)],
+      ['черновое сопротивление', formatValueWithUnit(result.draftConcreteResistanceMpa, 'МПа', 3)],
+      ['коэффициент использования', formatUtilization(result.utilizationRatio)],
+      ['использование с арматурой', formatUtilization(result.utilizationWithReinforcement)],
+      ['результат', result.passed === null ? 'не оценено' : formatPassFail(result.passed)],
     ]),
     '',
-    '## Moment Transfer',
+    '## Передача моментов',
     '',
     table([
-      ['status', result.momentTransfer.status],
-      ['Mx - moment in X-axis plane', formatValueWithUnit(input.forces.momentXKnM, 'kN*m')],
-      ['My - moment in Y-axis plane', formatValueWithUnit(input.forces.momentYKnM, 'kN*m')],
-      ['eccentricity X', formatValueWithUnit(result.eccentricityX, 'mm', 3)],
-      ['eccentricity Y', formatValueWithUnit(result.eccentricityY, 'mm', 3)],
-      ['max stress', formatValueWithUnit(result.maxShearStressMpa, 'MPa', 3)],
-      ['min stress', formatValueWithUnit(result.minShearStressMpa, 'MPa', 3)],
-      ['redistribution notes', 'DRAFT provisional linear perimeter redistribution; not SP63 verified'],
+      ['статус', result.momentTransfer.status],
+      ['Mx - момент в плоскости оси X', formatValueWithUnit(input.forces.momentXKnM, 'кН*м')],
+      ['My - момент в плоскости оси Y', formatValueWithUnit(input.forces.momentYKnM, 'кН*м')],
+      ['эксцентриситет X', formatValueWithUnit(result.eccentricityX, 'мм', 3)],
+      ['эксцентриситет Y', formatValueWithUnit(result.eccentricityY, 'мм', 3)],
+      ['максимальное напряжение', formatValueWithUnit(result.maxShearStressMpa, 'МПа', 3)],
+      ['минимальное напряжение', formatValueWithUnit(result.minShearStressMpa, 'МПа', 3)],
+      ['заметки о перераспределении', 'ЧЕРНОВОЕ предварительное линейное перераспределение по периметру; не проверено по СП 63'],
     ]),
     '',
-    '## Verification Capabilities',
+    '## Возможности проверки',
     '',
-    'Verified:',
+    'Проверено:',
     '',
     ...formatFeatureList(result.verifiedFeatures),
     '',
-    'Draft:',
+    'Черновик:',
     '',
     ...formatFeatureList(result.draftFeatures),
     '',
-    '## Verification Evidence',
+    '## Доказательства проверки',
     '',
     result.verificationEvidence.length > 0
       ? table([
-          ['case ID', 'source | checkedBy | checkedAt | status'],
+          ['ID случая', 'источник | проверил | дата проверки | статус'],
           ...result.verificationEvidence.map((evidence) => [
             evidence.id,
-            `${evidence.verificationSource} | ${evidence.checkedBy ?? 'n/a'} | ${evidence.checkedAt ?? 'n/a'} | ${evidence.status}`,
+            `${evidence.verificationSource} | ${evidence.checkedBy ?? 'н/д'} | ${evidence.checkedAt ?? 'н/д'} | ${evidence.status}`,
           ] satisfies [string, string]),
         ])
-      : 'No verified evidence linked.',
+      : 'Проверенные доказательства не привязаны.',
     '',
-    '## Related Knowledge',
+    '## Связанная база знаний',
     '',
     relatedKnowledge.length > 0
       ? table([
-          ['entry ID', 'title | category | source | tags'],
+          ['ID записи', 'название | категория | источник | теги'],
           ...relatedKnowledge.map((entry) => [
             entry.id,
-            `${entry.title} | ${entry.category} | ${entry.sourceReference} | ${entry.tags.join(', ') || 'none'}`,
+            `${entry.title} | ${entry.category} | ${entry.sourceReference} | ${entry.tags.join(', ') || 'нет'}`,
           ] satisfies [string, string]),
         ])
-      : 'No related knowledge entries linked.',
+      : 'Связанные записи базы знаний не найдены.',
     '',
-    '## Trace',
+    '## Трассировка',
     '',
-    '## Calculation Trace',
+    '## Трассировка расчета',
     '',
     renderCalculationTrace(report),
     '',
@@ -218,26 +218,26 @@ export function buildPunchingShearMarkdownReport(
     '',
     ...warnings.map((warning) => `- ${warning}`),
     '',
-    '## Verification Status',
+    '## Статус проверки',
     '',
-    `- Verification source: ${reportMetadata.verificationSource}`,
-    `- verification level: ${result.verificationLevel}`,
-    `- verified features: ${formatInlineFeatures(result.verifiedFeatures)}`,
-    `- draft features: ${formatInlineFeatures(result.draftFeatures)}`,
-    '- This report can be used to create a verified case only after checking with manual calculation, WebCAD, Excel, or another trusted source.',
+    `- Источник проверки: ${formatVerificationSource(reportMetadata.verificationSource)}`,
+    `- Уровень проверки: ${formatVerificationLevel(result.verificationLevel)}`,
+    `- Проверенные возможности: ${formatInlineFeatures(result.verifiedFeatures)}`,
+    `- Черновые возможности: ${formatInlineFeatures(result.draftFeatures)}`,
+    '- Этот отчет можно использовать для создания проверенного случая только после сверки с ручным расчетом, WebCAD, Excel или другим доверенным источником.',
     '',
-    '## Applicability',
+    '## Применимость',
     '',
     ...reportApplicabilityItems.map((item) => `- ${item}`),
-    `- verified features: ${formatInlineFeatures(result.verifiedFeatures)}`,
-    `- partial features: ${formatInlineFeatures(getPartialReportFeatures(result))}`,
-    `- draft features: ${formatInlineFeatures(result.draftFeatures)}`,
+    `- Проверенные возможности: ${formatInlineFeatures(result.verifiedFeatures)}`,
+    `- Частичные возможности: ${formatInlineFeatures(getPartialReportFeatures(result))}`,
+    `- Черновые возможности: ${formatInlineFeatures(result.draftFeatures)}`,
     '',
-    '## Unsupported in this draft',
+    '## Не поддерживается в этом черновике',
     '',
     ...unsupportedDraftFeatures.map((feature) => `- ${feature}`),
     '',
-    '## Source Report Notes',
+    '## Заметки исходного отчета',
     '',
     ...report.calculationSteps.map((step) => `- ${step}`),
     '',
@@ -247,8 +247,8 @@ export function buildPunchingShearMarkdownReport(
 function getColumnRows(input: PunchingShearInput): Array<[string, string]> {
   if (input.caseType === 'round') {
     return [
-      ['diameter', formatValueWithUnit(input.roundColumn?.diameterMm, 'mm')],
-      ['position', input.roundColumn?.position ?? 'n/a'],
+      ['диаметр', formatValueWithUnit(input.roundColumn?.diameterMm, 'мм')],
+      ['положение', formatPosition(input.roundColumn?.position ?? 'n/a')],
     ]
   }
 
@@ -261,11 +261,11 @@ function getColumnRows(input: PunchingShearInput): Array<[string, string]> {
 function renderOptionalInputGeometry(input: PunchingShearInput): string[] {
   if (input.caseType === 'wall-end') {
     return [
-      '### Wall Geometry',
+      '### Геометрия стены',
       '',
       table([
-        ['wall length', formatValueWithUnit(input.wall?.wallLength, 'mm')],
-        ['wall thickness', formatValueWithUnit(input.wall?.wallThickness, 'mm')],
+        ['длина стены', formatValueWithUnit(input.wall?.wallLength, 'мм')],
+        ['толщина стены', formatValueWithUnit(input.wall?.wallThickness, 'мм')],
       ]),
       '',
     ]
@@ -273,14 +273,14 @@ function renderOptionalInputGeometry(input: PunchingShearInput): string[] {
 
   if (input.caseType === 'wall-corner') {
     return [
-      '### Wall Corner Geometry',
+      '### Геометрия угла стены',
       '',
       table([
-        ['wall length X', formatValueWithUnit(input.wallCorner?.wallLengthX, 'mm')],
-        ['wall length Y', formatValueWithUnit(input.wallCorner?.wallLengthY, 'mm')],
-        ['wall thickness X', formatValueWithUnit(input.wallCorner?.wallThicknessX, 'mm')],
-        ['wall thickness Y', formatValueWithUnit(input.wallCorner?.wallThicknessY, 'mm')],
-        ['orientation', input.wallCorner?.orientation ?? 'n/a'],
+        ['длина стены X', formatValueWithUnit(input.wallCorner?.wallLengthX, 'мм')],
+        ['длина стены Y', formatValueWithUnit(input.wallCorner?.wallLengthY, 'мм')],
+        ['толщина стены X', formatValueWithUnit(input.wallCorner?.wallThicknessX, 'мм')],
+        ['толщина стены Y', formatValueWithUnit(input.wallCorner?.wallThicknessY, 'мм')],
+        ['ориентация', formatPosition(input.wallCorner?.orientation ?? 'n/a')],
       ]),
       '',
     ]
@@ -288,14 +288,14 @@ function renderOptionalInputGeometry(input: PunchingShearInput): string[] {
 
   if (input.caseType === 'opening') {
     return [
-      '### Openings',
+      '### Отверстия',
       '',
       table([
-        ['opening count', String(input.openings.length)],
-        ['first opening width X', formatValueWithUnit(input.openings[0]?.widthXMm, 'mm')],
-        ['first opening width Y', formatValueWithUnit(input.openings[0]?.widthYMm, 'mm')],
-        ['first opening center X', formatValueWithUnit(input.openings[0]?.centerXMm, 'mm')],
-        ['first opening center Y', formatValueWithUnit(input.openings[0]?.centerYMm, 'mm')],
+        ['количество отверстий', String(input.openings.length)],
+        ['ширина первого отверстия X', formatValueWithUnit(input.openings[0]?.widthXMm, 'мм')],
+        ['ширина первого отверстия Y', formatValueWithUnit(input.openings[0]?.widthYMm, 'мм')],
+        ['центр первого отверстия X', formatValueWithUnit(input.openings[0]?.centerXMm, 'мм')],
+        ['центр первого отверстия Y', formatValueWithUnit(input.openings[0]?.centerYMm, 'мм')],
       ]),
       '',
     ]
@@ -314,7 +314,7 @@ function renderSp63Geometry(result: PunchingShearResult) {
       ['Iy', 'n/a'],
       ['Wx', 'n/a'],
       ['Wy', 'n/a'],
-      ['note', 'SP63 interaction benchmark candidate is not available for this input.'],
+      ['примечание', 'Кандидат бенчмарка взаимодействия по СП 63 недоступен для этих исходных данных.'],
     ])
   }
 
@@ -323,8 +323,8 @@ function renderSp63Geometry(result: PunchingShearResult) {
     ['b', formatValueWithUnit(sp63.b, 'm', 3)],
     ['u', formatValueWithUnit(sp63.u, 'm', 3)],
     ['Ab', formatValueWithUnit(sp63.Ab, 'm2', 3)],
-    ['Ix', 'not exported by benchmark model'],
-    ['Iy', 'not exported by benchmark model'],
+    ['Ix', 'не выгружается моделью бенчмарка'],
+    ['Iy', 'не выгружается моделью бенчмарка'],
     ['Wx', formatValueWithUnit(sp63.Wx, 'm2', 3)],
     ['Wy', formatValueWithUnit(sp63.Wy, 'm2', 3)],
   ])
@@ -334,7 +334,7 @@ function renderConcreteLimitForces(result: PunchingShearResult) {
   const sp63 = result.sp63Interaction
 
   if (!sp63) {
-    return 'SP63 concrete limit forces are not available for this input.'
+    return 'Предельные усилия по бетону СП 63 недоступны для этих исходных данных.'
   }
 
   return table([
@@ -348,14 +348,14 @@ function renderShearReinforcement(result: PunchingShearResult) {
   const sp63 = result.sp63Interaction
 
   return table([
-    ['enabled', String(result.shearReinforcement.enabled)],
-    ['steel class', result.shearReinforcement.steelClass ?? 'n/a'],
-    ['layout type', result.shearReinforcement.layoutType ?? 'n/a'],
+    ['включено', formatBoolean(result.shearReinforcement.enabled)],
+    ['класс стали', result.shearReinforcement.steelClass ?? 'н/д'],
+    ['схема армирования', result.shearReinforcement.layoutType ?? 'н/д'],
     ['Asw', formatValueWithUnit(sp63?.Asw ?? result.reinforcementAreaMm2, sp63 ? 'cm2' : 'mm2', 3)],
     ['qsw', formatValueWithUnit(sp63?.qsw, 'kN/m', 3)],
     ['Fsw.ult', formatValueWithUnit(sp63?.FswUlt, 'kN', 3)],
     ['Fult', formatValueWithUnit(sp63?.Fult, 'kN', 3)],
-    ['warnings', result.reinforcementWarnings.join('; ') || 'none'],
+    ['предупреждения', result.reinforcementWarnings.join('; ') || 'нет'],
   ])
 }
 
@@ -363,9 +363,9 @@ function renderConcreteOnlyCheck(result: PunchingShearResult) {
   const sp63 = result.sp63Interaction
 
   return table([
-    ['interaction', formatUtilization(sp63?.utilizationConcreteOnly)],
-    ['force cap', formatUtilization(sp63?.forceCapConcreteOnly)],
-    ['result', sp63 ? formatPassFail(sp63.utilizationConcreteOnly <= 1) : 'n/a'],
+    ['взаимодействие', formatUtilization(sp63?.utilizationConcreteOnly)],
+    ['ограничение усилия', formatUtilization(sp63?.forceCapConcreteOnly)],
+    ['результат', sp63 ? formatPassFail(sp63.utilizationConcreteOnly <= 1) : 'н/д'],
   ])
 }
 
@@ -373,8 +373,8 @@ function renderReinforcedCheck(result: PunchingShearResult) {
   const sp63 = result.sp63Interaction
 
   return table([
-    ['interaction', formatUtilization(sp63?.utilizationWithReinforcement)],
-    ['result', sp63?.utilizationWithReinforcement === null || sp63?.utilizationWithReinforcement === undefined ? 'n/a' : formatPassFail(sp63.utilizationWithReinforcement <= 1)],
+    ['взаимодействие', formatUtilization(sp63?.utilizationWithReinforcement)],
+    ['результат', sp63?.utilizationWithReinforcement === null || sp63?.utilizationWithReinforcement === undefined ? 'н/д' : formatPassFail(sp63.utilizationWithReinforcement <= 1)],
   ])
 }
 
@@ -382,15 +382,15 @@ function renderOuterContourCheck(result: PunchingShearResult) {
   const outerContour = result.sp63Interaction?.outerContour
 
   if (!outerContour) {
-    return 'Outer contour check is not available for this input.'
+    return 'Проверка внешнего контура недоступна для этих исходных данных.'
   }
 
   return table([
-    ['outer contour asw', formatValueWithUnit(outerContour.asw, 'm', 3)],
+    ['asw внешнего контура', formatValueWithUnit(outerContour.asw, 'м', 3)],
     ["u'", formatValueWithUnit(outerContour.uPrime, 'm', 3)],
-    ["F'", formatValueWithUnit(outerContour.FPrime, 'kN', 3)],
-    ['outer contour utilization', formatUtilization(outerContour.utilization)],
-    ['result', formatPassFail(outerContour.utilization <= 1)],
+    ["F'", formatValueWithUnit(outerContour.FPrime, 'кН', 3)],
+    ['использование внешнего контура', formatUtilization(outerContour.utilization)],
+    ['результат', formatPassFail(outerContour.utilization <= 1)],
   ])
 }
 
@@ -416,7 +416,7 @@ function renderMultipleContours(result: PunchingShearResult): string[] {
 }
 
 function formatFeatureList(features: string[]) {
-  return features.length > 0 ? features.map((feature) => `- ${formatFeatureLabel(feature)}`) : ['- none']
+  return features.length > 0 ? features.map((feature) => `- ${formatFeatureLabel(feature)}`) : ['- нет']
 }
 
 function renderCalculationTrace(report: PunchingShearReportModel) {
@@ -425,20 +425,20 @@ function renderCalculationTrace(report: PunchingShearReportModel) {
   )
 
   if (steps.length === 0) {
-    return 'No calculation trace available.'
+    return 'Трассировка расчета недоступна.'
   }
 
   return table([
-    ['section / step', 'formula | substitution | result | verification source'],
+    ['раздел / шаг', 'формула | подстановка | результат | источник проверки'],
     ...steps.map(({ section, step }) => [
       `${section.title} / ${step.title}`,
-      `${step.formula} | ${step.substitutedFormula} | ${step.result} ${step.units} | ${formatTraceSourceLabel(step.sourceType)} - ${step.sourceReference}${step.warnings.length > 0 ? ` | warnings: ${step.warnings.join('; ')}` : ''}`,
+      `${step.formula} | ${step.substitutedFormula} | ${step.result} ${step.units} | ${formatTraceSourceLabel(step.sourceType)} - ${step.sourceReference}${step.warnings.length > 0 ? ` | предупреждения: ${step.warnings.join('; ')}` : ''}`,
     ] satisfies [string, string]),
   ])
 }
 
 function formatInlineFeatures(features: string[]) {
-  return features.length > 0 ? features.map(formatFeatureLabel).join(', ') : 'none'
+  return features.length > 0 ? features.map(formatFeatureLabel).join(', ') : 'нет'
 }
 
 function getPartialReportFeatures(result: PunchingShearResult) {
@@ -447,26 +447,78 @@ function getPartialReportFeatures(result: PunchingShearResult) {
 
 function createReportWarnings(result: PunchingShearResult) {
   return uniqueStrings([
-    'DRAFT CALCULATION - NOT FOR DESIGN USE',
+    'ЧЕРНОВОЙ РАСЧЕТ - НЕ ДЛЯ ПРОЕКТНОГО ПРИМЕНЕНИЯ',
     ...result.warnings,
-    'Moment transfer is draft-only where Mx/My are provided',
-    'Openings and boundary clipping are draft geometry only.',
-    'Round column perimeter is draft-only and requires SP63 verification.',
-    'Wall-end punching support is draft geometry only.',
-    'Wall-corner punching support is draft geometry only.',
+    'Передача моментов остается черновой там, где заданы Mx/My',
+    'Отверстия и обрезка по границам являются только черновой геометрией.',
+    'Периметр круглой колонны является черновым и требует проверки по СП 63.',
+    'Поддержка продавливания у конца стены является только черновой геометрией.',
+    'Поддержка продавливания в углу стены является только черновой геометрией.',
     'Выбор нескольких контуров является черновым и требует проверки по СП 63.',
-    'Shear reinforcement contribution is draft-only when enabled',
-    'Verify against SP63 before design use',
+    'Вклад поперечной арматуры является черновым при включении',
+    'Проверьте по СП 63 перед проектным применением',
   ])
 }
 
 function formatPassFail(value: boolean) {
-  return value ? 'pass' : 'fail'
+  return value ? 'проходит' : 'не проходит'
+}
+
+function formatBoolean(value: boolean) {
+  return value ? 'да' : 'нет'
+}
+
+function formatPosition(value: string) {
+  const labels: Record<string, string> = {
+    center: 'центр',
+    edge: 'край',
+    corner: 'угол',
+    'top-left': 'верхний левый',
+    'top-right': 'верхний правый',
+    'bottom-left': 'нижний левый',
+    'bottom-right': 'нижний правый',
+    'n/a': 'н/д',
+  }
+
+  return labels[value] ?? value
+}
+
+function formatStatus(value: string) {
+  const labels: Record<string, string> = {
+    draft_ok: 'черновик прошел',
+    draft_failed: 'черновик не прошел',
+    not_implemented: 'не реализовано',
+    invalid_input: 'ошибка ввода',
+  }
+
+  return labels[value] ?? value
+}
+
+function formatVerificationLevel(value: string) {
+  const labels: Record<string, string> = {
+    verified: 'проверено',
+    partial: 'частично',
+    draft: 'черновик',
+  }
+
+  return labels[value] ?? value
+}
+
+function formatVerificationSource(value: string) {
+  const labels: Record<string, string> = {
+    'NOT VERIFIED': 'НЕ ПРОВЕРЕНО',
+    'WebCAD checked': 'проверено в WebCAD',
+    'Manual engineer calculation': 'ручной инженерный расчет',
+    'Verified Excel': 'проверенный Excel',
+    'Normative example': 'нормативный пример',
+  }
+
+  return labels[value] ?? value
 }
 
 function table(rows: Array<[string, string]>) {
   return [
-    '| Field | Value |',
+    '| Поле | Значение |',
     '| --- | --- |',
     ...rows.map(([field, value]) => `| ${escapeMarkdownCell(field)} | ${escapeMarkdownCell(value)} |`),
   ].join('\n')
