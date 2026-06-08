@@ -411,6 +411,143 @@ v = N / (u * h0)
 
 The downloaded reports also contained the expected calculation values, including the default input force value `420`.
 
+## SP63 benchmark deploy recovery
+
+- Recovery date: 2026-06-08
+- Deployed source commit: `5453a1b`
+- Docker image tag: `truebim-structural-calcs:latest`
+- Docker image ID observed on server after load: `a31a53fac546`
+- Server IP: `192.168.22.37`
+- SSH user: `admin_devops`
+- Container name: `truebim-structural-calcs`
+
+### Root cause
+
+The initial `.\scripts\full-deploy.ps1` stopped before build because `deploy-precheck.ps1`
+reported office URL failures:
+
+```text
+Office URL / responds: 502 Bad Gateway or receive error
+Office URL /review responds: 502 Bad Gateway
+Office URL /validation-session responds: 502 Bad Gateway or receive error
+Office URL /diagnostics responds: 502 Bad Gateway
+```
+
+Server diagnostics showed the application runtime itself was healthy:
+
+```text
+truebim-structural-calcs   truebim-structural-calcs:latest   Up 2 days (healthy)   127.0.0.1:3000->80/tcp
+curl -I http://127.0.0.1:3000
+HTTP/1.1 200 OK
+```
+
+Host nginx also served the app correctly from the server and with `curl.exe` from Windows:
+
+```text
+curl -I http://192.168.22.37/
+HTTP/1.1 200 OK
+
+curl.exe -I http://192.168.22.37/review
+HTTP/1.1 200 OK
+```
+
+The remaining failure was isolated to the Windows PowerShell precheck HTTP client. `Invoke-WebRequest`
+intermittently returned 502/receive errors for the private office URL while `curl.exe --noproxy '*'`
+returned 200. During commit detection, large JS asset reads also exposed a redirected-stdout timeout
+path in the precheck helper.
+
+`sudo nginx -t`, `sudo systemctl status nginx --no-pager`, and `sudo tail /var/log/nginx/error.log`
+were attempted, but the deploy user required an interactive sudo password. No nginx config was changed.
+
+### Recovery actions
+
+No calculation formulas, verification logic, Docker prune, unrelated containers, or unrelated images were changed.
+
+The deploy was completed with the project-scoped fallback sequence:
+
+```powershell
+.\scripts\build-image.ps1
+.\scripts\export-image.ps1
+.\scripts\upload-image.ps1
+.\scripts\deploy.ps1
+```
+
+The remote deploy loaded the uploaded image and recreated only the `truebim-structural-calcs` container:
+
+```text
+Loaded image: truebim-structural-calcs:latest
+truebim-structural-calcs   truebim-structural-calcs:latest   Up ...   127.0.0.1:3000->80/tcp
+```
+
+`scripts/deploy-precheck.ps1` was hardened after deployment:
+
+- office URL checks use `curl.exe --noproxy '*'` when available;
+- large office HTTP responses are written to a temp file before parsing;
+- the timeout kill path supports older Windows PowerShell where `Kill($true)` is unavailable.
+
+After this fix, `npm run deploy:precheck` passed and detected the deployed commit:
+
+```text
+[PASS] Office URL / responds - HTTP 200, 474 bytes
+[PASS] Office URL /review responds - HTTP 200, 474 bytes
+[PASS] Office URL /validation-session responds - HTTP 200, 474 bytes
+[PASS] Office URL /diagnostics responds - HTTP 200, 474 bytes
+[PASS] Remote serves current commit - Remote server appears to already serve current commit 5453a1b.
+```
+
+### Post-deploy route checks
+
+Server-side checks:
+
+```text
+curl -I http://127.0.0.1:3000
+HTTP/1.1 200 OK
+
+curl -I http://192.168.22.37/
+HTTP/1.1 200 OK
+
+curl -I http://192.168.22.37/pilot
+HTTP/1.1 200 OK
+
+curl -I http://192.168.22.37/review
+HTTP/1.1 200 OK
+
+curl -I http://192.168.22.37/validation-session
+HTTP/1.1 200 OK
+
+curl -I http://192.168.22.37/release-evidence
+HTTP/1.1 200 OK
+
+curl -I http://192.168.22.37/diagnostics
+HTTP/1.1 200 OK
+```
+
+The deployed bundle contains commit `5453a1b`.
+
+### SP63 benchmark smoke
+
+The deployed JS asset was checked for the SP63 benchmark report/UI strings and benchmark values:
+
+```text
+FOUND_SP63_SECTION
+FOUND_SP63_UI
+FOUND_1366
+FOUND_0861
+FOUND_0626
+FOUND_DRAFT_STRESS
+FOUND_NO_AUTO_VERIFIED
+```
+
+This confirms the deployed app contains:
+
+- `SP63 Interaction Benchmark` report section;
+- compact `SP63 benchmark candidate` UI block;
+- concrete-only utilization value around `1.366`;
+- with-reinforcement utilization value around `0.861`;
+- outer-contour utilization value around `0.626`;
+- existing draft stress formula `v = N / (u * h0)`;
+- text confirming VERIFIED promotion is not automatic.
+
 ## Rollback
 
 Stop only this project:

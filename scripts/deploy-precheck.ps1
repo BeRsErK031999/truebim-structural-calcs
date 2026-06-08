@@ -56,7 +56,11 @@ function Invoke-CheckedCommand {
     [void]$process.Start()
 
     if (-not $process.WaitForExit($TimeoutSeconds * 1000)) {
-      $process.Kill($true)
+      try {
+        $process.Kill($true)
+      } catch {
+        $process.Kill()
+      }
 
       return [pscustomobject]@{
         ExitCode = 124
@@ -118,6 +122,55 @@ function Format-CommandFailure {
   }
 
   return ($message -replace '\s+', ' ').Trim()
+}
+
+function Invoke-OfficeHttpRequest {
+  param(
+    [Parameter(Mandatory = $true)][string]$Url,
+    [int]$TimeoutSeconds = 10
+  )
+
+  $curlCommand = Get-Command curl.exe -ErrorAction SilentlyContinue
+  if ($curlCommand) {
+    $tempFile = [System.IO.Path]::GetTempFileName()
+    try {
+      $curlResult = Invoke-CheckedCommand `
+        -FilePath $curlCommand.Source `
+        -Arguments @(
+          '--silent',
+          '--show-error',
+          '--location',
+          '--noproxy',
+          '*',
+          '--max-time',
+          "$TimeoutSeconds",
+          '--output',
+          $tempFile,
+          '--write-out',
+          '__HTTP_STATUS__:%{http_code}',
+          $Url
+        ) `
+        -TimeoutSeconds ($TimeoutSeconds + 5)
+
+      $statusMatch = [regex]::Match($curlResult.Output.Trim(), '__HTTP_STATUS__:(\d{3})$')
+
+      if ($curlResult.ExitCode -ne 0 -or -not $statusMatch.Success) {
+        throw "curl.exe failed for ${Url}: $(Format-CommandFailure $curlResult)"
+      }
+
+      $statusCode = [int]$statusMatch.Groups[1].Value
+      $content = Get-Content -Raw -LiteralPath $tempFile
+
+      return [pscustomobject]@{
+        StatusCode = $statusCode
+        Content = $content
+      }
+    } finally {
+      Remove-Item -LiteralPath $tempFile -Force -ErrorAction SilentlyContinue
+    }
+  }
+
+  return Invoke-WebRequest -Uri $Url -UseBasicParsing -TimeoutSec $TimeoutSeconds
 }
 
 Write-Host "Deploy precheck for truebim-structural-calcs"
@@ -213,7 +266,7 @@ $officeRoutes = @('/', '/review', '/validation-session', '/diagnostics')
 foreach ($route in $officeRoutes) {
   $url = "$OfficeBaseUrl$route"
   try {
-    $response = Invoke-WebRequest -Uri $url -UseBasicParsing -TimeoutSec 10
+    $response = Invoke-OfficeHttpRequest -Url $url -TimeoutSeconds 10
     Add-Check `
       -Name "Office URL $route responds" `
       -Passed ($response.StatusCode -ge 200 -and $response.StatusCode -lt 400) `
@@ -237,14 +290,14 @@ try {
 
 if ($currentCommit) {
   try {
-    $index = (Invoke-WebRequest -Uri "$OfficeBaseUrl/" -UseBasicParsing -TimeoutSec 10).Content
+    $index = (Invoke-OfficeHttpRequest -Url "$OfficeBaseUrl/" -TimeoutSeconds 10).Content
     $assetMatches = [regex]::Matches($index, 'src="([^"]+\.js)"')
     $commitFound = $false
 
     foreach ($match in $assetMatches) {
       $assetPath = $match.Groups[1].Value
       $assetUrl = if ($assetPath.StartsWith('http')) { $assetPath } else { "$OfficeBaseUrl$assetPath" }
-      $assetContent = (Invoke-WebRequest -Uri $assetUrl -UseBasicParsing -TimeoutSec 10).Content
+      $assetContent = (Invoke-OfficeHttpRequest -Url $assetUrl -TimeoutSeconds 10).Content
       if ($assetContent -match [regex]::Escape($currentCommit)) {
         $commitFound = $true
         break
