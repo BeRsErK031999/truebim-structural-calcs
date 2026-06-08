@@ -33,7 +33,7 @@ export function traceForCenterMoment(
     {
       id: 'moment-eccentricity',
       title: 'Moment eccentricity',
-      description: 'Draft moment transfer stores eccentricities derived by the current moment workflow.',
+      description: 'Draft moment transfer stores eccentricities derived by the current moment workflow. Mx follows the smaller column dimension along X, My follows the larger column dimension along Y.',
       formula: 'ex, ey = draft eccentricity from Mx/My and N',
       substitutedFormula: `Mx = ${formatNullable(input.forces.momentXKnM)} kN*m, My = ${formatNullable(input.forces.momentYKnM)} kN*m, N = ${formatNullable(input.forces.axialForceKn)} kN`,
       result: `ex = ${formatNullable(result.eccentricityX)} mm, ey = ${formatNullable(result.eccentricityY)} mm`,

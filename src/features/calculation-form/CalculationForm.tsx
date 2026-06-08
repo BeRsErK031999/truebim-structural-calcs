@@ -21,6 +21,7 @@ import { FormSection } from './components/FormSection'
 import { NumberField } from './components/NumberField'
 import { SelectField } from './components/SelectField'
 import { ToggleField } from './components/ToggleField'
+import { engineeringHelp } from './engineeringUx'
 
 const caseOptions: Array<{ value: PunchingShearCaseType; label: string; disabled?: boolean }> = [
   { value: 'center', label: 'Центральная прямоугольная колонна' },
@@ -156,7 +157,7 @@ export function CalculationForm() {
     <form className="grid gap-5" onSubmit={handleSubmit(runCalculation)}>
       <FormSection
         title="Расчетный случай"
-        helperText="Center force-only behavior is verified in the current evidence set. Edge, corner, opening, wall, reinforcement, moment, and round-column workflows are draft/pilot geometry and require review evidence."
+        helperText="Выберите расчетную схему. VERIFIED автоматически не присваивается: неподтвержденные сценарии остаются draft/pilot и требуют инженерной проверки."
       >
         <SelectField
           label="Тип случая"
@@ -179,66 +180,154 @@ export function CalculationForm() {
       </FormSection>
 
       <FormSection
-        title="Нагрузки"
-        helperText="Введите расчетную продавливающую силу и моменты. Моменты сохраняются для пилотной проверки и требуют отдельной инженерной валидации."
+        title="Материал плиты"
+        helperText="Класс бетона задает справочные сопротивления для расчета. Значения Rbt/Rsw раскрываются в отчете без изменения расчетных формул."
       >
-        <NumberField
-          label="N"
-          unit="кН"
-          registration={register('forces.axialForceKn', { valueAsNumber: true })}
-          error={errors.forces?.axialForceKn?.message}
-        />
-        <NumberField
-          label="Mx"
-          unit="кН·м"
-          registration={register('forces.momentXKnM', { valueAsNumber: true })}
-          error={errors.forces?.momentXKnM?.message}
-        />
-        <NumberField
-          label="My"
-          unit="кН·м"
-          registration={register('forces.momentYKnM', { valueAsNumber: true })}
-          error={errors.forces?.momentYKnM?.message}
+        <SelectField
+          label="Класс бетона"
+          placeholder="Выберите класс бетона"
+          value={concreteClass}
+          options={concreteClassOptions.map((value) => ({ value, label: value }))}
+          error={errors.concrete?.className?.message}
+          onValueChange={(value) =>
+            setValue('concrete.className', value as ConcreteClassName, {
+              shouldDirty: true,
+              shouldValidate: true,
+            })
+          }
         />
       </FormSection>
 
       <FormSection
-        title="Геометрия плиты"
-        helperText="Геометрия плиты задается в миллиметрах. Пустые и отрицательные значения блокируют запуск расчета."
+        title="Плита"
+        helperText="Геометрия плиты задается в миллиметрах. h0 вводится напрямую, поэтому защитный слой скрыт из интерфейса и остается только внутренним параметром модели."
       >
         <NumberField
-          label="Толщина плиты"
+          label="h - толщина плиты"
           unit="мм"
+          helperText={engineeringHelp.h}
           registration={register('slab.thicknessMm', { valueAsNumber: true })}
           error={errors.slab?.thicknessMm?.message}
         />
         <NumberField
-          label="Рабочая высота h0"
+          label="h0 - рабочая высота"
           unit="мм"
+          helperText={engineeringHelp.h0}
           registration={register('slab.effectiveDepthMm', { valueAsNumber: true })}
           error={errors.slab?.effectiveDepthMm?.message}
-        />
-        <NumberField
-          label="Защитный слой"
-          unit="мм"
-          registration={register('slab.concreteCoverMm', { valueAsNumber: true })}
-          error={errors.slab?.concreteCoverMm?.message}
         />
       </FormSection>
 
       <FormSection
-        title="Геометрия колонны"
-        helperText="Размеры прямоугольной колонны задают контрольный периметр и схему после расчета."
+        title="Поперечная арматура"
+        helperText="Черновой ввод усиления продавливания. Отключенное усиление сохраняет текущую проверенную область center force-only."
+      >
+        <ToggleField
+          checked={shearReinforcementEnabled}
+          label="Учитывать поперечную арматуру"
+          helperText="Включает расчет Asw, qsw, Fsw.ult и Fult для инженерного просмотра."
+          onCheckedChange={(checked) =>
+            setValue('shearReinforcement.enabled', checked, {
+              shouldDirty: true,
+              shouldValidate: true,
+            })
+          }
+        />
+        {shearReinforcementEnabled ? (
+          <>
+            <SelectField
+              label="Класс стали"
+              placeholder="Выберите класс стали"
+              value={shearReinforcementSteelClass ?? 'A400'}
+              options={steelClassOptions.map((value) => ({ value, label: value }))}
+              error={errors.shearReinforcement?.steelClass?.message}
+              onValueChange={(value) =>
+                setValue('shearReinforcement.steelClass', value as ShearReinforcementSteelClass, {
+                  shouldDirty: true,
+                  shouldValidate: true,
+                })
+              }
+            />
+            <SelectField
+              label="Схема армирования"
+              placeholder="Выберите схему"
+              value={shearReinforcementLayoutType ?? 'closed-stirrups'}
+              options={reinforcementLayoutOptions}
+              error={errors.shearReinforcement?.layoutType?.message}
+              onValueChange={(value) =>
+                setValue('shearReinforcement.layoutType', value as ShearReinforcementLayoutType, {
+                  shouldDirty: true,
+                  shouldValidate: true,
+                })
+              }
+            />
+            <NumberField
+              label="Диаметр стержня"
+              min={1}
+              step={1}
+              unit="мм"
+              registration={register('shearReinforcement.barDiameterMm', { valueAsNumber: true })}
+              error={errors.shearReinforcement?.barDiameterMm?.message}
+            />
+            <NumberField
+              label="Шаг стержней"
+              min={1}
+              step={1}
+              unit="мм"
+              registration={register('shearReinforcement.barSpacingMm', { valueAsNumber: true })}
+              error={errors.shearReinforcement?.barSpacingMm?.message}
+            />
+            <NumberField
+              label="Количество рядов"
+              min={1}
+              step={1}
+              unit="шт."
+              registration={register('shearReinforcement.rowCount', { valueAsNumber: true })}
+              error={errors.shearReinforcement?.rowCount?.message}
+            />
+            <NumberField
+              label="Ветвей в ряду"
+              min={1}
+              step={1}
+              unit="шт."
+              registration={register('shearReinforcement.legsPerRow', { valueAsNumber: true })}
+              error={errors.shearReinforcement?.legsPerRow?.message}
+            />
+            <NumberField
+              label="Расстояние до первого ряда"
+              min={1}
+              step={1}
+              unit="мм"
+              registration={register('shearReinforcement.firstRowDistanceMm', { valueAsNumber: true })}
+              error={errors.shearReinforcement?.firstRowDistanceMm?.message}
+            />
+            <NumberField
+              label="Шаг рядов"
+              min={1}
+              step={1}
+              unit="мм"
+              registration={register('shearReinforcement.rowSpacingMm', { valueAsNumber: true })}
+              error={errors.shearReinforcement?.rowSpacingMm?.message}
+            />
+          </>
+        ) : null}
+      </FormSection>
+
+      <FormSection
+        title="Колонна"
+        helperText="Размеры прямоугольной колонны задают контрольный периметр. X принят меньшим размером, Y - большим размером колонны."
       >
         <NumberField
           label="Ширина по X"
           unit="мм"
+          helperText="Меньший размер колонны."
           registration={register('rectColumn.widthXMm', { valueAsNumber: true })}
           error={errors.rectColumn?.widthXMm?.message}
         />
         <NumberField
           label="Высота по Y"
           unit="мм"
+          helperText="Больший размер колонны."
           registration={register('rectColumn.widthYMm', { valueAsNumber: true })}
           error={errors.rectColumn?.widthYMm?.message}
         />
@@ -272,11 +361,6 @@ export function CalculationForm() {
               })
             }
           />
-          {roundColumnPosition === 'edge' || roundColumnPosition === 'corner' ? (
-            <p className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm font-medium text-amber-800">
-              Round edge/corner is not implemented yet.
-            </p>
-          ) : null}
         </FormSection>
       ) : null}
 
@@ -385,21 +469,28 @@ export function CalculationForm() {
       ) : null}
 
       <FormSection
-        title="Материалы"
-        helperText="Класс бетона берется из текущей таблицы черновых сопротивлений без изменения расчетных коэффициентов."
+        title="Нагрузки"
+        helperText="Введите расчетную силу продавливания и моменты. Моменты сохраняются для pilot/draft проверки и требуют отдельной инженерной валидации."
       >
-        <SelectField
-          label="Класс бетона"
-          placeholder="Выберите класс бетона"
-          value={concreteClass}
-          options={concreteClassOptions.map((value) => ({ value, label: value }))}
-          error={errors.concrete?.className?.message}
-          onValueChange={(value) =>
-            setValue('concrete.className', value as ConcreteClassName, {
-              shouldDirty: true,
-              shouldValidate: true,
-            })
-          }
+        <NumberField
+          label="N"
+          unit="кН"
+          registration={register('forces.axialForceKn', { valueAsNumber: true })}
+          error={errors.forces?.axialForceKn?.message}
+        />
+        <NumberField
+          label="Mx - момент в плоскости оси X"
+          unit="кН·м"
+          helperText="В направлении меньшего размера колонны."
+          registration={register('forces.momentXKnM', { valueAsNumber: true })}
+          error={errors.forces?.momentXKnM?.message}
+        />
+        <NumberField
+          label="My - момент в плоскости оси Y"
+          unit="кН·м"
+          helperText="В направлении большего размера колонны."
+          registration={register('forces.momentYKnM', { valueAsNumber: true })}
+          error={errors.forces?.momentYKnM?.message}
         />
       </FormSection>
 
@@ -455,101 +546,6 @@ export function CalculationForm() {
         ) : null}
       </FormSection>
 
-      <FormSection
-        title="Shear Reinforcement"
-        helperText="Draft-only punching shear reinforcement input. Contribution, steel data, and layout assumptions require engineer review."
-      >
-        <ToggleField
-          checked={shearReinforcementEnabled}
-          label="Enable shear reinforcement"
-          helperText="Disabled preserves the current center force-only verified behavior."
-          onCheckedChange={(checked) =>
-            setValue('shearReinforcement.enabled', checked, {
-              shouldDirty: true,
-              shouldValidate: true,
-            })
-          }
-        />
-        {shearReinforcementEnabled ? (
-          <>
-            <SelectField
-              label="Steel class"
-              placeholder="Select steel class"
-              value={shearReinforcementSteelClass ?? 'A400'}
-              options={steelClassOptions.map((value) => ({ value, label: value }))}
-              error={errors.shearReinforcement?.steelClass?.message}
-              onValueChange={(value) =>
-                setValue('shearReinforcement.steelClass', value as ShearReinforcementSteelClass, {
-                  shouldDirty: true,
-                  shouldValidate: true,
-                })
-              }
-            />
-            <SelectField
-              label="Layout type"
-              placeholder="Select layout type"
-              value={shearReinforcementLayoutType ?? 'closed-stirrups'}
-              options={reinforcementLayoutOptions}
-              error={errors.shearReinforcement?.layoutType?.message}
-              onValueChange={(value) =>
-                setValue('shearReinforcement.layoutType', value as ShearReinforcementLayoutType, {
-                  shouldDirty: true,
-                  shouldValidate: true,
-                })
-              }
-            />
-            <NumberField
-              label="Bar diameter"
-              min={1}
-              step={1}
-              unit="mm"
-              registration={register('shearReinforcement.barDiameterMm', { valueAsNumber: true })}
-              error={errors.shearReinforcement?.barDiameterMm?.message}
-            />
-            <NumberField
-              label="Bar spacing"
-              min={1}
-              step={1}
-              unit="mm"
-              registration={register('shearReinforcement.barSpacingMm', { valueAsNumber: true })}
-              error={errors.shearReinforcement?.barSpacingMm?.message}
-            />
-            <NumberField
-              label="Row count"
-              min={1}
-              step={1}
-              unit="rows"
-              registration={register('shearReinforcement.rowCount', { valueAsNumber: true })}
-              error={errors.shearReinforcement?.rowCount?.message}
-            />
-            <NumberField
-              label="Legs per row"
-              min={1}
-              step={1}
-              unit="legs"
-              registration={register('shearReinforcement.legsPerRow', { valueAsNumber: true })}
-              error={errors.shearReinforcement?.legsPerRow?.message}
-            />
-            <NumberField
-              label="First row distance"
-              min={1}
-              step={1}
-              unit="mm"
-              registration={register('shearReinforcement.firstRowDistanceMm', { valueAsNumber: true })}
-              error={errors.shearReinforcement?.firstRowDistanceMm?.message}
-            />
-            <NumberField
-              label="Row spacing"
-              min={1}
-              step={1}
-              unit="mm"
-              registration={register('shearReinforcement.rowSpacingMm', { valueAsNumber: true })}
-              error={errors.shearReinforcement?.rowSpacingMm?.message}
-            />
-          </>
-        ) : null}
-      </FormSection>
-
       <div className="flex flex-wrap gap-3">
         <Button
           className="h-11 rounded-lg"
@@ -568,7 +564,7 @@ export function CalculationForm() {
           onClick={handleReset}
         >
           <RotateCcw className="size-4" />
-          Сбросить к значениям по умолчанию
+          Вернуть значения по умолчанию
         </Button>
         <Button
           className="h-11 rounded-lg"

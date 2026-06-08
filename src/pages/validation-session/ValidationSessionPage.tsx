@@ -209,9 +209,11 @@ export function ValidationSessionPage() {
             <InfoGrid
               items={[
                 ['тип случая', formatCaseType(session.input.caseType)],
+                ['Ширина по X (меньший размер)', `${session.input.rectColumn?.widthXMm ?? session.input.roundColumn?.diameterMm ?? 'n/a'} mm`],
+                ['Высота по Y (больший размер)', `${session.input.rectColumn?.widthYMm ?? session.input.roundColumn?.diameterMm ?? 'n/a'} mm`],
                 ['N', `${session.input.forces.axialForceKn} kN`],
-                ['Mx', `${session.input.forces.momentXKnM} kN*m`],
-                ['My', `${session.input.forces.momentYKnM} kN*m`],
+                ['Mx - момент в плоскости оси X', `${session.input.forces.momentXKnM} kN*m`],
+                ['My - момент в плоскости оси Y', `${session.input.forces.momentYKnM} kN*m`],
                 ['статус', formatCalculationStatus(session.result.status)],
                 ['уровень проверки', formatVerificationLevel(session.result.verificationLevel)],
               ]}

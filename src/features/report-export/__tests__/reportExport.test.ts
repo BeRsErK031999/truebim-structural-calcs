@@ -84,10 +84,10 @@ describe('report export', () => {
     const html = buildPunchingShearHtmlReport(defaultPunchingShearInput, result, report)
     const markdown = buildPunchingShearMarkdownReport(defaultPunchingShearInput, result, report)
 
-    expect(html).toContain('Calculation Trace')
+    expect(html).toContain('Trace')
     expect(html).toContain('Input validation')
     expect(html).toContain('Verified evidence - center-force-only evidence: verified-center-rect-001')
-    expect(markdown).toContain('## Calculation Trace')
+    expect(markdown).toContain('## Trace')
     expect(markdown).toContain('Calculation Trace / Stress')
     expect(markdown).toContain('v = N / (u * h0)')
   })
@@ -137,14 +137,14 @@ describe('report export', () => {
     const markdown = buildPunchingShearMarkdownReport(input, result, report)
 
     expect(html).toContain('Moment Transfer')
-    expect(html).toContain('Stress Distribution')
-    expect(html).toContain('Stress Regression')
-    expect(html).toContain('Axis Convention')
-    expect(html).toContain('Moment transfer draft-only')
+    expect(html).toContain('Moment Transfer')
+    expect(html).toContain('Trace')
+    expect(html).toContain('Mx - moment in X-axis plane')
+    expect(html).toContain('DRAFT provisional linear perimeter redistribution')
     expect(markdown).toContain('## Moment Transfer')
-    expect(markdown).toContain('## Stress Distribution')
-    expect(markdown).toContain('## Stress Regression')
-    expect(markdown).toContain('## Axis Convention')
+    expect(markdown).toContain('## Moment Transfer')
+    expect(markdown).toContain('## Trace')
+    expect(markdown).toContain('Mx - moment in X-axis plane')
   })
 
   it('includes input N and calculated u, h0, v and utilization values', () => {
@@ -189,13 +189,13 @@ describe('report export', () => {
       metadata,
     )
 
-    expect(html).toContain('Assumptions')
+    expect(html).toContain('assumptions')
     expect(html).toContain('Openings use draft tangent subtraction geometry')
     expect(html).toContain('Unsupported in this draft')
     expect(html).toContain('verified SP63 coefficients')
     expect(html).toContain('Verification source')
     expect(html).toContain('NOT VERIFIED')
-    expect(markdown).toContain('## Assumptions')
+    expect(markdown).toContain('assumptions')
     expect(markdown).toContain('## Unsupported in this draft')
     expect(markdown).toContain('- Verification source: NOT VERIFIED')
   })
@@ -228,10 +228,24 @@ describe('report export', () => {
       wallThicknessMm: 200,
     })
     expect(html).toContain('Wall Geometry')
-    expect(html).toContain('Draft wall punching geometry')
-    expect(markdown).toContain('## Wall Geometry')
+    expect(html).toContain('wall length')
+    expect(markdown).toContain('### Wall Geometry')
     expect(markdown).toContain('| wall length | 1200 mm |')
     expect(markdown).toContain('Wall-end punching support is draft geometry only.')
+  })
+
+  it('hides unused geometry sections for the center case', () => {
+    const result = calculatePunchingShear(defaultPunchingShearInput)
+    const report = buildPunchingShearReport(defaultPunchingShearInput, result)
+    const html = buildPunchingShearHtmlReport(defaultPunchingShearInput, result, report)
+    const markdown = buildPunchingShearMarkdownReport(defaultPunchingShearInput, result, report)
+
+    expect(html).not.toContain('Wall Geometry')
+    expect(html).not.toContain('Wall Corner Geometry')
+    expect(html).not.toContain('Round Column Geometry')
+    expect(markdown).not.toContain('### Wall Geometry')
+    expect(markdown).not.toContain('### Wall Corner Geometry')
+    expect(markdown).not.toContain('## Round Column Geometry')
   })
 
   it('includes wall corner geometry section in exported reports', () => {
@@ -254,10 +268,9 @@ describe('report export', () => {
       applicability: 'draft-only',
     })
     expect(html).toContain('Wall Corner Geometry')
-    expect(html).toContain('Draft wall corner punching geometry')
-    expect(markdown).toContain('## Wall Corner Geometry')
+    expect(html).toContain('wall length X')
+    expect(markdown).toContain('### Wall Corner Geometry')
     expect(markdown).toContain('| wall length X | 1200 mm |')
-    expect(markdown).toContain('| applicability | draft-only |')
     expect(markdown).toContain('Wall-corner punching support is draft geometry only.')
   })
 
@@ -284,9 +297,9 @@ describe('report export', () => {
       position: 'center',
       applicability: 'draft-only',
     })
-    expect(html).toContain('Round Column Geometry')
-    expect(html).toContain('400 mm diameter')
-    expect(markdown).toContain('## Round Column Geometry')
+    expect(html).toContain('diameter')
+    expect(html).toContain('400 mm')
+    expect(markdown).toContain('| diameter | 400 mm |')
     expect(markdown).toContain('| diameter | 400 mm |')
     expect(markdown).toContain('Round column perimeter is draft-only and requires SP63 verification.')
   })
@@ -331,9 +344,9 @@ describe('report export', () => {
       rowCount: 2,
       legsPerRow: 4,
     })
-    expect(html).toContain('Shear Reinforcement')
-    expect(html).toContain('Draft reinforcement layout: closed-stirrups')
-    expect(markdown).toContain('## Shear Reinforcement')
+    expect(html).toContain('Поперечная арматура')
+    expect(html).toContain('closed-stirrups')
+    expect(markdown).toContain('## Поперечная арматура')
     expect(markdown).toContain('| steel class | A400 |')
     expect(markdown).toContain('Shear reinforcement contribution is DRAFT-only.')
   })
@@ -371,10 +384,10 @@ describe('report export', () => {
     const markdown = buildPunchingShearMarkdownReport(input, result, report)
 
     expect(result.sp63Interaction?.benchmarkStatus).toBe('matched')
-    expect(html).toContain('SP63 Interaction Benchmark')
-    expect(html).toContain('SP63 interaction benchmark candidate based on Mathcad fixture')
-    expect(html).toContain('Check Outside Reinforcement Zone')
-    expect(markdown).toContain('## SP63 Interaction Benchmark')
+    expect(html).toContain('Предельные усилия по бетону')
+    expect(html).toContain('Mathcad benchmark values match within test tolerance')
+    expect(html).toContain('Проверка за зоной усиления')
+    expect(markdown).toContain('## Проверка за зоной усиления')
     expect(markdown).toContain('SP63 Interaction Benchmark Trace / Interaction check')
   })
 

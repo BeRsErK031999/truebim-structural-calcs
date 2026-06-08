@@ -26,7 +26,7 @@ export function traceForSp63Interaction(
       {
         id: 'sp63-moment-reduction',
         title: 'Moment reduction',
-        description: 'Mathcad benchmark uses half-sum design moments for interaction checks.',
+        description: 'Mathcad benchmark uses half-sum design moments for interaction checks. Mx is in the X-axis plane for the smaller column dimension; My is in the Y-axis plane for the larger column dimension.',
         formula: 'Mx = (Mx.sup + Mx.inf) / 2; My = (My.sup + My.inf) / 2',
         substitutedFormula: `Mx = (${formatNumber(0)} + ${formatNumber(input.forces.momentXKnM)}) / 2; My = (${formatNumber(0)} + ${formatNumber(input.forces.momentYKnM)}) / 2`,
         result: `Mx = ${formatNumber(sp63.Mx)}; My = ${formatNumber(sp63.My)}`,
@@ -38,7 +38,7 @@ export function traceForSp63Interaction(
       {
         id: 'sp63-concrete-capacity',
         title: 'Concrete capacity',
-        description: 'Concrete force and moment limits are calculated from contour area and section moduli.',
+        description: 'Concrete force and moment limits are calculated from contour area and section moduli for column X width (smaller dimension) and Y height (larger dimension).',
         formula: 'Fb.ult = Rbt * Ab; Mx.b.ult = Rbt * Wx * h0; My.b.ult = Rbt * Wy * h0',
         substitutedFormula: `Rbt = ${formatNumber(sp63.Rbt)} MPa; Ab = ${formatNumber(sp63.Ab, 6)} m2; Wx = ${formatNumber(sp63.Wx, 6)} m2; Wy = ${formatNumber(sp63.Wy, 6)} m2`,
         result: `Fb.ult = ${formatNumber(sp63.FbUlt, 3)}; Mx.b.ult = ${formatNumber(sp63.MxBUlt, 3)}; My.b.ult = ${formatNumber(sp63.MyBUlt, 3)}`,
@@ -88,4 +88,3 @@ export function traceForSp63Interaction(
     ] satisfies TraceStep[],
   }
 }
-

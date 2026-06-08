@@ -23,6 +23,21 @@ import {
   type ReportMetadata,
 } from './reportMetadata'
 
+const helpRows: Array<[string, string]> = [
+  ['h', 'Полная толщина плиты, мм.'],
+  ['h0', 'Рабочая высота сечения, задается напрямую пользователем.'],
+  ['Rbt', 'Расчетное сопротивление бетона растяжению.'],
+  ['Rsw', 'Расчетное сопротивление поперечной арматуры.'],
+  ['Ab', 'Площадь расчетного контура продавливания.'],
+  ['Wx', 'Момент сопротивления контура для проверки момента Mx.'],
+  ['Wy', 'Момент сопротивления контура для проверки момента My.'],
+  ['Fb.ult', 'Предельное усилие по бетону на расчетном контуре.'],
+  ['Mx.ult', 'Предельный момент в плоскости оси X.'],
+  ['My.ult', 'Предельный момент в плоскости оси Y.'],
+  ['Fult', 'Предельное усилие с учетом поперечной арматуры.'],
+  ['utilization', 'Коэффициент использования: расчетное воздействие / предельная несущая способность.'],
+]
+
 export function buildPunchingShearHtmlReport(
   input: PunchingShearInput,
   result: PunchingShearResult,
@@ -43,10 +58,11 @@ export function buildPunchingShearHtmlReport(
     body { margin: 0; font-family: Arial, sans-serif; color: #0f172a; background: #f8fafc; }
     main { max-width: 1040px; margin: 0 auto; padding: 32px 20px 48px; }
     h1 { margin: 0 0 12px; font-size: 30px; }
-    h2 { margin: 28px 0 12px; font-size: 20px; }
+    h2 { margin: 30px 0 12px; font-size: 20px; border-bottom: 2px solid #cbd5e1; padding-bottom: 6px; }
+    h3 { margin: 20px 0 10px; font-size: 16px; }
     table { width: 100%; border-collapse: collapse; background: #fff; }
     th, td { border: 1px solid #cbd5e1; padding: 9px 10px; text-align: left; vertical-align: top; }
-    th { background: #e2e8f0; }
+    th { background: #e2e8f0; width: 32%; }
     .warning { margin: 18px 0; padding: 18px; border: 2px solid #b45309; background: #fffbeb; color: #78350f; font-size: 20px; font-weight: 700; }
     .note { color: #475569; line-height: 1.55; }
     .draft { color: #b45309; font-weight: 700; }
@@ -74,132 +90,67 @@ export function buildPunchingShearHtmlReport(
       ['Verification source', reportMetadata.verificationSource],
     ])}
 
-    <h2>Input Data</h2>
+    <h2>Исходные данные</h2>
+    <h3>Материалы</h3>
     ${renderTable([
-      ['case type', input.caseType],
-      ['N', formatValueWithUnit(input.forces.axialForceKn, 'kN')],
-      ['Mx', formatValueWithUnit(input.forces.momentXKnM, 'kN*m')],
-      ['My', formatValueWithUnit(input.forces.momentYKnM, 'kN*m')],
-      ['slab thickness', formatValueWithUnit(input.slab.thicknessMm, 'mm')],
-      ['effective depth', formatValueWithUnit(input.slab.effectiveDepthMm, 'mm')],
-      ['concrete cover', formatValueWithUnit(input.slab.concreteCoverMm, 'mm')],
-      ['column width', formatValueWithUnit(input.rectColumn?.widthXMm ?? input.roundColumn?.diameterMm, 'mm')],
-      ['column height', formatValueWithUnit(input.rectColumn?.widthYMm ?? input.roundColumn?.diameterMm, 'mm')],
-      ['wall length', formatValueWithUnit(input.wall?.wallLength, 'mm')],
-      ['wall thickness', formatValueWithUnit(input.wall?.wallThickness, 'mm')],
-      ['wall length X', formatValueWithUnit(input.wallCorner?.wallLengthX, 'mm')],
-      ['wall length Y', formatValueWithUnit(input.wallCorner?.wallLengthY, 'mm')],
-      ['wall thickness X', formatValueWithUnit(input.wallCorner?.wallThicknessX, 'mm')],
-      ['wall thickness Y', formatValueWithUnit(input.wallCorner?.wallThicknessY, 'mm')],
-      ['wall corner orientation', input.wallCorner?.orientation ?? 'n/a'],
-      ['round diameter', formatValueWithUnit(input.roundColumn?.diameterMm, 'mm')],
-      ['round position', input.roundColumn?.position ?? 'n/a'],
       ['concrete class', input.concrete.className],
-      ['shear reinforcement enabled', String(input.shearReinforcement.enabled)],
+      ['shear reinforcement steel', result.shearReinforcement.steelClass ?? 'n/a'],
+    ])}
+    <h3>Плита</h3>
+    ${renderTable([
+      ['h', formatValueWithUnit(input.slab.thicknessMm, 'mm')],
+      ['h0', formatValueWithUnit(input.slab.effectiveDepthMm, 'mm')],
+    ])}
+    <h3>Колонна</h3>
+    ${renderTable(getColumnRows(input))}
+    ${renderOptionalInputGeometry(input)}
+    <h3>Нагрузки</h3>
+    ${renderTable([
+      ['N', formatValueWithUnit(input.forces.axialForceKn, 'kN')],
+      ['Mx - moment in X-axis plane', formatValueWithUnit(input.forces.momentXKnM, 'kN*m')],
+      ['My - moment in Y-axis plane', formatValueWithUnit(input.forces.momentYKnM, 'kN*m')],
+      ['Mx convention', 'direction of the smaller column dimension'],
+      ['My convention', 'direction of the larger column dimension'],
     ])}
 
-    <h2>Geometry</h2>
+    <h2>Справочные данные</h2>
     ${renderTable([
-      ['control perimeter', formatValueWithUnit(result.controlPerimeterMm, 'mm')],
-      ['effective depth', formatValueWithUnit(result.effectiveDepthMm, 'mm')],
+      ['Rbt', formatValueWithUnit(result.sp63Interaction?.Rbt, 'MPa', 3)],
+      ['Rsw', formatValueWithUnit(result.sp63Interaction?.Rsw, 'MPa', 3)],
+      ['assumptions', reportAssumptions.join('; ')],
+    ])}
+    <h3>Engineering Help</h3>
+    ${renderTable(helpRows)}
+
+    <h2>Вычисления</h2>
+    <h3>Контур продавливания</h3>
+    ${renderTable([
+      ['control perimeter u', formatValueWithUnit(result.controlPerimeterMm, 'mm')],
+      ['effective depth h0', formatValueWithUnit(result.effectiveDepthMm, 'mm')],
       ['segment count', String(result.perimeter.segments.length)],
-      ['bounding box minX', formatValueWithUnit(result.perimeter.boundingBox.minX, 'mm')],
-      ['bounding box minY', formatValueWithUnit(result.perimeter.boundingBox.minY, 'mm')],
       ['bounding box width', formatValueWithUnit(result.perimeter.boundingBox.width, 'mm')],
       ['bounding box height', formatValueWithUnit(result.perimeter.boundingBox.height, 'mm')],
-    ])}
-    <h2>Round Column Geometry</h2>
-    ${renderTable([
-      ['enabled', String(input.caseType === 'round')],
-      ['diameter', formatValueWithUnit(input.roundColumn?.diameterMm, 'mm')],
-      ['position', input.roundColumn?.position ?? 'n/a'],
-      ['control perimeter', formatValueWithUnit(result.controlPerimeterMm, 'mm')],
       ['draft formula', 'v = N / (u * h0)'],
-      ['applicability', 'draft-only'],
-      ['warnings', result.perimeter.warnings.join('; ') || 'none'],
     ])}
-    <h2>Wall Geometry</h2>
-    ${renderTable([
-      ['enabled', String(input.caseType === 'wall-end')],
-      ['wall length', formatValueWithUnit(input.wall?.wallLength, 'mm')],
-      ['wall thickness', formatValueWithUnit(input.wall?.wallThickness, 'mm')],
-      ['control perimeter', formatValueWithUnit(result.controlPerimeterMm, 'mm')],
-      ['geometry warnings', result.perimeter.warnings.join('; ') || 'none'],
-    ])}
-    <h2>Wall Corner Geometry</h2>
-    ${renderTable([
-      ['enabled', String(input.caseType === 'wall-corner')],
-      ['wall length X', formatValueWithUnit(input.wallCorner?.wallLengthX, 'mm')],
-      ['wall length Y', formatValueWithUnit(input.wallCorner?.wallLengthY, 'mm')],
-      ['wall thickness X', formatValueWithUnit(input.wallCorner?.wallThicknessX, 'mm')],
-      ['wall thickness Y', formatValueWithUnit(input.wallCorner?.wallThicknessY, 'mm')],
-      ['orientation', input.wallCorner?.orientation ?? 'n/a'],
-      ['control perimeter', formatValueWithUnit(result.controlPerimeterMm, 'mm')],
-      ['applicability', 'draft-only'],
-      ['geometry warnings', result.perimeter.warnings.join('; ') || 'none'],
-    ])}
-    <h2>Boundary Effects</h2>
-    ${renderTable([
-      ['edge affected', String(result.perimeter.edgeAffected)],
-      ['corner affected', String(result.perimeter.cornerAffected)],
-      ['removed perimeter', formatValueWithUnit(result.perimeter.removedPerimeterMm, 'mm')],
-      ['clipped perimeter', formatValueWithUnit(result.perimeter.clippedPerimeterMm, 'mm')],
-    ])}
-    <h2>Openings</h2>
-    ${renderTable([
-      ['opening count', String(input.openings.length)],
-      ['affected openings', result.perimeter.clippingMetadata.affectedOpeningIds.join(', ') || 'none'],
-      ['removed segments', String(result.perimeter.removedSegments.filter((segment) => segment.removedBy === 'opening').length)],
-      ['tangent geometry', String(result.perimeter.openingTangents.length)],
-    ])}
-    <h2>Geometry Verification</h2>
-    ${renderTable([
-      ['clipped perimeter', formatValueWithUnit(result.perimeter.clippedPerimeterMm, 'mm')],
-      ['removed perimeter', formatValueWithUnit(result.perimeter.removedPerimeterMm, 'mm')],
-      ['removed segments', String(result.perimeter.removedSegments.length)],
-      ['tangent count', String(result.perimeter.openingTangents.length)],
-      ['opening affected', String(result.perimeter.openingAffected)],
-      ['boundary classification', result.perimeter.clippingMetadata.boundaryCondition],
-    ])}
-    <h2>Multiple Control Perimeters</h2>
-    <p class="draft">Multiple contour selection is draft-only and requires SP63 verification.</p>
+    <h3>Ab / Ix / Iy / Wx / Wy</h3>
+    ${renderSp63Geometry(result)}
+
+    <h2>Предельные усилия по бетону</h2>
+    ${renderConcreteLimitForces(result)}
+
+    <h2>Поперечная арматура</h2>
+    ${renderShearReinforcement(result)}
+
+    <h2>Проверка без поперечной арматуры</h2>
+    ${renderConcreteOnlyCheck(result)}
+
+    <h2>Проверка с поперечной арматурой</h2>
+    ${renderReinforcedCheck(result)}
+
+    <h2>Проверка за зоной усиления</h2>
+    ${renderOuterContourCheck(result)}
+
     ${renderMultipleControlPerimeters(result)}
-    <h2>Shear Reinforcement</h2>
-    ${renderTable([
-      ['enabled', String(input.shearReinforcement.enabled)],
-      ['steel class', result.shearReinforcement.steelClass ?? 'n/a'],
-      ['layout type', result.shearReinforcement.layoutType ?? 'n/a'],
-      ['bar diameter', formatValueWithUnit(result.shearReinforcement.barDiameterMm, 'mm')],
-      ['bar spacing', formatValueWithUnit(result.shearReinforcement.barSpacingMm, 'mm')],
-      ['rows', String(result.shearReinforcement.rowCount)],
-      ['legs per row', String(result.shearReinforcement.legsPerRow)],
-      ['total legs', String(result.shearReinforcement.totalLegs)],
-      ['area', formatValueWithUnit(result.reinforcementAreaMm2, 'mm2', 2)],
-      ['draft contribution', formatValueWithUnit(result.reinforcementContributionN, 'N', 2)],
-      ['draft capacity with reinforcement', formatValueWithUnit(result.draftCapacityWithReinforcementN, 'N', 2)],
-      ['utilization with reinforcement', formatUtilization(result.utilizationWithReinforcement)],
-      ['warnings', result.reinforcementWarnings.join('; ') || 'none'],
-    ])}
-    ${renderSp63InteractionBenchmark(result)}
-    <h2>Verification Readiness</h2>
-    ${renderTable([
-      ['geometry draft-ready', String(result.perimeter.perimeterMm > 0)],
-      ['stress draft-ready', String(result.shearStressMpa !== null || result.stressDistribution !== null)],
-      ['verified arithmetic available', String(result.verifiedFeatures.length > 0)],
-      ['geometry verified', String(result.verifiedFeatures.includes('center-force-only'))],
-      ['stress verified', String(result.verifiedFeatures.includes('center-force-only'))],
-      ['moment transfer verified', String(result.verifiedFeatures.includes('center-moment-transfer'))],
-    ])}
-    <h2>Verification Capabilities</h2>
-    <h3>Verified</h3>
-    ${renderFeatureList(result.verifiedFeatures)}
-    <h3>Draft</h3>
-    ${renderFeatureList(result.draftFeatures)}
-    <h2>Verification Evidence</h2>
-    ${renderEvidence(result)}
-    <h2>Related Knowledge</h2>
-    ${renderRelatedKnowledge(relatedKnowledge)}
-    ${renderSegments(result)}
     ${renderSvg(result)}
 
     <h2>Calculation Summary</h2>
@@ -215,68 +166,32 @@ export function buildPunchingShearHtmlReport(
       ['passed', result.passed === null ? 'not evaluated' : String(result.passed)],
     ])}
 
-    <h2>Calculation Trace</h2>
-    ${renderCalculationTrace(report)}
-
     <h2>Moment Transfer</h2>
     ${renderTable([
       ['status', result.momentTransfer.status],
-      ['Mx', formatValueWithUnit(input.forces.momentXKnM, 'kN*m')],
-      ['My', formatValueWithUnit(input.forces.momentYKnM, 'kN*m')],
+      ['Mx - moment in X-axis plane', formatValueWithUnit(input.forces.momentXKnM, 'kN*m')],
+      ['My - moment in Y-axis plane', formatValueWithUnit(input.forces.momentYKnM, 'kN*m')],
       ['eccentricity X', formatValueWithUnit(result.eccentricityX, 'mm', 3)],
       ['eccentricity Y', formatValueWithUnit(result.eccentricityY, 'mm', 3)],
       ['max stress', formatValueWithUnit(result.maxShearStressMpa, 'MPa', 3)],
       ['min stress', formatValueWithUnit(result.minShearStressMpa, 'MPa', 3)],
       ['redistribution notes', 'DRAFT provisional linear perimeter redistribution; not SP63 verified'],
     ])}
-    <p class="draft">Moment transfer draft-only. Verify against SP63. Stress redistribution is not verified.</p>
 
-    <h2>Moment Verification</h2>
-    ${renderTable([
-      ['eccentricity X', formatValueWithUnit(result.eccentricityX, 'mm', 3)],
-      ['eccentricity Y', formatValueWithUnit(result.eccentricityY, 'mm', 3)],
-      ['transfer factor X', 'draft metadata only'],
-      ['transfer factor Y', 'draft metadata only'],
-      ['max stress', formatValueWithUnit(result.maxShearStressMpa, 'MPa', 3)],
-      ['min stress', formatValueWithUnit(result.minShearStressMpa, 'MPa', 3)],
-      ['stress point count', String(result.stressDistribution?.points.length ?? 0)],
-      ['stress distribution metadata', result.stressDiagramMetadata?.method ?? 'disabled'],
-    ])}
+    <h2>Verification Capabilities</h2>
+    <h3>Verified</h3>
+    ${renderFeatureList(result.verifiedFeatures)}
+    <h3>Draft</h3>
+    ${renderFeatureList(result.draftFeatures)}
+    <h2>Verification Evidence</h2>
+    ${renderEvidence(result)}
+    <h2>Related Knowledge</h2>
+    ${renderRelatedKnowledge(relatedKnowledge)}
 
-    <h2>Stress Distribution</h2>
-    ${renderTable([
-      ['status', result.stressDistribution?.status ?? 'disabled'],
-      ['point count', String(result.stressDistribution?.points.length ?? 0)],
-      ['segment count', String(result.stressDistribution?.segmentStresses.length ?? 0)],
-      ['base stress', formatValueWithUnit(result.stressDistribution?.baseStressMpa ?? result.shearStressMpa, 'MPa', 3)],
-      ['method', result.stressDiagramMetadata?.method ?? 'draft-linear-perimeter-redistribution'],
-      ['formulas verified', String(result.stressDiagramMetadata?.formulasVerified ?? false)],
-    ])}
+    <h2>Calculation Trace</h2>
+    ${renderCalculationTrace(report)}
 
-    <h2>Stress Regression</h2>
-    ${renderTable([
-      ['checksum', String(report.stressRegressionSummary.checksum)],
-      ['drift detected', String(report.stressRegressionSummary.driftDetected)],
-      ['expected vs actual', String(report.stressRegressionSummary.expectedVsActual)],
-      ['tolerance', String(report.stressRegressionSummary.tolerance)],
-      ['regression status', String(report.stressRegressionSummary.regressionStatus)],
-    ])}
-
-    <h2>Axis Convention</h2>
-    ${renderTable([
-      ['X positive direction', String(report.axisConventionSummary.xPositiveDirection)],
-      ['Y positive direction', String(report.axisConventionSummary.yPositiveDirection)],
-      ['Mx sign convention', String(report.axisConventionSummary.momentXSignConvention)],
-      ['My sign convention', String(report.axisConventionSummary.momentYSignConvention)],
-    ])}
-
-    <h2>Assumptions</h2>
-    <ul>${reportAssumptions.map((assumption) => `<li>${escapeHtml(assumption)}</li>`).join('')}</ul>
-
-    <h2>Unsupported in this draft</h2>
-    <ul>${unsupportedDraftFeatures.map((feature) => `<li>${escapeHtml(feature)}</li>`).join('')}</ul>
-
-    <h2>Warnings</h2>
+    <h2>Предупреждения</h2>
     <ul>${warnings.map((warning) => `<li>${escapeHtml(warning)}</li>`).join('')}</ul>
 
     <h2>Verification Status</h2>
@@ -294,11 +209,149 @@ export function buildPunchingShearHtmlReport(
       ['draft features', formatInlineFeatures(result.draftFeatures)],
     ])}
 
+    <h2>Unsupported in this draft</h2>
+    <ul>${unsupportedDraftFeatures.map((feature) => `<li>${escapeHtml(feature)}</li>`).join('')}</ul>
+
     <h2>Source Report Notes</h2>
     <ul>${report.calculationSteps.map((step) => `<li>${escapeHtml(step)}</li>`).join('')}</ul>
   </main>
 </body>
 </html>`
+}
+
+function getColumnRows(input: PunchingShearInput): Array<[string, string]> {
+  if (input.caseType === 'round') {
+    return [
+      ['diameter', formatValueWithUnit(input.roundColumn?.diameterMm, 'mm')],
+      ['position', input.roundColumn?.position ?? 'n/a'],
+    ]
+  }
+
+  return [
+    ['Ширина по X (меньший размер)', formatValueWithUnit(input.rectColumn?.widthXMm, 'mm')],
+    ['Высота по Y (больший размер)', formatValueWithUnit(input.rectColumn?.widthYMm, 'mm')],
+  ]
+}
+
+function renderOptionalInputGeometry(input: PunchingShearInput) {
+  if (input.caseType === 'wall-end') {
+    return `<h3>Wall Geometry</h3>${renderTable([
+      ['wall length', formatValueWithUnit(input.wall?.wallLength, 'mm')],
+      ['wall thickness', formatValueWithUnit(input.wall?.wallThickness, 'mm')],
+    ])}`
+  }
+
+  if (input.caseType === 'wall-corner') {
+    return `<h3>Wall Corner Geometry</h3>${renderTable([
+      ['wall length X', formatValueWithUnit(input.wallCorner?.wallLengthX, 'mm')],
+      ['wall length Y', formatValueWithUnit(input.wallCorner?.wallLengthY, 'mm')],
+      ['wall thickness X', formatValueWithUnit(input.wallCorner?.wallThicknessX, 'mm')],
+      ['wall thickness Y', formatValueWithUnit(input.wallCorner?.wallThicknessY, 'mm')],
+      ['orientation', input.wallCorner?.orientation ?? 'n/a'],
+    ])}`
+  }
+
+  if (input.caseType === 'opening') {
+    return `<h3>Openings</h3>${renderTable([
+      ['opening count', String(input.openings.length)],
+      ['first opening width X', formatValueWithUnit(input.openings[0]?.widthXMm, 'mm')],
+      ['first opening width Y', formatValueWithUnit(input.openings[0]?.widthYMm, 'mm')],
+      ['first opening center X', formatValueWithUnit(input.openings[0]?.centerXMm, 'mm')],
+      ['first opening center Y', formatValueWithUnit(input.openings[0]?.centerYMm, 'mm')],
+    ])}`
+  }
+
+  return ''
+}
+
+function renderSp63Geometry(result: PunchingShearResult) {
+  const sp63 = result.sp63Interaction
+
+  if (!sp63) {
+    return renderTable([
+      ['Ab', 'n/a'],
+      ['Ix', 'n/a'],
+      ['Iy', 'n/a'],
+      ['Wx', 'n/a'],
+      ['Wy', 'n/a'],
+      ['note', 'SP63 interaction benchmark candidate is not available for this input.'],
+    ])
+  }
+
+  return renderTable([
+    ['a', formatValueWithUnit(sp63.a, 'm', 3)],
+    ['b', formatValueWithUnit(sp63.b, 'm', 3)],
+    ['u', formatValueWithUnit(sp63.u, 'm', 3)],
+    ['Ab', formatValueWithUnit(sp63.Ab, 'm2', 3)],
+    ['Ix', 'not exported by benchmark model'],
+    ['Iy', 'not exported by benchmark model'],
+    ['Wx', formatValueWithUnit(sp63.Wx, 'm2', 3)],
+    ['Wy', formatValueWithUnit(sp63.Wy, 'm2', 3)],
+  ])
+}
+
+function renderConcreteLimitForces(result: PunchingShearResult) {
+  const sp63 = result.sp63Interaction
+
+  if (!sp63) {
+    return '<p class="note">SP63 concrete limit forces are not available for this input.</p>'
+  }
+
+  return renderTable([
+    ['Fb.ult', formatValueWithUnit(sp63.FbUlt, 'kN', 3)],
+    ['Mx.b.ult', formatValueWithUnit(sp63.MxBUlt, 'kN*m', 3)],
+    ['My.b.ult', formatValueWithUnit(sp63.MyBUlt, 'kN*m', 3)],
+  ])
+}
+
+function renderShearReinforcement(result: PunchingShearResult) {
+  const sp63 = result.sp63Interaction
+
+  return renderTable([
+    ['enabled', String(result.shearReinforcement.enabled)],
+    ['steel class', result.shearReinforcement.steelClass ?? 'n/a'],
+    ['layout type', result.shearReinforcement.layoutType ?? 'n/a'],
+    ['Asw', formatValueWithUnit(sp63?.Asw ?? result.reinforcementAreaMm2, sp63 ? 'cm2' : 'mm2', 3)],
+    ['qsw', formatValueWithUnit(sp63?.qsw, 'kN/m', 3)],
+    ['Fsw.ult', formatValueWithUnit(sp63?.FswUlt, 'kN', 3)],
+    ['Fult', formatValueWithUnit(sp63?.Fult, 'kN', 3)],
+    ['warnings', result.reinforcementWarnings.join('; ') || 'none'],
+  ])
+}
+
+function renderConcreteOnlyCheck(result: PunchingShearResult) {
+  const sp63 = result.sp63Interaction
+
+  return renderTable([
+    ['interaction', formatUtilization(sp63?.utilizationConcreteOnly)],
+    ['force cap', formatUtilization(sp63?.forceCapConcreteOnly)],
+    ['result', sp63 ? formatPassFail(sp63.utilizationConcreteOnly <= 1) : 'n/a'],
+  ])
+}
+
+function renderReinforcedCheck(result: PunchingShearResult) {
+  const sp63 = result.sp63Interaction
+
+  return renderTable([
+    ['interaction', formatUtilization(sp63?.utilizationWithReinforcement)],
+    ['result', sp63?.utilizationWithReinforcement === null || sp63?.utilizationWithReinforcement === undefined ? 'n/a' : formatPassFail(sp63.utilizationWithReinforcement <= 1)],
+  ])
+}
+
+function renderOuterContourCheck(result: PunchingShearResult) {
+  const outerContour = result.sp63Interaction?.outerContour
+
+  if (!outerContour) {
+    return '<p class="note">Outer contour check is not available for this input.</p>'
+  }
+
+  return renderTable([
+    ['outer contour asw', formatValueWithUnit(outerContour.asw, 'm', 3)],
+    ["u'", formatValueWithUnit(outerContour.uPrime, 'm', 3)],
+    ["F'", formatValueWithUnit(outerContour.FPrime, 'kN', 3)],
+    ['outer contour utilization', formatUtilization(outerContour.utilization)],
+    ['result', formatPassFail(outerContour.utilization <= 1)],
+  ])
 }
 
 function renderRelatedKnowledge(entries: ReturnType<typeof getRelatedKnowledgeEntries>) {
@@ -317,16 +370,18 @@ function renderRelatedKnowledge(entries: ReturnType<typeof getRelatedKnowledgeEn
 
 function renderMultipleControlPerimeters(result: PunchingShearResult) {
   if (result.contourComparison.length === 0) {
-    return '<p class="note">Multiple control perimeters disabled.</p>'
+    return ''
   }
 
-  return renderTable([
-    ['contour id', 'offset | perimeter | draft stress | utilization | selected | warnings'],
-    ...result.contourComparison.map((contour) => [
-      contour.contourId,
-      `${formatValueWithUnit(contour.offsetMm, 'mm')} | ${formatValueWithUnit(contour.perimeterMm, 'mm')} | ${formatValueWithUnit(contour.draftStressMpa, 'MPa', 3)} | ${formatUtilization(contour.utilization)} | ${contour.selected ? 'yes' : 'no'} | ${contour.warnings.join('; ') || 'none'}`,
-    ] satisfies [string, string]),
-  ])
+  return `<h2>Multiple Control Perimeters</h2>
+    <p class="draft">Multiple contour selection is draft-only and requires SP63 verification.</p>
+    ${renderTable([
+      ['contour id', 'offset | perimeter | draft stress | utilization | selected | warnings'],
+      ...result.contourComparison.map((contour) => [
+        contour.contourId,
+        `${formatValueWithUnit(contour.offsetMm, 'mm')} | ${formatValueWithUnit(contour.perimeterMm, 'mm')} | ${formatValueWithUnit(contour.draftStressMpa, 'MPa', 3)} | ${formatUtilization(contour.utilization)} | ${contour.selected ? 'yes' : 'no'} | ${contour.warnings.join('; ') || 'none'}`,
+      ] satisfies [string, string]),
+    ])}`
 }
 
 function renderCalculationTrace(report: PunchingShearReportModel) {
@@ -345,80 +400,6 @@ function renderCalculationTrace(report: PunchingShearReportModel) {
       `${step.formula} | ${step.substitutedFormula} | ${step.result} ${step.units} | ${formatTraceSourceLabel(step.sourceType)} - ${step.sourceReference}${step.warnings.length > 0 ? ` | warnings: ${step.warnings.join('; ')}` : ''}`,
     ] satisfies [string, string]),
   ])
-}
-
-function renderSp63InteractionBenchmark(result: PunchingShearResult) {
-  const sp63 = result.sp63Interaction
-
-  if (!sp63) {
-    return '<h2>SP63 Interaction Benchmark</h2><p class="note">SP63 interaction benchmark candidate is not available for this input.</p>'
-  }
-
-  return `
-    <h2>SP63 Interaction Benchmark</h2>
-    <p class="draft">SP63 interaction benchmark candidate based on Mathcad fixture. Not VERIFIED for design use.</p>
-    <h3>Input Data</h3>
-    ${renderTable([
-      ['F', formatValueWithUnit(sp63.F, 'kN', 3)],
-      ['Mx design', formatValueWithUnit(sp63.Mx, 'kN*m', 3)],
-      ['My design', formatValueWithUnit(sp63.My, 'kN*m', 3)],
-      ['benchmark status', sp63.benchmarkStatus],
-    ])}
-    <h3>Reference Data</h3>
-    ${renderTable([
-      ['Rbt', formatValueWithUnit(sp63.Rbt, 'MPa', 3)],
-      ['Rsw', formatValueWithUnit(sp63.Rsw, 'MPa', 3)],
-    ])}
-    <h3>Control Contour Geometry</h3>
-    ${renderTable([
-      ['a', formatValueWithUnit(sp63.a, 'm', 3)],
-      ['b', formatValueWithUnit(sp63.b, 'm', 3)],
-      ['u', formatValueWithUnit(sp63.u, 'm', 3)],
-      ['Ab', formatValueWithUnit(sp63.Ab, 'm2', 3)],
-      ['Wx', formatValueWithUnit(sp63.Wx, 'm2', 3)],
-      ['Wy', formatValueWithUnit(sp63.Wy, 'm2', 3)],
-    ])}
-    <h3>Concrete Limit Forces</h3>
-    ${renderTable([
-      ['Fb.ult', formatValueWithUnit(sp63.FbUlt, 'kN', 3)],
-      ['Mx.b.ult', formatValueWithUnit(sp63.MxBUlt, 'kN*m', 3)],
-      ['My.b.ult', formatValueWithUnit(sp63.MyBUlt, 'kN*m', 3)],
-    ])}
-    <h3>Shear Reinforcement</h3>
-    ${renderTable([
-      ['sw1', formatValueWithUnit(sp63.sw1, 'mm', 3)],
-      ['sw', formatValueWithUnit(sp63.sw, 'mm', 3)],
-      ['nw', String(sp63.nw)],
-      ['Asw', formatValueWithUnit(sp63.Asw, 'cm2', 3)],
-      ['qsw', formatValueWithUnit(sp63.qsw, 'kN/m', 3)],
-      ['Fsw.ult', formatValueWithUnit(sp63.FswUlt, 'kN', 3)],
-      ['Fult', formatValueWithUnit(sp63.Fult, 'kN', 3)],
-      ['Mx.ult', formatValueWithUnit(sp63.MxUlt, 'kN*m', 3)],
-      ['My.ult', formatValueWithUnit(sp63.MyUlt, 'kN*m', 3)],
-    ])}
-    <h3>Check Without Shear Reinforcement</h3>
-    ${renderTable([
-      ['utilization concrete-only', formatUtilization(sp63.utilizationConcreteOnly)],
-      ['force cap concrete-only', formatUtilization(sp63.forceCapConcreteOnly)],
-    ])}
-    <h3>Check With Shear Reinforcement</h3>
-    ${renderTable([
-      ['utilization with reinforcement', formatUtilization(sp63.utilizationWithReinforcement)],
-    ])}
-    <h3>Check Outside Reinforcement Zone</h3>
-    ${renderTable([
-      ['asw', formatValueWithUnit(sp63.outerContour?.asw, 'm', 3)],
-      ["u'", formatValueWithUnit(sp63.outerContour?.uPrime, 'm', 3)],
-      ["F'", formatValueWithUnit(sp63.outerContour?.FPrime, 'kN', 3)],
-      ['outer contour utilization', formatUtilization(sp63.outerContour?.utilization)],
-    ])}
-    <h3>Mathcad Benchmark Comparison</h3>
-    ${renderTable([
-      ['concrete-only expected', '1.366'],
-      ['with reinforcement expected', '0.861'],
-      ['outer contour expected', '0.626'],
-      ['status', sp63.benchmarkStatus],
-    ])}`
 }
 
 function renderFeatureList(features: string[]) {
@@ -447,20 +428,6 @@ function formatInlineFeatures(features: string[]) {
 
 function getPartialReportFeatures(result: PunchingShearResult) {
   return result.verificationLevel === 'partial' ? result.draftFeatures : []
-}
-
-function renderSegments(result: PunchingShearResult) {
-  if (result.perimeter.segments.length === 0) {
-    return '<p class="note">No segments available.</p>'
-  }
-
-  return `<h2>Segments</h2>${renderTable([
-    ['id', 'kind | start | end | length'],
-    ...result.perimeter.segments.map((segment) => [
-      segment.id,
-      `${segment.kind} | (${formatValueWithUnit(segment.start.x, 'mm')}, ${formatValueWithUnit(segment.start.y, 'mm')}) | (${formatValueWithUnit(segment.end.x, 'mm')}, ${formatValueWithUnit(segment.end.y, 'mm')}) | ${formatValueWithUnit(segment.lengthMm, 'mm')}`,
-    ] satisfies [string, string]),
-  ])}`
 }
 
 function renderSvg(result: PunchingShearResult) {
@@ -499,7 +466,6 @@ function renderSvgElement(element: SvgSketchElement): string {
     const label = element.label
       ? `<text x="${(element.start.x + element.end.x) / 2}" y="${(element.start.y + element.end.y) / 2 - 8}" fill="#475569" font-size="18" text-anchor="middle">${escapeHtml(element.label)}</text>`
       : ''
-
     const marker =
       element.role === 'dimension' ||
       element.role === 'moment-arrow' ||
@@ -555,6 +521,10 @@ function createReportWarnings(result: PunchingShearResult) {
       'Verify against SP63 before design use',
     ]),
   )
+}
+
+function formatPassFail(value: boolean) {
+  return value ? 'pass' : 'fail'
 }
 
 function escapeHtml(value: string) {

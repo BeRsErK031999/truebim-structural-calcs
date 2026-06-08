@@ -8,6 +8,7 @@ type NumberFieldProps = {
   unit: string
   registration: UseFormRegisterReturn
   error?: string
+  helperText?: string
   min?: number
   step?: number
 }
@@ -17,6 +18,7 @@ export function NumberField({
   unit,
   registration,
   error,
+  helperText,
   min = 0,
   step = 1,
 }: NumberFieldProps) {
@@ -35,6 +37,7 @@ export function NumberField({
         type="number"
         {...registration}
       />
+      {helperText ? <p className="text-xs leading-5 text-slate-500">{helperText}</p> : null}
       {error ? <p className="text-sm leading-5 text-red-600">{error}</p> : null}
     </div>
   )
