@@ -9,6 +9,7 @@
   "standard": "SP63.13330.2018",
   "caseType": "center",
   "verificationLevel": "draft",
+  "benchmarkStatus": "matched",
   "input": {
     "caseType": "center",
     "forces": {

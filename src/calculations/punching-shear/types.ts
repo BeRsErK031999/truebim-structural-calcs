@@ -13,6 +13,7 @@ import type { Segment2D } from './domain/segment'
 import type { PunchingSketchModel } from './sketch/svg'
 import type { TraceSection } from './trace/traceSection'
 import type { VerificationEvidence, VerificationLevel, VerifiedFeatureId } from './verified/verifiedMode'
+import type { Sp63InteractionResult } from './sp63'
 import type {
   ContourComparisonRow,
   ControlContour,
@@ -280,6 +281,7 @@ export type PunchingShearResult = {
   reinforcementWarnings: string[]
   svgModel: PunchingSketchModel
   momentTransfer: MomentTransferResult
+  sp63Interaction: Sp63InteractionResult | null
   verifiedMode: VerificationLevel
   verificationLevel: VerificationLevel
   verifiedFeatures: VerifiedFeatureId[]
@@ -313,6 +315,7 @@ export type PunchingShearReportModel = {
   stressDistributionSummary: Record<string, string | number | boolean | null>
   stressRegressionSummary: Record<string, string | number | boolean | null>
   axisConventionSummary: Record<string, string | number | boolean | null>
+  sp63InteractionSummary: Record<string, string | number | boolean | null>
   verificationCapabilities: {
     verified: string[]
     draft: string[]

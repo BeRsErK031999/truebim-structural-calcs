@@ -13,6 +13,7 @@ import { traceForMultipleContours } from './traceForMultipleContours'
 import { traceForOpenings } from './traceForOpenings'
 import { traceForRoundColumn } from './traceForRoundColumn'
 import { traceForShearReinforcement } from './traceForShearReinforcement'
+import { traceForSp63Interaction } from './traceForSp63Interaction'
 import { traceForWallCorner } from './traceForWallCorner'
 import { traceForWallEnd } from './traceForWallEnd'
 import type { TraceSection } from './traceSection'
@@ -26,6 +27,7 @@ export const traceBuilderRegistry = [
   'multiple-contours',
   'shear-reinforcement',
   'round-column',
+  'sp63-interaction',
   'draft-unsupported',
 ] as const
 
@@ -42,6 +44,7 @@ export function buildPunchingShearTrace(
     traceForMultipleContours(input, result),
     traceForShearReinforcement(input, result),
     traceForRoundColumn(input, result),
+    traceForSp63Interaction(input, result),
     traceForDraftUnsupported(input, result),
   ].filter((section): section is TraceSection => section !== null)
 }

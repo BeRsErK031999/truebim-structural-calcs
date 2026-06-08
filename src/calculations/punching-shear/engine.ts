@@ -12,6 +12,7 @@ import {
 import { punchingShearInputSchema } from './schemas'
 import { buildPunchingSketchModel } from './sketch/punchingSketch'
 import { summarizeShearReinforcement } from './reinforcement/shearReinforcement'
+import { calculateSp63MathcadBenchmark } from './sp63'
 import { knToN, normalizePunchingShearInput } from './units'
 import { applyVerifiedStatus, buildVerifiedStatus } from './verified/verifiedStatus'
 import type { PunchingShearInput, PunchingShearResult } from './types'
@@ -117,6 +118,7 @@ export function calculatePunchingShear(input: PunchingShearInput): PunchingShear
     concreteCapacityN,
     designDemandN,
   )
+  const sp63Interaction = calculateSp63MathcadBenchmark(normalizedInput)
   const effectiveUtilization =
     shearReinforcement.utilizationWithReinforcement ?? utilizationRatio
   const passed = effectiveUtilization <= 1
@@ -146,12 +148,14 @@ export function calculatePunchingShear(input: PunchingShearInput): PunchingShear
     draftCapacityWithReinforcementN: shearReinforcement.draftCapacityWithReinforcementN,
     utilizationWithReinforcement: shearReinforcement.utilizationWithReinforcement,
     reinforcementWarnings: shearReinforcement.warnings,
+    sp63Interaction,
     warnings: [
       ...draftScopeWarnings,
       ...selectedPerimeter.warnings,
       ...momentTransfer.warnings,
       ...contourBundle.contourWarnings,
       ...shearReinforcement.warnings,
+      ...(sp63Interaction?.warnings ?? []),
     ],
     placeholders: [
       'moment contribution',
@@ -270,6 +274,7 @@ function createBaseResult(
     reinforcementWarnings: shearReinforcement.warnings,
     svgModel,
     momentTransfer,
+    sp63Interaction: null,
     verifiedMode: 'draft',
     verificationLevel: 'draft',
     verifiedFeatures: [],

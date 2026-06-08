@@ -180,6 +180,7 @@ export function buildPunchingShearHtmlReport(
       ['utilization with reinforcement', formatUtilization(result.utilizationWithReinforcement)],
       ['warnings', result.reinforcementWarnings.join('; ') || 'none'],
     ])}
+    ${renderSp63InteractionBenchmark(result)}
     <h2>Verification Readiness</h2>
     ${renderTable([
       ['geometry draft-ready', String(result.perimeter.perimeterMm > 0)],
@@ -344,6 +345,80 @@ function renderCalculationTrace(report: PunchingShearReportModel) {
       `${step.formula} | ${step.substitutedFormula} | ${step.result} ${step.units} | ${formatTraceSourceLabel(step.sourceType)} - ${step.sourceReference}${step.warnings.length > 0 ? ` | warnings: ${step.warnings.join('; ')}` : ''}`,
     ] satisfies [string, string]),
   ])
+}
+
+function renderSp63InteractionBenchmark(result: PunchingShearResult) {
+  const sp63 = result.sp63Interaction
+
+  if (!sp63) {
+    return '<h2>SP63 Interaction Benchmark</h2><p class="note">SP63 interaction benchmark candidate is not available for this input.</p>'
+  }
+
+  return `
+    <h2>SP63 Interaction Benchmark</h2>
+    <p class="draft">SP63 interaction benchmark candidate based on Mathcad fixture. Not VERIFIED for design use.</p>
+    <h3>Input Data</h3>
+    ${renderTable([
+      ['F', formatValueWithUnit(sp63.F, 'kN', 3)],
+      ['Mx design', formatValueWithUnit(sp63.Mx, 'kN*m', 3)],
+      ['My design', formatValueWithUnit(sp63.My, 'kN*m', 3)],
+      ['benchmark status', sp63.benchmarkStatus],
+    ])}
+    <h3>Reference Data</h3>
+    ${renderTable([
+      ['Rbt', formatValueWithUnit(sp63.Rbt, 'MPa', 3)],
+      ['Rsw', formatValueWithUnit(sp63.Rsw, 'MPa', 3)],
+    ])}
+    <h3>Control Contour Geometry</h3>
+    ${renderTable([
+      ['a', formatValueWithUnit(sp63.a, 'm', 3)],
+      ['b', formatValueWithUnit(sp63.b, 'm', 3)],
+      ['u', formatValueWithUnit(sp63.u, 'm', 3)],
+      ['Ab', formatValueWithUnit(sp63.Ab, 'm2', 3)],
+      ['Wx', formatValueWithUnit(sp63.Wx, 'm2', 3)],
+      ['Wy', formatValueWithUnit(sp63.Wy, 'm2', 3)],
+    ])}
+    <h3>Concrete Limit Forces</h3>
+    ${renderTable([
+      ['Fb.ult', formatValueWithUnit(sp63.FbUlt, 'kN', 3)],
+      ['Mx.b.ult', formatValueWithUnit(sp63.MxBUlt, 'kN*m', 3)],
+      ['My.b.ult', formatValueWithUnit(sp63.MyBUlt, 'kN*m', 3)],
+    ])}
+    <h3>Shear Reinforcement</h3>
+    ${renderTable([
+      ['sw1', formatValueWithUnit(sp63.sw1, 'mm', 3)],
+      ['sw', formatValueWithUnit(sp63.sw, 'mm', 3)],
+      ['nw', String(sp63.nw)],
+      ['Asw', formatValueWithUnit(sp63.Asw, 'cm2', 3)],
+      ['qsw', formatValueWithUnit(sp63.qsw, 'kN/m', 3)],
+      ['Fsw.ult', formatValueWithUnit(sp63.FswUlt, 'kN', 3)],
+      ['Fult', formatValueWithUnit(sp63.Fult, 'kN', 3)],
+      ['Mx.ult', formatValueWithUnit(sp63.MxUlt, 'kN*m', 3)],
+      ['My.ult', formatValueWithUnit(sp63.MyUlt, 'kN*m', 3)],
+    ])}
+    <h3>Check Without Shear Reinforcement</h3>
+    ${renderTable([
+      ['utilization concrete-only', formatUtilization(sp63.utilizationConcreteOnly)],
+      ['force cap concrete-only', formatUtilization(sp63.forceCapConcreteOnly)],
+    ])}
+    <h3>Check With Shear Reinforcement</h3>
+    ${renderTable([
+      ['utilization with reinforcement', formatUtilization(sp63.utilizationWithReinforcement)],
+    ])}
+    <h3>Check Outside Reinforcement Zone</h3>
+    ${renderTable([
+      ['asw', formatValueWithUnit(sp63.outerContour?.asw, 'm', 3)],
+      ["u'", formatValueWithUnit(sp63.outerContour?.uPrime, 'm', 3)],
+      ["F'", formatValueWithUnit(sp63.outerContour?.FPrime, 'kN', 3)],
+      ['outer contour utilization', formatUtilization(sp63.outerContour?.utilization)],
+    ])}
+    <h3>Mathcad Benchmark Comparison</h3>
+    ${renderTable([
+      ['concrete-only expected', '1.366'],
+      ['with reinforcement expected', '0.861'],
+      ['outer contour expected', '0.626'],
+      ['status', sp63.benchmarkStatus],
+    ])}`
 }
 
 function renderFeatureList(features: string[]) {

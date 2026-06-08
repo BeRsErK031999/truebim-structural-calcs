@@ -8,6 +8,7 @@ export { calculateDraftStressDistribution } from './moments/stressDistribution'
 export { draftSteelClassData, calculateShearReinforcementCapacity } from './reinforcement/reinforcementCapacity'
 export { normalizeShearReinforcement } from './reinforcement/reinforcementLayout'
 export { summarizeShearReinforcement } from './reinforcement/shearReinforcement'
+export { calculateSp63Interaction, calculateSp63MathcadBenchmark } from './sp63'
 export { compareGeometryVerification } from './verification/geometryComparison'
 export { compareRemovedSegments } from './verification/segmentComparison'
 export { compareOpeningVerification } from './verification/openingComparison'
@@ -107,6 +108,11 @@ export type {
   TraceSourceType,
   TraceStep,
 } from './trace/traceStep'
+export type {
+  Sp63InteractionInput,
+  Sp63InteractionResult,
+  Sp63OuterContourResult,
+} from './sp63'
 export type {
   TraceSection,
 } from './trace/traceSection'

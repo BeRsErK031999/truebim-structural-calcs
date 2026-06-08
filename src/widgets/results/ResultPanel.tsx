@@ -189,6 +189,37 @@ export function ResultPanel() {
           <Metric label="Результат" value={formatPassed(result?.passed)} unit="" />
         </div>
 
+        {result?.sp63Interaction ? (
+          <div className="grid gap-3 rounded-lg border border-cyan-200 bg-cyan-50 p-4">
+            <div className="flex items-center justify-between gap-3">
+              <p className="text-sm font-semibold text-cyan-950">SP63 benchmark candidate</p>
+              <span className="rounded-md bg-white px-2 py-1 text-xs font-semibold text-cyan-700">
+                {result.sp63Interaction.benchmarkStatus}
+              </span>
+            </div>
+            <div className="grid grid-cols-3 gap-2">
+              <Metric
+                label="Concrete"
+                value={formatDecimal(result.sp63Interaction.utilizationConcreteOnly)}
+                unit="eta"
+              />
+              <Metric
+                label="Reinf."
+                value={formatDecimal(result.sp63Interaction.utilizationWithReinforcement)}
+                unit="eta"
+              />
+              <Metric
+                label="Outer"
+                value={formatDecimal(result.sp63Interaction.outerContour?.utilization)}
+                unit="eta"
+              />
+            </div>
+            <p className="text-xs font-medium text-cyan-800">
+              Mathcad benchmark candidate. Draft warnings remain active; VERIFIED promotion is not automatic.
+            </p>
+          </div>
+        ) : null}
+
         <EngineeringPreview svgModel={result?.svgModel} />
 
         {result ? (

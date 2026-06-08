@@ -338,6 +338,46 @@ describe('report export', () => {
     expect(markdown).toContain('Shear reinforcement contribution is DRAFT-only.')
   })
 
+  it('includes SP63 interaction benchmark sections in exported reports', () => {
+    const input = {
+      ...defaultPunchingShearInput,
+      forces: {
+        axialForceKn: 800,
+        momentXKnM: 60,
+        momentYKnM: 50,
+      },
+      concrete: {
+        className: 'B30' as const,
+      },
+      rectColumn: {
+        widthXMm: 500,
+        widthYMm: 800,
+      },
+      shearReinforcement: {
+        enabled: true,
+        barDiameterMm: 6,
+        barSpacingMm: 60,
+        rowCount: 1,
+        legsPerRow: 2,
+        steelClass: 'A240' as const,
+        firstRowDistanceMm: 65,
+        rowSpacingMm: 60,
+        layoutType: 'custom' as const,
+      },
+    }
+    const result = calculatePunchingShear(input)
+    const report = buildPunchingShearReport(input, result)
+    const html = buildPunchingShearHtmlReport(input, result, report)
+    const markdown = buildPunchingShearMarkdownReport(input, result, report)
+
+    expect(result.sp63Interaction?.benchmarkStatus).toBe('matched')
+    expect(html).toContain('SP63 Interaction Benchmark')
+    expect(html).toContain('SP63 interaction benchmark candidate based on Mathcad fixture')
+    expect(html).toContain('Check Outside Reinforcement Zone')
+    expect(markdown).toContain('## SP63 Interaction Benchmark')
+    expect(markdown).toContain('SP63 Interaction Benchmark Trace / Interaction check')
+  })
+
   it('formats copy report summary', () => {
     const result = calculatePunchingShear(defaultPunchingShearInput)
 

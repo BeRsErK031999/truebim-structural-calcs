@@ -36,7 +36,7 @@ describe('diagnostics helpers', () => {
       axisConventionValidationSupport: 'draft',
       driftDetectionSupport: 'draft',
       traceSupport: 'available',
-      traceBuildersCount: 9,
+      traceBuildersCount: 10,
       traceCenterMomentsSupport: 'partial',
       traceWallSupport: 'draft',
       traceOpeningsSupport: 'draft',
