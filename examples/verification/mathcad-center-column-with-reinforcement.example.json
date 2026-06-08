@@ -1,0 +1,147 @@
+{
+  "id": "draft-mathcad-center-column-with-reinforcement",
+  "title": "Draft Mathcad center rectangular column with shear reinforcement benchmark",
+  "source": "manual/mathcad pdf benchmark: center column punching shear with A240 shear reinforcement, extracted 2026-06-08",
+  "verificationSource": "Mathcad PDF manual benchmark, not imported as verified",
+  "checkedBy": null,
+  "checkedAt": null,
+  "comparisonNotes": "Candidate only. Mathcad uses F = 800 kN, Mx = 30 kN*m, My = 25 kN*m in SP63 interaction checks. The current TrueBIM report used entered Mx = 60 kN*m, My = 50 kN*m, draft stress redistribution, and shear reinforcement disabled.",
+  "standard": "SP63.13330.2018",
+  "caseType": "center",
+  "verificationLevel": "draft",
+  "input": {
+    "caseType": "center",
+    "forces": {
+      "axialForceKn": 800,
+      "momentXKnM": 60,
+      "momentYKnM": 50
+    },
+    "slab": {
+      "thicknessMm": 220,
+      "effectiveDepthMm": 190,
+      "concreteCoverMm": 30
+    },
+    "concrete": {
+      "className": "B30"
+    },
+    "rectColumn": {
+      "widthXMm": 500,
+      "widthYMm": 800
+    },
+    "openings": [],
+    "shearReinforcement": {
+      "enabled": true,
+      "barDiameterMm": 6,
+      "barSpacingMm": 60,
+      "rowCount": 1,
+      "legsPerRow": 2,
+      "steelClass": "A240",
+      "firstRowDistanceMm": 65,
+      "rowSpacingMm": 60,
+      "layoutType": "custom"
+    }
+  },
+  "expected": {
+    "controlPerimeterMm": 3360,
+    "effectiveDepthMm": 190,
+    "shearStressMpa": null,
+    "utilizationRatio": 0.861,
+    "passed": true
+  },
+  "mathcadExpected": {
+    "materials": {
+      "concreteClass": "B30",
+      "reinforcementClass": "A240",
+      "barDiameterMm": 6,
+      "RbtMpa": 1.15,
+      "RswMpa": 170
+    },
+    "geometry": {
+      "a1Mm": 800,
+      "b1Mm": 500,
+      "hMm": 220,
+      "h0Mm": 190,
+      "contourAMm": 990,
+      "contourBMm": 690,
+      "uM": 3.36,
+      "uMm": 3360,
+      "AbM2": 0.638,
+      "IxM3": 0.29,
+      "IyM3": 0.5,
+      "WxM2": 0.842,
+      "WyM2": 1.01
+    },
+    "rawActions": {
+      "FinfKn": 800,
+      "FsupKn": 0,
+      "MxInfKnM": 60,
+      "MxSupKnM": 0,
+      "MyInfKnM": 50,
+      "MySupKnM": 0
+    },
+    "designActions": {
+      "FKn": 800,
+      "MxKnM": 30,
+      "MyKnM": 25
+    },
+    "concreteLimits": {
+      "FbUltKn": 734.16,
+      "MxBUltKnM": 183.933,
+      "MyBUltKnM": 220.641
+    },
+    "shearReinforcement": {
+      "firstRowDistanceMm": 65,
+      "rowSpacingMm": 60,
+      "nw": 2,
+      "AswCm2": 0.565,
+      "qswKnPerM": 160.221,
+      "FswUltKn": 430.675
+    },
+    "reinforcedLimits": {
+      "FultKn": 1164.835,
+      "MxUltKnM": 291.833,
+      "MyUltKnM": 350.074
+    },
+    "checks": {
+      "withoutShearReinforcement": 1.366,
+      "forceCapWithoutShearReinforcement": 1.635,
+      "withShearReinforcement": 0.861,
+      "outerContour": 0.626
+    }
+  },
+  "trueBimReportSnapshot": {
+    "calculationId": "calc-1780652745917-0.8560049275733098",
+    "generatedAt": "2026-06-05T09:46:02.407Z",
+    "commit": "0fe8870",
+    "status": "draft_failed",
+    "verificationLevel": "draft",
+    "caseType": "center",
+    "NKn": 800,
+    "MxKnM": 60,
+    "MyKnM": 50,
+    "hMm": 220,
+    "h0Mm": 190,
+    "columnWidthXMm": 500,
+    "columnHeightYMm": 800,
+    "concreteClass": "B30",
+    "controlPerimeterMm": 3360,
+    "baseStressMpa": 1.253133,
+    "maxStressMpa": 2.100662,
+    "minStressMpa": 0.405603,
+    "draftResistanceMpa": 1.15,
+    "utilizationRatio": 1.826663,
+    "shearReinforcementEnabled": false,
+    "momentTransferMethod": "draft-linear-perimeter-redistribution",
+    "eccentricityXMm": 62.5,
+    "eccentricityYMm": 75,
+    "stressPointCount": 12
+  },
+  "tolerance": {
+    "relativePercent": 0.1,
+    "absolute": 0.000001,
+    "geometryToleranceMm": 0.001,
+    "stressTolerancePercent": 0.1
+  },
+  "notes": "Draft candidate for future SP63 interaction and shear-reinforcement verification. Do not promote to VERIFIED automatically.",
+  "status": "draft"
+}
