@@ -7,7 +7,11 @@ import { defaultPunchingShearInput } from '../defaults'
 import { calculatePunchingShear } from '../engine'
 import { buildPunchingShearReport } from '../report'
 import { buildPunchingShearTrace } from '../trace/traceBuilder'
-import { formatTraceStepPath } from '../trace/tracePresentation'
+import {
+  engineeringStepTitle,
+  formatEngineeringFormulaText,
+  groupEngineeringTraceSteps,
+} from '../trace/engineeringReportPresentation'
 import type { PunchingShearInput } from '../types'
 import { formatTraceSourceLabel, traceSourceLabels } from '../trace/traceLabels'
 import type { TraceSourceType } from '../trace/traceStep'
@@ -181,27 +185,41 @@ describe('trace consistency audit', () => {
     expect(findStep(steps, 'verification-level')?.result).toBe(result.verificationLevel.toUpperCase())
   })
 
-  it.each(scenarios)('keeps exported reports aligned with trace steps for $name', ({ input }) => {
+  it.each(scenarios)('renders trace steps as engineering report formulas for $name', ({ input }) => {
     const result = calculatePunchingShear(input)
     const report = buildPunchingShearReport(input, result)
     const html = buildPunchingShearHtmlReport(input, result, report)
     const markdown = buildPunchingShearMarkdownReport(input, result, report)
+    const groupedSteps = groupEngineeringTraceSteps(report.calculationTrace)
+    const visibleSteps = [
+      ...groupedSteps.geometry,
+      ...groupedSteps.calculation,
+      ...groupedSteps.checks,
+    ]
 
     expect(html).toContain('Трассировка расчета')
     expect(markdown).toContain('## Трассировка расчета')
+    expect(html).toContain('Формула:')
+    expect(html).toContain('Подстановка:')
+    expect(html).toContain('Результат:')
+    expect(markdown).toContain('Формула:')
+    expect(markdown).toContain('Подстановка:')
+    expect(markdown).toContain('Результат:')
 
-    for (const section of report.calculationTrace) {
-      for (const step of section.steps) {
-        const localizedPath = formatTraceStepPath({ section, step })
+    for (const step of visibleSteps) {
+      const title = engineeringStepTitle(step)
+      const formula = formatEngineeringFormulaText(step.formula)
 
-        expect(html).toContain(localizedPath)
-        expect(markdown).toContain(localizedPath)
-        expect(decodeHtml(html)).toContain(step.formula)
-        expect(markdown).toContain(step.formula)
-        expect(html).toContain(formatTraceSourceLabel(step.sourceType))
-        expect(markdown).toContain(formatTraceSourceLabel(step.sourceType))
-      }
+      expect(html).toContain(title)
+      expect(markdown).toContain(title)
+      expect(decodeHtml(html)).toContain(formula)
+      expect(markdown).toContain(formula)
+      expect(html).not.toContain(formatTraceSourceLabel(step.sourceType))
+      expect(markdown).not.toContain(formatTraceSourceLabel(step.sourceType))
     }
+
+    expect(decodeHtml(html)).not.toMatch(/\b(?:DTO|schema|safeParse|explainability|trace foundation)\b/i)
+    expect(markdown).not.toMatch(/\b(?:DTO|schema|safeParse|explainability|trace foundation)\b/i)
   })
 
   it.each(scenarios)('uses allowed finite trace values for $name', ({ input }) => {

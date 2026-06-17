@@ -3,12 +3,15 @@ import type {
   PunchingShearInput,
   PunchingShearReportModel,
   PunchingShearResult,
+  TraceStep,
 } from '@/calculations/punching-shear'
 import {
-  flattenTraceSteps,
-  formatTraceStepDetails,
-  formatTraceStepPath,
-} from '@/calculations/punching-shear/trace/tracePresentation'
+  engineeringStepTitle,
+  engineeringStepDescription,
+  formatEngineeringFormulaResult,
+  formatEngineeringFormulaText,
+  groupEngineeringTraceSteps,
+} from '@/calculations/punching-shear/trace/engineeringReportPresentation'
 import { localizeTraceText } from '@/calculations/punching-shear/trace/traceLocalization'
 import { getRelatedKnowledgeEntries } from '@/features/knowledge-base'
 import { formatFeatureLabel } from '@/shared/labels/featureLabels'
@@ -423,19 +426,49 @@ function formatFeatureList(features: string[]) {
 }
 
 function renderCalculationTrace(report: PunchingShearReportModel) {
-  const steps = flattenTraceSteps(report.calculationTrace)
+  const groups = groupEngineeringTraceSteps(report.calculationTrace)
+  const sections: Array<[string, string, TraceStep[]]> = [
+    ['Геометрия расчетного контура', 'Построение расчетного контура и геометрических параметров.', groups.geometry],
+    ['Промежуточные вычисления', 'Расчет напряжений и вспомогательных величин.', groups.calculation],
+    ['Проверки условий', 'Сравнение с несущей способностью и коэффициенты использования.', groups.checks],
+  ]
 
-  if (steps.length === 0) {
-    return 'Трассировка расчета недоступна.'
+  if (sections.every(([, , steps]) => steps.length === 0)) {
+    return 'Расчетные шаги недоступны.'
   }
 
-  return table([
-    ['раздел / шаг', 'формула | подстановка | результат | источник проверки'],
-    ...steps.map((traceStep) => [
-      formatTraceStepPath(traceStep),
-      formatTraceStepDetails(traceStep.step),
-    ] satisfies [string, string]),
-  ])
+  return sections
+    .filter(([, , steps]) => steps.length > 0)
+    .map(
+      ([title, description, steps]) => [
+        `### ${title}`,
+        '',
+        description,
+        '',
+        ...steps.map(renderEngineeringTraceStep),
+      ].join('\n'),
+    )
+    .join('\n\n')
+}
+
+function renderEngineeringTraceStep(step: TraceStep) {
+  return [
+    `#### ${engineeringStepTitle(step)}`,
+    '',
+    engineeringStepDescription(step),
+    '',
+    'Формула:',
+    '',
+    `\`${formatEngineeringFormulaText(step.formula)}\``,
+    '',
+    'Подстановка:',
+    '',
+    `\`${formatEngineeringFormulaText(localizeTraceText(step.substitutedFormula))}\``,
+    '',
+    'Результат:',
+    '',
+    `\`${formatEngineeringFormulaResult(step)}\``,
+  ].join('\n')
 }
 
 function formatInlineFeatures(features: string[]) {

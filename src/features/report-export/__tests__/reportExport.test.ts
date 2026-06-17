@@ -85,15 +85,21 @@ describe('report export', () => {
     const markdown = buildPunchingShearMarkdownReport(defaultPunchingShearInput, result, report)
 
     expect(html).toContain('Трассировка')
-    expect(html).toContain('раздел / шаг')
-    expect(html).toContain('формула | подстановка | результат | источник проверки')
-    expect(html).toContain('Трассировка расчета / Проверка исходных данных')
-    expect(html).toContain('Проверенное доказательство - доказательство для центральной колонны только от силы: verified-center-rect-001')
+    expect(html).toContain('Геометрия расчетного контура')
+    expect(html).toContain('Формула:')
+    expect(html).toContain('Подстановка:')
+    expect(html).toContain('Результат:')
+    expect(html).toContain('Проверка напряжений')
+    expect(html).not.toContain('формула | подстановка | результат | источник проверки')
+    expect(html).not.toContain('Трассировка расчета / Проверка исходных данных')
     expect(markdown).toContain('## Трассировка расчета')
     expect(markdown).not.toContain('## Трассировка\n\n## Трассировка расчета')
-    expect(markdown).toContain('| раздел / шаг | формула \\| подстановка \\| результат \\| источник проверки |')
-    expect(markdown).toContain('Трассировка расчета / Напряжение')
-    expect(markdown).toContain('v = N / (u * h0)')
+    expect(markdown).toContain('Формула:')
+    expect(markdown).toContain('Подстановка:')
+    expect(markdown).toContain('Результат:')
+    expect(markdown).toContain('#### Проверка напряжений')
+    expect(markdown).toContain('v = N / (u × h0)')
+    expect(markdown).not.toContain('| раздел / шаг | формула \\| подстановка \\| результат \\| источник проверки |')
   })
 
   it('includes scenario trace steps in exported reports', () => {
@@ -119,11 +125,11 @@ describe('report export', () => {
     const html = buildPunchingShearHtmlReport(input, result, report)
     const markdown = buildPunchingShearMarkdownReport(input, result, report)
 
-    expect(html).toContain('Трассировка передачи моментов / Эксцентриситет от моментов')
-    expect(html).toContain('Трассировка нескольких контуров / Выбор критического чернового контура')
-    expect(html).toContain('Трассировка поперечной арматуры / Черновой вклад поперечной арматуры')
-    expect(markdown).toContain('Трассировка передачи моментов / Эксцентриситет от моментов')
-    expect(markdown).toContain('Передача моментов частично/черновая и требует доверенного подтверждения.')
+    expect(html).toContain('Эксцентриситет от моментов')
+    expect(html).toContain('Выбор критического чернового контура')
+    expect(html).toContain('Черновой вклад поперечной арматуры')
+    expect(markdown).toContain('#### Эксцентриситет от моментов')
+    expect(markdown).toContain('Передача моментов использует черновое перераспределение напряжений')
   })
 
   it('includes moment transfer and stress distribution sections', () => {
@@ -387,7 +393,7 @@ describe('report export', () => {
     expect(html).toContain('Значения эталона Mathcad совпадают в пределах допуска теста')
     expect(html).toContain('Проверка за зоной усиления')
     expect(markdown).toContain('## Проверка за зоной усиления')
-    expect(markdown).toContain('Трассировка проверки взаимодействия СП63 / Проверка взаимодействия')
+    expect(markdown).toContain('#### Проверка взаимодействия')
   })
 
   it('formats copy report summary', () => {

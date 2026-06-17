@@ -1,19 +1,26 @@
-import { useMemo, useState } from 'react'
-import { ChevronDown, Copy, Download, Eye, X } from 'lucide-react'
+import { useState } from 'react'
+import type { ReactNode } from 'react'
+import { Copy, Download } from 'lucide-react'
 
 import {
   pointsToSvg,
   type PunchingShearCheckStatus,
+  type PunchingShearInput,
   type PunchingShearReportModel,
+  type PunchingShearResult,
   type PunchingSketchModel,
   type SvgSketchElement,
+  type TraceStep,
   viewBoxToString,
 } from '@/calculations/punching-shear'
 import {
-  flattenTraceSteps,
-  formatTraceStepDetails,
-  formatTraceStepPath,
-} from '@/calculations/punching-shear/trace/tracePresentation'
+  engineeringStepTitle,
+  engineeringStepDescription,
+  formatEngineeringFormulaResult,
+  formatEngineeringFormulaText,
+  groupEngineeringTraceSteps,
+  sanitizeEngineeringText,
+} from '@/calculations/punching-shear/trace/engineeringReportPresentation'
 import { localizeTraceText } from '@/calculations/punching-shear/trace/traceLocalization'
 import { useCalculationStore } from '@/entities/calculation/model/store'
 import {
@@ -21,8 +28,6 @@ import {
   exportCurrentCalculationAsHtml,
   exportCurrentCalculationAsMarkdown,
 } from '@/features/report-export'
-import { buildPunchingShearHtmlReport } from '@/features/report-export/reportHtml'
-import { createReportMetadata } from '@/features/report-export/reportMetadata'
 import { formatFeatureLabel } from '@/shared/labels/featureLabels'
 import { Button } from '@/shared/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card'
@@ -37,16 +42,7 @@ export function ResultPanel() {
   const calculationId = useCalculationStore((state) => state.activeCalculationId)
   const [exportMessage, setExportMessage] = useState<string | null>(null)
   const [copyMessage, setCopyMessage] = useState<string | null>(null)
-  const [showTrace, setShowTrace] = useState(false)
-  const [isPreviewOpen, setIsPreviewOpen] = useState(false)
   const canExport = Boolean(result && report)
-  const previewHtml = useMemo(() => {
-    if (!result || !report || !calculationId) {
-      return ''
-    }
-
-    return buildPunchingShearHtmlReport(draft, result, report, createReportMetadata(new Date(), calculationId))
-  }, [calculationId, draft, report, result])
 
   const handleExportHtml = () => {
     const exportResult = exportCurrentCalculationAsHtml()
@@ -103,33 +99,22 @@ export function ResultPanel() {
           {draftWarning}
         </div>
 
-        {result ? (
-          <div className="grid gap-3 rounded-lg border border-slate-200 bg-slate-50 p-4">
-            <div className="flex items-center justify-between gap-3">
-              <p className="text-sm font-semibold text-slate-900">Уровень проверки</p>
-              <VerificationLevelBadge level={result.verificationLevel} />
-            </div>
-            <FeatureList title="Проверенные возможности" features={result.verifiedFeatures} />
-            <FeatureList title="Черновые возможности" features={result.draftFeatures} />
+        {result && report ? (
+          <EngineeringCalculationReport input={draft} result={result} report={report} />
+        ) : (
+          <div className="rounded-lg border border-slate-200 bg-slate-50 p-4 text-sm text-slate-600">
+            Заполните исходные данные и запустите расчет, чтобы увидеть инженерный отчет.
           </div>
-        ) : null}
+        )}
 
-        <div className="grid gap-3 rounded-lg border border-slate-200 bg-slate-50 p-4">
+        <EngineeringPreview svgModel={result?.svgModel} />
+
+        <div className="grid gap-3 rounded-lg border border-slate-200 bg-white p-4">
+          <p className="text-sm font-semibold text-slate-900">Экспорт и передача расчета</p>
           <p className="text-sm leading-6 text-slate-700">
-            Скачайте отчет и отправьте его инженеру на проверку. После проверки значения можно
-            использовать для подготовки проверенного случая.
+            Скачайте отчет или скопируйте краткую сводку для проверки инженером.
           </p>
           <div className="grid gap-2 sm:grid-cols-2">
-            <Button
-              type="button"
-              variant="outline"
-              className="justify-center"
-              disabled={!canExport}
-              onClick={() => setIsPreviewOpen(true)}
-            >
-              <Eye />
-              Предпросмотр HTML-отчета
-            </Button>
             <Button
               type="button"
               variant="outline"
@@ -150,8 +135,6 @@ export function ResultPanel() {
               <Download />
               Выгрузить Markdown
             </Button>
-          </div>
-          <div className="grid gap-2 sm:grid-cols-2">
             <Button
               type="button"
               variant="outline"
@@ -178,152 +161,270 @@ export function ResultPanel() {
           ) : null}
           {copyMessage ? <p className="text-sm font-medium text-slate-700">{copyMessage}</p> : null}
         </div>
-
-        <div className="grid grid-cols-2 gap-3">
-          <Metric label="N" value={formatKn(result?.designShearForceN)} unit="кН" />
-          <Metric label="Контур" value={formatNumber(result?.controlPerimeterMm)} unit="мм" />
-          <Metric label="h0" value={formatNumber(result?.effectiveDepthMm)} unit="мм" />
-          <Metric label="v" value={formatDecimal(result?.shearStressMpa)} unit="МПа" />
-          <Metric label="v max" value={formatDecimal(result?.maxShearStressMpa)} unit="МПа" />
-          <Metric label="v min" value={formatDecimal(result?.minShearStressMpa)} unit="МПа" />
-          <Metric label="R черн." value={formatDecimal(result?.draftConcreteResistanceMpa)} unit="МПа" />
-          <Metric label="Использование" value={formatDecimal(result?.utilizationRatio)} unit="η" />
-          <Metric label="Asw черн." value={formatNumber(result?.reinforcementAreaMm2)} unit="мм2" />
-          <Metric label="η арм." value={formatDecimal(result?.utilizationWithReinforcement)} unit="черн." />
-          <Metric label="Результат" value={formatPassed(result?.passed)} unit="" />
-        </div>
-
-        {result?.sp63Interaction ? (
-          <div className="grid gap-3 rounded-lg border border-cyan-200 bg-cyan-50 p-4">
-            <div className="flex items-center justify-between gap-3">
-              <p className="text-sm font-semibold text-cyan-950">Кандидат бенчмарка СП 63</p>
-              <span className="rounded-md bg-white px-2 py-1 text-xs font-semibold text-cyan-700">
-                {localizeTraceText(result.sp63Interaction.benchmarkStatus)}
-              </span>
-            </div>
-            <div className="grid grid-cols-3 gap-2">
-              <Metric
-                label="Бетон"
-                value={formatDecimal(result.sp63Interaction.utilizationConcreteOnly)}
-                unit="eta"
-              />
-              <Metric
-                label="Арм."
-                value={formatDecimal(result.sp63Interaction.utilizationWithReinforcement)}
-                unit="eta"
-              />
-              <Metric
-                label="Внешн."
-                value={formatDecimal(result.sp63Interaction.outerContour?.utilization)}
-                unit="eta"
-              />
-            </div>
-            <p className="text-xs font-medium text-cyan-800">
-              Кандидат бенчмарка Mathcad. Черновые предупреждения остаются активными; статус VERIFIED не присваивается автоматически.
-            </p>
-          </div>
-        ) : null}
-
-        <EngineeringPreview svgModel={result?.svgModel} />
-
-        {result ? (
-          <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
-            <p className="text-sm font-semibold text-slate-900">Предупреждения</p>
-            <ul className="mt-3 grid gap-1 text-sm text-slate-700">
-              {result.warnings.length > 0 ? (
-                result.warnings.map((warning) => <li key={warning}>- {localizeTraceText(warning)}</li>)
-              ) : (
-                <li>- Предупреждений нет</li>
-              )}
-            </ul>
-          </div>
-        ) : null}
-
-        {report ? (
-          <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
-            <p className="text-sm font-semibold text-slate-800">{report.title}</p>
-            <p className="mt-1 text-sm text-slate-600">{report.standard}</p>
-            <p className="mt-2 text-sm text-slate-600">
-              Формула: {report.formulaSummary[1] ?? 'н/д'}. Сегментов:{' '}
-              {report.geometrySummary.segmentCount ?? 'н/д'}.
-            </p>
-          </div>
-        ) : null}
-
-        {report ? (
-          <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
-            <Button
-              type="button"
-              variant="outline"
-              className="w-full justify-between"
-              onClick={() => setShowTrace((value) => !value)}
-            >
-              Показать трассировку
-              <ChevronDown className={showTrace ? 'rotate-180 transition-transform' : 'transition-transform'} />
-            </Button>
-            {showTrace ? <TraceSteps report={report} /> : null}
-          </div>
-        ) : null}
-
-        {isPreviewOpen && previewHtml ? (
-          <div className="fixed inset-4 z-50 grid overflow-hidden rounded-lg border border-slate-300 bg-white shadow-xl md:inset-8">
-            <div className="flex items-center justify-between gap-3 border-b border-slate-200 px-4 py-3">
-              <div>
-                <p className="text-sm font-semibold text-slate-950">Предпросмотр HTML-отчета</p>
-                <p className="text-xs text-slate-600">ID расчета: {calculationId}</p>
-              </div>
-              <Button type="button" variant="outline" onClick={() => setIsPreviewOpen(false)}>
-                <X />
-                Закрыть
-              </Button>
-            </div>
-            <iframe className="h-full w-full" srcDoc={previewHtml} title="Предпросмотр HTML-отчета по продавливанию" />
-          </div>
-        ) : null}
       </CardContent>
     </Card>
   )
 }
 
-function TraceSteps({ report }: { report: PunchingShearReportModel }) {
-  const steps = flattenTraceSteps(report.calculationTrace)
+function EngineeringCalculationReport({
+  input,
+  result,
+  report,
+}: {
+  input: PunchingShearInput
+  result: PunchingShearResult
+  report: PunchingShearReportModel
+}) {
+  const groupedSteps = groupTraceSteps(report)
+  const reserve = result.utilizationRatio === null ? null : Math.max(0, 1 - result.utilizationRatio)
 
   return (
-    <div className="mt-4">
-      {steps.length > 0 ? (
-        <div className="max-h-96 overflow-auto rounded-lg border border-slate-200 bg-white">
-          <table className="w-full min-w-[720px] border-collapse text-left text-xs">
-            <thead className="sticky top-0 bg-slate-100 text-slate-700">
-              <tr>
-                <th className="w-[32%] border-b border-r border-slate-200 px-3 py-2 font-semibold">
-                  раздел / шаг
-                </th>
-                <th className="border-b border-slate-200 px-3 py-2 font-semibold">
-                  формула | подстановка | результат | источник проверки
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {steps.map((traceStep, index) => (
-                <tr key={`${traceStep.section.id}-${traceStep.step.id}-${index}`} className="align-top">
-                  <th className="border-r border-t border-slate-200 bg-slate-50 px-3 py-2 font-semibold text-slate-900">
-                    {formatTraceStepPath(traceStep)}
-                  </th>
-                  <td className="border-t border-slate-200 px-3 py-2 font-mono leading-5 text-slate-800">
-                    {formatTraceStepDetails(traceStep.step)}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+    <div className="grid gap-4">
+      <ReportSection
+        title="Расчет продавливания"
+        description={`${report.standard}. Расчет оформлен как последовательность исходных данных, геометрии, вычислений и проверки условия прочности.`}
+      >
+        <div className="grid grid-cols-2 gap-3">
+          <Metric label="N" value={formatKn(result.designShearForceN)} unit="кН" />
+          <Metric label="u" value={formatNumber(result.controlPerimeterMm)} unit="мм" />
+          <Metric label="h0" value={formatNumber(result.effectiveDepthMm)} unit="мм" />
+          <Metric label="η" value={formatDecimal(result.utilizationRatio)} unit="" />
         </div>
-      ) : (
-        <div className="rounded-lg border border-slate-200 bg-white p-3 text-sm text-slate-600">
-          Шагов трассировки нет.
+      </ReportSection>
+
+      <ReportSection
+        title="Исходные данные"
+        description="Данные, принятые для расчета продавливания плиты выбранным типом опоры."
+      >
+        <ValueRows
+          rows={[
+            ['Тип расчетного случая', formatCaseType(input.caseType)],
+            ['Продольная сила N', `${formatKn(result.designShearForceN)} кН`],
+            ['Бетон', input.concrete.className],
+            ['Толщина плиты', `${formatNumber(input.slab.thicknessMm)} мм`],
+            ['Рабочая высота сечения h0', `${formatNumber(result.effectiveDepthMm)} мм`],
+            ['Размер опоры', formatSupportSize(input)],
+            ['Момент Mx', `${formatDecimal(input.forces.momentXKnM)} кН·м`],
+            ['Момент My', `${formatDecimal(input.forces.momentYKnM)} кН·м`],
+          ]}
+        />
+      </ReportSection>
+
+      <ReportSection
+        title="Геометрия расчетного контура"
+        description="Расчетный контур расположен относительно опоры с учетом рабочей высоты сечения, краев плиты и отверстий."
+      >
+        <p className="text-sm leading-6 text-slate-700">
+          Основной контур принят на расстоянии h0/2 от грани опоры. Для краевых, угловых и
+          специальных случаев используются доступные участки расчетного контура.
+        </p>
+        <ValueRows
+          rows={[
+            ['Расчетный контур u', `${formatNumber(result.controlPerimeterMm)} мм`],
+            ['Количество участков контура', String(result.perimeter.segments.length)],
+            ['Смещение контура', `${formatNumber(result.perimeter.draftOffsetMm)} мм`],
+            ['Исключенная длина', `${formatNumber(result.perimeter.removedPerimeterMm)} мм`],
+          ]}
+        />
+        <TraceFormulaList steps={groupedSteps.geometry} />
+      </ReportSection>
+
+      <ReportSection
+        title="Промежуточные вычисления"
+        description="Формулы показаны отдельно от численной подстановки и результата."
+      >
+        <TraceFormulaList steps={groupedSteps.calculation} />
+      </ReportSection>
+
+      <ReportSection
+        title="Проверки условий"
+        description="Сравнение расчетных напряжений с принятой несущей способностью и расчет коэффициента использования."
+      >
+        <ValueRows
+          rows={[
+            ['Расчетное напряжение v', `${formatDecimal(result.shearStressMpa)} МПа`],
+            ['Максимальное напряжение', `${formatDecimal(result.maxShearStressMpa)} МПа`],
+            ['Расчетное сопротивление R', `${formatDecimal(result.draftConcreteResistanceMpa)} МПа`],
+            ['Коэффициент использования η', formatPercentWithRatio(result.utilizationRatio)],
+          ]}
+        />
+        <TraceFormulaList steps={groupedSteps.checks} />
+      </ReportSection>
+
+      <ReportSection
+        title="Итоговый вывод"
+        description="Краткий результат проверки для инженерной оценки."
+      >
+        <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
+          <p className="text-base font-semibold text-slate-950">
+            {result.passed ? 'Условие прочности выполняется.' : 'Условие прочности не выполняется.'}
+          </p>
+          <p className="mt-2 text-sm leading-6 text-slate-700">
+            Коэффициент использования: {formatPercent(result.utilizationRatio)}. Запас несущей
+            способности: {formatPercent(reserve)}.
+          </p>
         </div>
-      )}
+        <div className="flex flex-wrap items-center gap-2">
+          <VerificationLevelBadge level={result.verificationLevel} />
+          <span className="rounded-md bg-slate-100 px-2.5 py-1 text-sm font-semibold text-slate-700">
+            {formatPassed(result.passed)}
+          </span>
+        </div>
+      </ReportSection>
+
+      <ReportSection
+        title="Допущения и предупреждения"
+        description="Инженерные ограничения, которые нужно учесть перед применением результата."
+      >
+        <FeatureList title="Проверенные возможности" features={result.verifiedFeatures} />
+        <FeatureList title="Требуют инженерной проверки" features={result.draftFeatures} />
+        <ul className="grid gap-1 text-sm text-slate-700">
+          {result.warnings.length > 0 ? (
+            result.warnings.map((warning) => (
+              <li key={warning}>- {sanitizeEngineeringText(localizeTraceText(warning))}</li>
+            ))
+          ) : (
+            <li>- Предупреждений нет</li>
+          )}
+        </ul>
+      </ReportSection>
     </div>
   )
+}
+
+function ReportSection({
+  title,
+  description,
+  children,
+}: {
+  title: string
+  description: string
+  children: ReactNode
+}) {
+  return (
+    <section className="grid gap-3 rounded-lg border border-slate-200 bg-white p-4">
+      <div>
+        <h3 className="text-base font-semibold text-slate-950">{title}</h3>
+        <p className="mt-1 text-sm leading-6 text-slate-600">{description}</p>
+      </div>
+      {children}
+    </section>
+  )
+}
+
+function ValueRows({ rows }: { rows: Array<[string, string]> }) {
+  return (
+    <dl className="grid gap-2 text-sm">
+      {rows.map(([label, value]) => (
+        <div
+          key={label}
+          className="grid grid-cols-[minmax(0,1fr)_auto] gap-3 border-b border-slate-100 pb-2 last:border-0 last:pb-0"
+        >
+          <dt className="text-slate-600">{label}</dt>
+          <dd className="text-right font-semibold text-slate-950">{value}</dd>
+        </div>
+      ))}
+    </dl>
+  )
+}
+
+function TraceFormulaList({ steps }: { steps: TraceStep[] }) {
+  if (steps.length === 0) {
+    return <p className="text-sm text-slate-500">Для этого раздела дополнительных формул нет.</p>
+  }
+
+  return (
+    <div className="grid gap-3">
+      {steps.map((step) => (
+        <div key={step.id} className="grid gap-3 rounded-lg border border-slate-200 bg-slate-50 p-3">
+          <div>
+            <p className="text-sm font-semibold text-slate-950">{engineeringStepTitle(step)}</p>
+            <p className="mt-1 text-sm leading-6 text-slate-600">
+              {engineeringStepDescription(step)}
+            </p>
+          </div>
+          <FormulaBlock label="Формула" value={formatFormulaText(step.formula)} />
+          <FormulaBlock label="Подстановка" value={formatFormulaText(localizeTraceText(step.substitutedFormula))} />
+          <FormulaBlock label="Результат" value={formatFormulaResult(step)} />
+        </div>
+      ))}
+    </div>
+  )
+}
+
+function FormulaBlock({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <p className="text-xs font-semibold uppercase text-slate-500">{label}</p>
+      <p className="mt-1 break-words rounded-md bg-white px-3 py-2 font-mono text-sm text-slate-900">
+        {value}
+      </p>
+    </div>
+  )
+}
+
+type EngineeringStepGroup = {
+  geometry: TraceStep[]
+  calculation: TraceStep[]
+  checks: TraceStep[]
+}
+
+function groupTraceSteps(report: PunchingShearReportModel): EngineeringStepGroup {
+  return groupEngineeringTraceSteps(report.calculationTrace)
+}
+
+function formatFormulaText(value: string) {
+  return formatEngineeringFormulaText(value)
+}
+
+function formatFormulaResult(step: TraceStep) {
+  return formatEngineeringFormulaResult(step)
+}
+
+function formatCaseType(caseType: PunchingShearInput['caseType']) {
+  const labelByCaseType: Record<PunchingShearInput['caseType'], string> = {
+    center: 'центральная колонна',
+    edge: 'колонна у края плиты',
+    corner: 'колонна в углу плиты',
+    opening: 'колонна с учетом отверстия',
+    round: 'круглая колонна',
+    'wall-end': 'торец стены',
+    'wall-corner': 'угол стены',
+  }
+
+  return labelByCaseType[caseType]
+}
+
+function formatSupportSize(input: PunchingShearInput) {
+  if (input.rectColumn) {
+    return `${formatNumber(input.rectColumn.widthXMm)} × ${formatNumber(input.rectColumn.widthYMm)} мм`
+  }
+
+  if (input.roundColumn) {
+    return `диаметр ${formatNumber(input.roundColumn.diameterMm)} мм`
+  }
+
+  if (input.wall) {
+    return `${formatNumber(input.wall.wallLength)} × ${formatNumber(input.wall.wallThickness)} мм`
+  }
+
+  if (input.wallCorner) {
+    return `${formatNumber(input.wallCorner.wallLengthX)} × ${formatNumber(input.wallCorner.wallLengthY)} мм`
+  }
+
+  return 'не задано'
+}
+
+function formatPercent(value?: number | null) {
+  return value === undefined || value === null || !Number.isFinite(value)
+    ? 'не оценено'
+    : `${(value * 100).toFixed(0)}%`
+}
+
+function formatPercentWithRatio(value?: number | null) {
+  return value === undefined || value === null || !Number.isFinite(value)
+    ? 'не оценено'
+    : `${value.toFixed(3)} (${(value * 100).toFixed(0)}%)`
 }
 
 function VerificationLevelBadge({ level }: { level: 'verified' | 'partial' | 'draft' }) {

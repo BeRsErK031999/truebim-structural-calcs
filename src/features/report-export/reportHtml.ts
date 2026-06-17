@@ -5,12 +5,15 @@ import {
   type PunchingShearReportModel,
   type PunchingShearResult,
   type SvgSketchElement,
+  type TraceStep,
 } from '@/calculations/punching-shear'
 import {
-  flattenTraceSteps,
-  formatTraceStepDetails,
-  formatTraceStepPath,
-} from '@/calculations/punching-shear/trace/tracePresentation'
+  engineeringStepTitle,
+  engineeringStepDescription,
+  formatEngineeringFormulaResult,
+  formatEngineeringFormulaText,
+  groupEngineeringTraceSteps,
+} from '@/calculations/punching-shear/trace/engineeringReportPresentation'
 import { localizeTraceText } from '@/calculations/punching-shear/trace/traceLocalization'
 import { getRelatedKnowledgeEntries } from '@/features/knowledge-base'
 import { formatFeatureLabel } from '@/shared/labels/featureLabels'
@@ -71,6 +74,9 @@ export function buildPunchingShearHtmlReport(
     .warning { margin: 18px 0; padding: 18px; border: 2px solid #b45309; background: #fffbeb; color: #78350f; font-size: 20px; font-weight: 700; }
     .note { color: #475569; line-height: 1.55; }
     .draft { color: #b45309; font-weight: 700; }
+    .calc-step { margin: 12px 0; padding: 14px; border: 1px solid #cbd5e1; background: #fff; border-radius: 8px; }
+    .calc-step h4 { margin: 0 0 8px; font-size: 15px; }
+    .calc-step p { margin: 8px 0; line-height: 1.55; }
     .svg-wrap { background: #fff; border: 1px solid #cbd5e1; padding: 12px; overflow: auto; }
     svg { max-width: 100%; height: auto; background: #fff; }
     code { background: #e2e8f0; padding: 2px 5px; border-radius: 4px; }
@@ -390,19 +396,43 @@ function renderMultipleControlPerimeters(result: PunchingShearResult) {
 }
 
 function renderCalculationTrace(report: PunchingShearReportModel) {
-  const steps = flattenTraceSteps(report.calculationTrace)
+  const groups = groupEngineeringTraceSteps(report.calculationTrace)
+  const sections: Array<[string, string, TraceStep[]]> = [
+    ['Геометрия расчетного контура', 'Построение расчетного контура и геометрических параметров.', groups.geometry],
+    ['Промежуточные вычисления', 'Расчет напряжений и вспомогательных величин.', groups.calculation],
+    ['Проверки условий', 'Сравнение с несущей способностью и коэффициенты использования.', groups.checks],
+  ]
 
-  if (steps.length === 0) {
-    return '<p class="note">Трассировка расчета недоступна.</p>'
+  if (sections.every(([, , steps]) => steps.length === 0)) {
+    return '<p class="note">Расчетные шаги недоступны.</p>'
   }
 
-  return renderTable([
-    ['раздел / шаг', 'формула | подстановка | результат | источник проверки'],
-    ...steps.map((traceStep) => [
-      formatTraceStepPath(traceStep),
-      formatTraceStepDetails(traceStep.step),
-    ] satisfies [string, string]),
-  ])
+  return sections
+    .filter(([, , steps]) => steps.length > 0)
+    .map(
+      ([title, description, steps]) => `
+        <h3>${escapeHtml(title)}</h3>
+        <p class="note">${escapeHtml(description)}</p>
+        ${steps.map(renderEngineeringTraceStep).join('\n')}
+      `,
+    )
+    .join('\n')
+}
+
+function renderEngineeringTraceStep(step: TraceStep) {
+  return `
+    <div class="calc-step">
+      <h4>${escapeHtml(engineeringStepTitle(step))}</h4>
+      <p>${escapeHtml(engineeringStepDescription(step))}</p>
+      ${renderFormulaLine('Формула', formatEngineeringFormulaText(step.formula))}
+      ${renderFormulaLine('Подстановка', formatEngineeringFormulaText(localizeTraceText(step.substitutedFormula)))}
+      ${renderFormulaLine('Результат', formatEngineeringFormulaResult(step))}
+    </div>
+  `
+}
+
+function renderFormulaLine(label: string, value: string) {
+  return `<p><strong>${escapeHtml(label)}:</strong><br><code>${escapeHtml(value)}</code></p>`
 }
 
 function renderFeatureList(features: string[]) {
