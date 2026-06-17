@@ -1,4 +1,5 @@
 import type { PunchingShearInput, PunchingShearReportModel, PunchingShearResult } from '../types'
+import type { TraceStep } from './traceStep'
 import { localizeTraceText } from './traceLocalization'
 
 export type EngineeringReportLine = {
@@ -44,6 +45,9 @@ export type EngineeringReportListing = {
 
 const unavailable = 'Параметр недоступен для данного режима расчета.'
 
+const etaSymbol = '\u03b7'
+const multiplySymbol = '\u00d7'
+
 export function buildEngineeringReportListing(
   input: PunchingShearInput,
   result: PunchingShearResult,
@@ -72,7 +76,7 @@ export function buildEngineeringReportListing(
     },
     inputRows: buildInputRows(input, result),
     quickRows: buildQuickRows(result),
-    calculationSections: buildCalculationSections(input, result),
+    calculationSections: buildCalculationSections(input, result, report),
     conditionLines: buildConditionLines(result),
     conclusionLines: buildConclusionLines(result),
     serviceBlocks: buildServiceBlocks(result, report),
@@ -109,7 +113,14 @@ function buildQuickRows(result: PunchingShearResult): EngineeringReportTableRow[
 function buildCalculationSections(
   input: PunchingShearInput,
   result: PunchingShearResult,
+  report: PunchingShearReportModel,
 ): EngineeringReportSection[] {
+  const verifiedCenterSections = buildVerifiedCenterForceOnlySections(input, result, report)
+
+  if (verifiedCenterSections) {
+    return verifiedCenterSections
+  }
+
   const sections: EngineeringReportSection[] = [
     {
       id: 'geometry',
@@ -194,6 +205,119 @@ function buildCalculationSections(
   }
 
   return sections
+}
+
+function buildVerifiedCenterForceOnlySections(
+  input: PunchingShearInput,
+  result: PunchingShearResult,
+  report: PunchingShearReportModel,
+): EngineeringReportSection[] | null {
+  if (!isVerifiedCenterForceOnlyListing(input, result)) {
+    return null
+  }
+
+  const steps = report.calculationTrace.flatMap((section) => section.steps)
+  const offset = findTraceStep(steps, 'control-perimeter-offset')
+  const contourX = findTraceStep(steps, 'contour-x')
+  const contourY = findTraceStep(steps, 'contour-y')
+  const perimeter = findTraceStep(steps, 'control-perimeter')
+  const area = findTraceStep(steps, 'control-area')
+  const stress = findTraceStep(steps, 'stress')
+  const utilization = findTraceStep(steps, 'utilization')
+
+  if (!offset || !contourX || !contourY || !perimeter || !area || !stress || !utilization) {
+    return null
+  }
+
+  return [
+    {
+      id: 'geometry',
+      title: 'Геометрические характеристики',
+      lines: [
+        ...traceFormulaBlock(offset, formatMm(result.perimeter.draftOffsetMm)),
+        ...traceFormulaBlock(contourX, formatMm(readTraceNumber(contourX))),
+        ...traceFormulaBlock(contourY, formatMm(readTraceNumber(contourY))),
+        ...traceFormulaBlock(perimeter, formatMm(result.controlPerimeterMm)),
+        ...traceFormulaBlock(area, formatMm2(readTraceNumber(area), 0)),
+      ],
+    },
+    {
+      id: 'stress',
+      title: 'Напряжение продавливания',
+      lines: traceFormulaBlock(stress, formatMpa(result.shearStressMpa, 4)),
+    },
+    {
+      id: 'capacity',
+      title: 'Несущая способность',
+      lines: [
+        line('r', `R = ${formatMpa(result.draftConcreteResistanceMpa, 3)}`),
+      ],
+    },
+    {
+      id: 'utilization',
+      title: 'Коэффициент использования',
+      lines: [
+        line('utilization-formula', formatFormulaText(utilization.formula)),
+        line(
+          'utilization-substitution',
+          hasFinite(result.maxShearStressMpa ?? result.shearStressMpa) && hasFinite(result.draftConcreteResistanceMpa)
+            ? `${etaSymbol} = ${formatPlain(result.maxShearStressMpa ?? result.shearStressMpa, 4)} / ${formatPlain(result.draftConcreteResistanceMpa, 3)}`
+            : `${etaSymbol} = ${unavailable}`,
+        ),
+        line('utilization-result', `${etaSymbol} = ${formatRatio(result.utilizationRatio)}`),
+      ],
+    },
+  ]
+}
+
+function traceFormulaBlock(step: TraceStep, resultText: string): EngineeringReportLine[] {
+  return [
+    line(`${step.id}-formula`, formatFormulaText(step.formula)),
+    line(`${step.id}-substitution`, formatFormulaText(step.substitutedFormula)),
+    line(`${step.id}-result`, `${getTraceFormulaSymbol(step)} = ${resultText}`),
+  ]
+}
+
+function findTraceStep(steps: TraceStep[], id: string) {
+  return steps.find((step) => step.id === id)
+}
+
+function getTraceFormulaSymbol(step: TraceStep) {
+  const formula = formatFormulaText(step.formula)
+  const [left] = formula.split('=')
+
+  return left.trim()
+}
+
+function formatFormulaText(value: string) {
+  return value
+    .replace(/\*/g, multiplySymbol)
+    .replace(/^eta_reinf\b/i, `${etaSymbol}sw`)
+    .replace(/^eta\b/i, etaSymbol)
+    .replace(/(\d+)\.000\b/g, '$1')
+}
+
+function readTraceNumber(step: TraceStep) {
+  const value = Number(step.result)
+
+  return Number.isFinite(value) ? value : null
+}
+
+function isVerifiedCenterForceOnlyListing(
+  input: PunchingShearInput,
+  result: PunchingShearResult,
+) {
+  return (
+    input.caseType === 'center' &&
+    Boolean(input.rectColumn) &&
+    input.openings.length === 0 &&
+    input.forces.momentXKnM === 0 &&
+    input.forces.momentYKnM === 0 &&
+    !input.shearReinforcement.enabled &&
+    !input.multipleContours?.enabled &&
+    result.verificationLevel === 'verified' &&
+    result.verifiedFeatures.includes('center-force-only')
+  )
 }
 
 function buildOptionalSp63GeometryLines(result: PunchingShearResult): EngineeringReportLine[] {

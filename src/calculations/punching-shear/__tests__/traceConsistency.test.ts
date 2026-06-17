@@ -19,6 +19,8 @@ const allowedSourceTypes = new Set<TraceSourceType>([
   'manual',
   'placeholder',
 ])
+const eta = '\u03b7'
+const multiply = '\u00d7'
 
 const scenarios: Array<{
   name: string
@@ -182,8 +184,23 @@ describe('trace consistency audit', () => {
     expect(html).toContain('5. Заключение')
     expect(markdown).toContain('## 1. Итог проверки')
     expect(markdown).toContain('## 3. Ход расчета')
-    expect(markdown).toContain('v = N / (u × h0)')
-    expect(markdown).toContain('η = v / R')
+    if (
+      input.caseType === 'center' &&
+      input.forces.momentXKnM === 0 &&
+      input.forces.momentYKnM === 0 &&
+      !input.shearReinforcement.enabled &&
+      !input.multipleContours?.enabled
+    ) {
+      expect(markdown).toContain('offset = h0 / 2')
+      expect(markdown).toContain(`contourX = columnX + 2 ${multiply} offset`)
+      expect(markdown).toContain(`contourY = columnY + 2 ${multiply} offset`)
+      expect(markdown).toContain(`u = 2 ${multiply} contourX + 2 ${multiply} contourY`)
+      expect(markdown).toContain(`Ab = u ${multiply} h0`)
+      expect(markdown).toContain('v = N / Ab')
+    } else {
+      expect(markdown).toContain(`v = N / (u ${multiply} h0)`)
+    }
+    expect(markdown).toContain(`${eta} = v / R`)
     expect(markdown).not.toContain('Формула:')
     expect(markdown).not.toContain('Подстановка:')
     expect(markdown).not.toContain('Результат:')

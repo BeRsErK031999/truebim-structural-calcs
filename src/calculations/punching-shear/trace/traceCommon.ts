@@ -52,6 +52,23 @@ export function buildForceOnlyStressStep(
   result: PunchingShearResult,
   sourceType = getArithmeticSource(input, result),
 ): TraceStep {
+  if (isVerifiedCenterForceOnlyTraceCase(input, result)) {
+    const Ab = calculateControlAreaMm2(result)
+
+    return {
+      id: 'stress',
+      title: 'Stress',
+      description: 'Force-only punching shear stress is calculated from design force and control area.',
+      formula: 'v = N / Ab',
+      substitutedFormula: `v = ${formatNullable(result.designShearForceN)} / ${formatNullable(Ab)}`,
+      result: formatNullable(result.shearStressMpa, 6),
+      units: 'MPa',
+      sourceType,
+      sourceReference: getSourceReference(sourceType),
+      warnings: [],
+    }
+  }
+
   return {
     id: 'stress',
     title: 'Stress',
@@ -94,19 +111,28 @@ export function buildBaseGeometrySteps(
   const sourceReference = getSourceReference(geometrySource)
   const warnings = usesDraftGeometry(input, result) ? createTraceWarnings(input, result) : []
 
+  const geometryGenerationStep: TraceStep = {
+    id: 'geometry-generation',
+    title: 'Geometry generation',
+    description: 'Control geometry was generated from the normalized punching shear input.',
+    formula: 'geometry DTO -> control perimeter segments',
+    substitutedFormula: `${result.perimeter.segments.length} segment(s), ${result.perimeter.vertices.length} vertex/vertices`,
+    result: `${formatNumber(result.perimeter.perimeterMm)} mm perimeter geometry`,
+    units: 'mm',
+    sourceType: geometrySource,
+    sourceReference,
+    warnings,
+  }
+
+  if (isVerifiedCenterForceOnlyTraceCase(input, result)) {
+    return [
+      geometryGenerationStep,
+      ...buildVerifiedCenterForceOnlyGeometrySteps(input, result, geometrySource, sourceReference),
+    ]
+  }
+
   return [
-    {
-      id: 'geometry-generation',
-      title: 'Geometry generation',
-      description: 'Control geometry was generated from the normalized punching shear input.',
-      formula: 'geometry DTO -> control perimeter segments',
-      substitutedFormula: `${result.perimeter.segments.length} segment(s), ${result.perimeter.vertices.length} vertex/vertices`,
-      result: `${formatNumber(result.perimeter.perimeterMm)} mm perimeter geometry`,
-      units: 'mm',
-      sourceType: geometrySource,
-      sourceReference,
-      warnings,
-    },
+    geometryGenerationStep,
     {
       id: 'control-perimeter',
       title: 'Control perimeter',
@@ -132,6 +158,124 @@ export function buildBaseGeometrySteps(
       warnings,
     },
   ]
+}
+
+function buildVerifiedCenterForceOnlyGeometrySteps(
+  input: PunchingShearInput,
+  result: PunchingShearResult,
+  sourceType: TraceSourceType,
+  sourceReference: string,
+): TraceStep[] {
+  const columnX = input.rectColumn?.widthXMm
+  const columnY = input.rectColumn?.widthYMm
+  const offset = result.perimeter.draftOffsetMm
+  const contourX = hasFiniteNumber(columnX) ? columnX + 2 * offset : null
+  const contourY = hasFiniteNumber(columnY) ? columnY + 2 * offset : null
+  const Ab = calculateControlAreaMm2(result)
+
+  return [
+    {
+      id: 'control-perimeter-offset',
+      title: 'Control perimeter offset',
+      description: 'The verified center force-only rectangular contour uses the stored perimeter offset.',
+      formula: 'offset = h0 / 2',
+      substitutedFormula: `offset = ${formatNullable(result.effectiveDepthMm)} / 2`,
+      result: formatNullable(offset),
+      units: 'mm',
+      sourceType,
+      sourceReference,
+      warnings: [],
+    },
+    {
+      id: 'contour-x',
+      title: 'Control contour X dimension',
+      description: 'The X dimension of the control contour is derived from the column X dimension and stored offset.',
+      formula: 'contourX = columnX + 2 * offset',
+      substitutedFormula: `contourX = ${formatNullable(columnX)} + 2 * ${formatNullable(offset)}`,
+      result: formatNullable(contourX),
+      units: 'mm',
+      sourceType,
+      sourceReference,
+      warnings: [],
+    },
+    {
+      id: 'contour-y',
+      title: 'Control contour Y dimension',
+      description: 'The Y dimension of the control contour is derived from the column Y dimension and stored offset.',
+      formula: 'contourY = columnY + 2 * offset',
+      substitutedFormula: `contourY = ${formatNullable(columnY)} + 2 * ${formatNullable(offset)}`,
+      result: formatNullable(contourY),
+      units: 'mm',
+      sourceType,
+      sourceReference,
+      warnings: [],
+    },
+    {
+      id: 'control-perimeter',
+      title: 'Control perimeter',
+      description: 'The verified center force-only perimeter is the sum of two contour dimensions in each direction.',
+      formula: 'u = 2 * contourX + 2 * contourY',
+      substitutedFormula: `u = 2 * ${formatNullable(contourX)} + 2 * ${formatNullable(contourY)}`,
+      result: formatNullable(result.controlPerimeterMm),
+      units: 'mm',
+      sourceType,
+      sourceReference,
+      warnings: [],
+    },
+    {
+      id: 'effective-depth',
+      title: 'Effective depth',
+      description: 'Effective depth is taken from the normalized slab input.',
+      formula: 'h0 = effective depth',
+      substitutedFormula: `h0 = ${formatNullable(result.effectiveDepthMm)} mm`,
+      result: formatNullable(result.effectiveDepthMm),
+      units: 'mm',
+      sourceType,
+      sourceReference,
+      warnings: [],
+    },
+    {
+      id: 'control-area',
+      title: 'Control area',
+      description: 'Control area is derived from the selected perimeter and effective depth.',
+      formula: 'Ab = u * h0',
+      substitutedFormula: `Ab = ${formatNullable(result.controlPerimeterMm)} * ${formatNullable(result.effectiveDepthMm)}`,
+      result: formatNullable(Ab),
+      units: 'mm2',
+      sourceType,
+      sourceReference,
+      warnings: [],
+    },
+  ]
+}
+
+function isVerifiedCenterForceOnlyTraceCase(
+  input: PunchingShearInput,
+  result: PunchingShearResult,
+) {
+  return (
+    input.caseType === 'center' &&
+    Boolean(input.rectColumn) &&
+    input.openings.length === 0 &&
+    input.forces.momentXKnM === 0 &&
+    input.forces.momentYKnM === 0 &&
+    !input.shearReinforcement.enabled &&
+    !input.multipleContours?.enabled &&
+    result.verificationLevel === 'verified' &&
+    result.verifiedFeatures.includes('center-force-only')
+  )
+}
+
+function calculateControlAreaMm2(result: PunchingShearResult) {
+  if (!hasFiniteNumber(result.controlPerimeterMm) || !hasFiniteNumber(result.effectiveDepthMm)) {
+    return null
+  }
+
+  return result.controlPerimeterMm * result.effectiveDepthMm
+}
+
+function hasFiniteNumber(value: number | null | undefined): value is number {
+  return typeof value === 'number' && Number.isFinite(value)
 }
 
 export function getArithmeticSource(

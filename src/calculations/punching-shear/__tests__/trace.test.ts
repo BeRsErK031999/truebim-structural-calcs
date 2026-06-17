@@ -24,8 +24,12 @@ describe('punching shear calculation trace', () => {
     expect(trace[0].steps.map((step) => step.id)).toEqual([
       'input-validation',
       'geometry-generation',
+      'control-perimeter-offset',
+      'contour-x',
+      'contour-y',
       'control-perimeter',
       'effective-depth',
+      'control-area',
       'stress',
       'utilization',
       'verification-level',
@@ -38,12 +42,12 @@ describe('punching shear calculation trace', () => {
     const stressStep = trace[0].steps.find((step) => step.id === 'stress')
 
     expect(stressStep).toMatchObject({
-      formula: 'v = N / (u * h0)',
+      formula: 'v = N / Ab',
       result: result.shearStressMpa?.toFixed(6),
       units: 'MPa',
       sourceType: 'verified',
     })
-    expect(stressStep?.substitutedFormula).toContain('420000.000 / (2360.000 * 190.000)')
+    expect(stressStep?.substitutedFormula).toContain('420000.000 / 448400.000')
   })
 
   it('traces utilization from stress and draft resistance without changing verification logic', () => {
@@ -76,7 +80,7 @@ describe('punching shear calculation trace', () => {
     const report = buildPunchingShearReport(defaultPunchingShearInput, result)
 
     expect(report.calculationTrace[0].title).toBe('Calculation Trace')
-    expect(report.calculationTrace[0].steps).toHaveLength(7)
+    expect(report.calculationTrace[0].steps).toHaveLength(11)
   })
 
   it('adds center moment eccentricity and redistribution trace steps', () => {

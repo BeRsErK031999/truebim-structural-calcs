@@ -22,6 +22,8 @@ vi.mock('../downloadFile', () => ({
 }))
 
 const mockedDownloadTextFile = vi.mocked(downloadTextFile)
+const eta = '\u03b7'
+const multiply = '\u00d7'
 
 describe('report export', () => {
   beforeEach(() => {
@@ -50,8 +52,8 @@ describe('report export', () => {
     expect(html).toContain('5. Заключение')
     expect(markdown).toContain('## 1. Итог проверки')
     expect(markdown).toContain('## 3. Ход расчета')
-    expect(markdown).toContain('v = N / (u × h0)')
-    expect(markdown).toContain('η = v / R')
+    expect(markdown).toContain('v = N / Ab')
+    expect(markdown).toContain(`${eta} = v / R`)
   })
 
   it('renders formulas as listing lines rather than trace cards', () => {
@@ -60,9 +62,25 @@ describe('report export', () => {
     const markdown = buildPunchingShearMarkdownReport(defaultPunchingShearInput, result, report)
     const html = buildPunchingShearHtmlReport(defaultPunchingShearInput, result, report)
 
-    expect(markdown).toContain('Ab = u × h0')
-    expect(markdown).toContain('Ab = 2360 × 190')
+    expect(markdown).toContain('offset = h0 / 2')
+    expect(markdown).toContain('offset = 190 / 2')
+    expect(markdown).toContain('offset = 95 мм')
+    expect(markdown).toContain(`contourX = columnX + 2 ${multiply} offset`)
+    expect(markdown).toContain(`contourX = 400 + 2 ${multiply} 95`)
+    expect(markdown).toContain('contourX = 590 мм')
+    expect(markdown).toContain(`contourY = columnY + 2 ${multiply} offset`)
+    expect(markdown).toContain(`u = 2 ${multiply} contourX + 2 ${multiply} contourY`)
+    expect(markdown).toContain(`u = 2 ${multiply} 590 + 2 ${multiply} 590`)
+    expect(markdown).toContain('u = 2360 мм')
+    expect(markdown).toContain(`Ab = u ${multiply} h0`)
+    expect(markdown).toContain(`Ab = 2360 ${multiply} 190`)
     expect(markdown).toContain('Ab = 448400 мм²')
+    expect(markdown).toContain('v = N / Ab')
+    expect(markdown).toContain('v = 420000 / 448400')
+    expect(markdown).toContain('v = 0.9367 МПа')
+    expect(markdown).toContain('R = 1.050 МПа')
+    expect(markdown).toContain(`${eta} = 0.9367 / 1.050`)
+    expect(markdown).toContain(`${eta} = 0.892`)
     expect(markdown).not.toContain('Формула:')
     expect(markdown).not.toContain('Подстановка:')
     expect(markdown).not.toContain('Результат:')
@@ -80,7 +98,7 @@ describe('report export', () => {
     for (const content of [markdown, html]) {
       expect(content).not.toMatch(/\bu = u\b|\bh0 = h0\b|\bR = R\b|η = η/)
       expect(content).not.toContain('n/a')
-      expect(content).toContain('Параметр недоступен для данного режима расчета.')
+      expect(content).not.toContain('Параметр недоступен для данного режима расчета.')
     }
   })
 
