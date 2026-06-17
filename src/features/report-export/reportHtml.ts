@@ -6,7 +6,11 @@ import {
   type PunchingShearResult,
   type SvgSketchElement,
 } from '@/calculations/punching-shear'
-import { formatTraceSourceLabel } from '@/calculations/punching-shear/trace/traceLabels'
+import {
+  flattenTraceSteps,
+  formatTraceStepDetails,
+  formatTraceStepPath,
+} from '@/calculations/punching-shear/trace/tracePresentation'
 import { getRelatedKnowledgeEntries } from '@/features/knowledge-base'
 import { formatFeatureLabel } from '@/shared/labels/featureLabels'
 import { getAppMetadata } from '@/shared/config/appMetadata'
@@ -385,9 +389,7 @@ function renderMultipleControlPerimeters(result: PunchingShearResult) {
 }
 
 function renderCalculationTrace(report: PunchingShearReportModel) {
-  const steps = report.calculationTrace.flatMap((section) =>
-    section.steps.map((step) => ({ section, step })),
-  )
+  const steps = flattenTraceSteps(report.calculationTrace)
 
   if (steps.length === 0) {
     return '<p class="note">Трассировка расчета недоступна.</p>'
@@ -395,9 +397,9 @@ function renderCalculationTrace(report: PunchingShearReportModel) {
 
   return renderTable([
     ['раздел / шаг', 'формула | подстановка | результат | источник проверки'],
-    ...steps.map(({ section, step }) => [
-      `${section.title} / ${step.title}`,
-      `${step.formula} | ${step.substitutedFormula} | ${step.result} ${step.units} | ${formatTraceSourceLabel(step.sourceType)} - ${step.sourceReference}${step.warnings.length > 0 ? ` | предупреждения: ${step.warnings.join('; ')}` : ''}`,
+    ...steps.map((traceStep) => [
+      formatTraceStepPath(traceStep),
+      formatTraceStepDetails(traceStep.step),
     ] satisfies [string, string]),
   ])
 }

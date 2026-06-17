@@ -4,7 +4,11 @@ import type {
   PunchingShearReportModel,
   PunchingShearResult,
 } from '@/calculations/punching-shear'
-import { formatTraceSourceLabel } from '@/calculations/punching-shear/trace/traceLabels'
+import {
+  flattenTraceSteps,
+  formatTraceStepDetails,
+  formatTraceStepPath,
+} from '@/calculations/punching-shear/trace/tracePresentation'
 import { getRelatedKnowledgeEntries } from '@/features/knowledge-base'
 import { formatFeatureLabel } from '@/shared/labels/featureLabels'
 
@@ -207,8 +211,6 @@ export function buildPunchingShearMarkdownReport(
           ] satisfies [string, string]),
         ])
       : 'Связанные записи базы знаний не найдены.',
-    '',
-    '## Трассировка',
     '',
     '## Трассировка расчета',
     '',
@@ -420,9 +422,7 @@ function formatFeatureList(features: string[]) {
 }
 
 function renderCalculationTrace(report: PunchingShearReportModel) {
-  const steps = report.calculationTrace.flatMap((section) =>
-    section.steps.map((step) => ({ section, step })),
-  )
+  const steps = flattenTraceSteps(report.calculationTrace)
 
   if (steps.length === 0) {
     return 'Трассировка расчета недоступна.'
@@ -430,9 +430,9 @@ function renderCalculationTrace(report: PunchingShearReportModel) {
 
   return table([
     ['раздел / шаг', 'формула | подстановка | результат | источник проверки'],
-    ...steps.map(({ section, step }) => [
-      `${section.title} / ${step.title}`,
-      `${step.formula} | ${step.substitutedFormula} | ${step.result} ${step.units} | ${formatTraceSourceLabel(step.sourceType)} - ${step.sourceReference}${step.warnings.length > 0 ? ` | предупреждения: ${step.warnings.join('; ')}` : ''}`,
+    ...steps.map((traceStep) => [
+      formatTraceStepPath(traceStep),
+      formatTraceStepDetails(traceStep.step),
     ] satisfies [string, string]),
   ])
 }
