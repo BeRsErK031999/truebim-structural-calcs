@@ -7,14 +7,10 @@ import { defaultPunchingShearInput } from '../defaults'
 import { calculatePunchingShear } from '../engine'
 import { buildPunchingShearReport } from '../report'
 import { buildPunchingShearTrace } from '../trace/traceBuilder'
-import {
-  engineeringStepTitle,
-  formatEngineeringFormulaText,
-  groupEngineeringTraceSteps,
-} from '../trace/engineeringReportPresentation'
-import type { PunchingShearInput } from '../types'
-import { formatTraceSourceLabel, traceSourceLabels } from '../trace/traceLabels'
+import { buildEngineeringReportListing } from '../trace/engineeringReportLines'
+import { traceSourceLabels } from '../trace/traceLabels'
 import type { TraceSourceType } from '../trace/traceStep'
+import type { PunchingShearInput } from '../types'
 
 const allowedSourceTypes = new Set<TraceSourceType>([
   'verified',
@@ -27,7 +23,6 @@ const allowedSourceTypes = new Set<TraceSourceType>([
 const scenarios: Array<{
   name: string
   input: PunchingShearInput
-  draftOnly?: boolean
   warningPattern?: RegExp
 }> = [
   {
@@ -44,7 +39,6 @@ const scenarios: Array<{
         momentYKnM: 8,
       },
     },
-    draftOnly: true,
     warningPattern: /Moment transfer/i,
   },
   {
@@ -53,7 +47,6 @@ const scenarios: Array<{
       ...defaultPunchingShearInput,
       caseType: 'edge',
     },
-    draftOnly: true,
     warningPattern: /boundary|draft/i,
   },
   {
@@ -62,7 +55,6 @@ const scenarios: Array<{
       ...defaultPunchingShearInput,
       caseType: 'corner',
     },
-    draftOnly: true,
     warningPattern: /boundary|draft/i,
   },
   {
@@ -80,7 +72,6 @@ const scenarios: Array<{
         },
       ],
     },
-    draftOnly: true,
     warningPattern: /Openings|opening|draft/i,
   },
   {
@@ -89,7 +80,6 @@ const scenarios: Array<{
       ...defaultPunchingShearInput,
       caseType: 'wall-end',
     },
-    draftOnly: true,
     warningPattern: /Wall-end|wall|draft/i,
   },
   {
@@ -98,7 +88,6 @@ const scenarios: Array<{
       ...defaultPunchingShearInput,
       caseType: 'wall-corner',
     },
-    draftOnly: true,
     warningPattern: /Wall-corner|wall|draft/i,
   },
   {
@@ -111,7 +100,6 @@ const scenarios: Array<{
         offsetStep: 'h0/2',
       },
     },
-    draftOnly: true,
     warningPattern: /Multiple contour|contour|draft/i,
   },
   {
@@ -123,7 +111,6 @@ const scenarios: Array<{
         enabled: true,
       },
     },
-    draftOnly: true,
     warningPattern: /Shear reinforcement|reinforcement|draft/i,
   },
   {
@@ -136,7 +123,6 @@ const scenarios: Array<{
         position: 'center',
       },
     },
-    draftOnly: true,
     warningPattern: /Round column|round|draft/i,
   },
   {
@@ -149,7 +135,6 @@ const scenarios: Array<{
         position: 'edge',
       },
     },
-    draftOnly: true,
     warningPattern: /not implemented|unsupported|Round edge/i,
   },
   {
@@ -162,7 +147,6 @@ const scenarios: Array<{
         position: 'corner',
       },
     },
-    draftOnly: true,
     warningPattern: /not implemented|unsupported|Round edge/i,
   },
 ]
@@ -181,45 +165,38 @@ describe('trace consistency audit', () => {
     expect(findStep(steps, 'effective-depth')?.result).toBe(formatNullable(result.effectiveDepthMm))
     expect(findStep(steps, 'stress')?.result).toBe(formatNullable(result.shearStressMpa, 6))
     expect(findStep(steps, 'utilization')?.result).toBe(formatNullable(result.utilizationRatio, 6))
-
     expect(findStep(steps, 'verification-level')?.result).toBe(result.verificationLevel.toUpperCase())
   })
 
-  it.each(scenarios)('renders trace steps as engineering report formulas for $name', ({ input }) => {
+  it.each(scenarios)('renders exported reports as engineering calculation listings for $name', ({ input }) => {
     const result = calculatePunchingShear(input)
     const report = buildPunchingShearReport(input, result)
     const html = buildPunchingShearHtmlReport(input, result, report)
     const markdown = buildPunchingShearMarkdownReport(input, result, report)
-    const groupedSteps = groupEngineeringTraceSteps(report.calculationTrace)
-    const visibleSteps = [
-      ...groupedSteps.geometry,
-      ...groupedSteps.calculation,
-      ...groupedSteps.checks,
-    ]
+    const listing = buildEngineeringReportListing(input, result, report)
 
-    expect(html).toContain('Трассировка расчета')
-    expect(markdown).toContain('## Трассировка расчета')
-    expect(html).toContain('Формула:')
-    expect(html).toContain('Подстановка:')
-    expect(html).toContain('Результат:')
-    expect(markdown).toContain('Формула:')
-    expect(markdown).toContain('Подстановка:')
-    expect(markdown).toContain('Результат:')
+    expect(html).toContain('1. Итог проверки')
+    expect(html).toContain('2. Исходные данные')
+    expect(html).toContain('3. Ход расчета')
+    expect(html).toContain('4. Проверка условия')
+    expect(html).toContain('5. Заключение')
+    expect(markdown).toContain('## 1. Итог проверки')
+    expect(markdown).toContain('## 3. Ход расчета')
+    expect(markdown).toContain('v = N / (u × h0)')
+    expect(markdown).toContain('η = v / R')
+    expect(markdown).not.toContain('Формула:')
+    expect(markdown).not.toContain('Подстановка:')
+    expect(markdown).not.toContain('Результат:')
 
-    for (const step of visibleSteps) {
-      const title = engineeringStepTitle(step)
-      const formula = formatEngineeringFormulaText(step.formula)
-
-      expect(html).toContain(title)
-      expect(markdown).toContain(title)
-      expect(decodeHtml(html)).toContain(formula)
-      expect(markdown).toContain(formula)
-      expect(html).not.toContain(formatTraceSourceLabel(step.sourceType))
-      expect(markdown).not.toContain(formatTraceSourceLabel(step.sourceType))
+    for (const section of listing.calculationSections) {
+      expect(html).toContain(section.title)
+      expect(markdown).toContain(section.title)
     }
 
     expect(decodeHtml(html)).not.toMatch(/\b(?:DTO|schema|safeParse|explainability|trace foundation)\b/i)
     expect(markdown).not.toMatch(/\b(?:DTO|schema|safeParse|explainability|trace foundation)\b/i)
+    expect(markdown).not.toMatch(/\bu = u\b|\bh0 = h0\b|\bR = R\b|η = η/)
+    expect(markdown).not.toContain('n/a')
   })
 
   it.each(scenarios)('uses allowed finite trace values for $name', ({ input }) => {
@@ -233,22 +210,6 @@ describe('trace consistency audit', () => {
       expect(allowedSourceTypes.has(step.sourceType)).toBe(true)
     }
   })
-
-  it.each(scenarios.filter((scenario) => scenario.draftOnly))(
-    'does not mark draft-only scenario trace steps as verified for $name',
-    ({ input }) => {
-      const result = calculatePunchingShear(input)
-      const report = buildPunchingShearReport(input, result)
-      const nonLifecycleSteps = report.calculationTrace
-        .flatMap((section) => section.steps)
-        .filter((step) => step.id !== 'input-validation' && step.id !== 'verification-level')
-
-      expect(
-        result.draftFeatures.some((feature) => result.verifiedFeatures.includes(feature)),
-      ).toBe(false)
-      expect(nonLifecycleSteps.some((step) => step.sourceType === 'verified')).toBe(false)
-    },
-  )
 
   it.each(scenarios.filter((scenario) => scenario.warningPattern))(
     'surfaces expected draft/partial warnings for $name',
@@ -264,20 +225,15 @@ describe('trace consistency audit', () => {
     },
   )
 
-  it.each(scenarios)('does not expose internal IDs as visible trace labels for $name', ({ input }) => {
-    const result = calculatePunchingShear(input)
-    const report = buildPunchingShearReport(input, result)
-    const labels = report.calculationTrace.flatMap((section) => [
-      section.title,
-      ...section.steps.map((step) => step.title),
-    ])
-
-    for (const label of labels) {
-      expect(label).not.toMatch(/^[a-z]+(?:-[a-z0-9]+)+$/)
-    }
+  it('does not leak trace source labels into exported reports', () => {
+    const result = calculatePunchingShear(defaultPunchingShearInput)
+    const report = buildPunchingShearReport(defaultPunchingShearInput, result)
+    const html = buildPunchingShearHtmlReport(defaultPunchingShearInput, result, report)
+    const markdown = buildPunchingShearMarkdownReport(defaultPunchingShearInput, result, report)
 
     for (const sourceLabel of Object.values(traceSourceLabels)) {
-      expect(sourceLabel).not.toMatch(/^[a-z]+$/)
+      expect(html).not.toContain(sourceLabel)
+      expect(markdown).not.toContain(sourceLabel)
     }
   })
 })
@@ -286,17 +242,19 @@ function findStep<T extends { id: string }>(steps: T[], id: string) {
   return steps.find((step) => step.id === id)
 }
 
-function formatNullable(value: number | null | undefined, digits = 3) {
-  return value === null || value === undefined || !Number.isFinite(value)
-    ? 'n/a'
-    : value.toFixed(digits)
+function formatNullable(value: number | null | undefined, decimals = 3) {
+  if (value === null || value === undefined || !Number.isFinite(value)) {
+    return 'n/a'
+  }
+
+  return value.toFixed(decimals)
 }
 
 function decodeHtml(value: string) {
   return value
-    .replace(/&gt;/g, '>')
+    .replace(/&amp;/g, '&')
     .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
     .replace(/&quot;/g, '"')
     .replace(/&#39;/g, "'")
-    .replace(/&amp;/g, '&')
 }

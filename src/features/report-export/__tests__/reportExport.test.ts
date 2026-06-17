@@ -11,9 +11,9 @@ import {
   buildPunchingShearHtmlReport,
   buildPunchingShearMarkdownReport,
   createCalculationId,
-  formatUtilization,
   exportCurrentCalculationAsHtml,
   exportCurrentCalculationAsMarkdown,
+  formatUtilization,
   sanitizeFileName,
 } from '../index'
 
@@ -35,153 +35,56 @@ describe('report export', () => {
     })
   })
 
-  it('builds an HTML report with the draft warning', () => {
+  it('builds exported reports around the engineering calculation sequence', () => {
     const result = calculatePunchingShear(defaultPunchingShearInput)
     const report = buildPunchingShearReport(defaultPunchingShearInput, result)
     const html = buildPunchingShearHtmlReport(defaultPunchingShearInput, result, report)
+    const markdown = buildPunchingShearMarkdownReport(defaultPunchingShearInput, result, report)
 
-    expect(html).toContain('ЧЕРНОВОЙ РАСЧЕТ - НЕ ДЛЯ ПРОЕКТНОГО ПРИМЕНЕНИЯ')
     expect(html).toContain('TrueBIM: отчет по продавливанию')
-  })
-
-  it('includes verification capability sections', () => {
-    const result = calculatePunchingShear(defaultPunchingShearInput)
-    const report = buildPunchingShearReport(defaultPunchingShearInput, result)
-    const html = buildPunchingShearHtmlReport(defaultPunchingShearInput, result, report)
-    const markdown = buildPunchingShearMarkdownReport(defaultPunchingShearInput, result, report)
-
-    expect(html).toContain('Возможности проверки')
-    expect(html).toContain('Доказательства проверки')
-    expect(markdown).toContain('## Возможности проверки')
-    expect(markdown).toContain('verified-center-rect-001')
-  })
-
-  it('includes the applicability section in exported reports', () => {
-    const result = calculatePunchingShear(defaultPunchingShearInput)
-    const report = buildPunchingShearReport(defaultPunchingShearInput, result)
-    const html = buildPunchingShearHtmlReport(defaultPunchingShearInput, result, report)
-    const markdown = buildPunchingShearMarkdownReport(defaultPunchingShearInput, result, report)
-
-    expect(html).toContain('Применимость')
-    expect(html).toContain('Подходит для пилотной проверки, сравнения и сбора доказательств.')
-    expect(html).toContain('Это не финальный проектный документ')
-    expect(markdown).toContain('## Применимость')
-    expect(markdown).toContain('- Частичные возможности: нет')
-    expect(markdown).toContain('- Черновые возможности: нет')
-  })
-
-  it('builds a Markdown report with the formula', () => {
-    const result = calculatePunchingShear(defaultPunchingShearInput)
-    const report = buildPunchingShearReport(defaultPunchingShearInput, result)
-    const markdown = buildPunchingShearMarkdownReport(defaultPunchingShearInput, result, report)
-
-    expect(markdown).toContain('v = N / (u * h0)')
-  })
-
-  it('includes the calculation trace section in exported reports', () => {
-    const result = calculatePunchingShear(defaultPunchingShearInput)
-    const report = buildPunchingShearReport(defaultPunchingShearInput, result)
-    const html = buildPunchingShearHtmlReport(defaultPunchingShearInput, result, report)
-    const markdown = buildPunchingShearMarkdownReport(defaultPunchingShearInput, result, report)
-
-    expect(html).toContain('Трассировка')
-    expect(html).toContain('Геометрия расчетного контура')
-    expect(html).toContain('Формула:')
-    expect(html).toContain('Подстановка:')
-    expect(html).toContain('Результат:')
-    expect(html).toContain('Проверка напряжений')
-    expect(html).not.toContain('формула | подстановка | результат | источник проверки')
-    expect(html).not.toContain('Трассировка расчета / Проверка исходных данных')
-    expect(markdown).toContain('## Трассировка расчета')
-    expect(markdown).not.toContain('## Трассировка\n\n## Трассировка расчета')
-    expect(markdown).toContain('Формула:')
-    expect(markdown).toContain('Подстановка:')
-    expect(markdown).toContain('Результат:')
-    expect(markdown).toContain('#### Проверка напряжений')
+    expect(html).toContain('ЧЕРНОВОЙ РАСЧЕТ - НЕ ДЛЯ ПРОЕКТНОГО ПРИМЕНЕНИЯ')
+    expect(html).toContain('1. Итог проверки')
+    expect(html).toContain('2. Исходные данные')
+    expect(html).toContain('3. Ход расчета')
+    expect(html).toContain('4. Проверка условия')
+    expect(html).toContain('5. Заключение')
+    expect(markdown).toContain('## 1. Итог проверки')
+    expect(markdown).toContain('## 3. Ход расчета')
     expect(markdown).toContain('v = N / (u × h0)')
-    expect(markdown).not.toContain('| раздел / шаг | формула \\| подстановка \\| результат \\| источник проверки |')
+    expect(markdown).toContain('η = v / R')
   })
 
-  it('includes scenario trace steps in exported reports', () => {
-    const input = {
-      ...defaultPunchingShearInput,
-      forces: {
-        axialForceKn: 420,
-        momentXKnM: 12,
-        momentYKnM: 8,
-      },
-      multipleContours: {
-        enabled: true,
-        count: 2,
-        offsetStep: 'h0/2' as const,
-      },
-      shearReinforcement: {
-        ...defaultPunchingShearInput.shearReinforcement,
-        enabled: true,
-      },
-    }
-    const result = calculatePunchingShear(input)
-    const report = buildPunchingShearReport(input, result)
-    const html = buildPunchingShearHtmlReport(input, result, report)
-    const markdown = buildPunchingShearMarkdownReport(input, result, report)
-
-    expect(html).toContain('Эксцентриситет от моментов')
-    expect(html).toContain('Выбор критического чернового контура')
-    expect(html).toContain('Черновой вклад поперечной арматуры')
-    expect(markdown).toContain('#### Эксцентриситет от моментов')
-    expect(markdown).toContain('Передача моментов использует черновое перераспределение напряжений')
-  })
-
-  it('includes moment transfer and stress distribution sections', () => {
-    const input = {
-      ...defaultPunchingShearInput,
-      forces: {
-        axialForceKn: 420,
-        momentXKnM: 12,
-        momentYKnM: 8,
-      },
-    }
-    const result = calculatePunchingShear(input)
-    const report = buildPunchingShearReport(input, result)
-    const html = buildPunchingShearHtmlReport(input, result, report)
-    const markdown = buildPunchingShearMarkdownReport(input, result, report)
-
-    expect(html).toContain('Передача моментов')
-    expect(html).toContain('Трассировка')
-    expect(html).toContain('Mx - момент в плоскости оси X')
-    expect(html).toContain('ЧЕРНОВОЕ предварительное линейное перераспределение')
-    expect(markdown).toContain('## Передача моментов')
-    expect(markdown).toContain('## Трассировка')
-    expect(markdown).toContain('Mx - момент в плоскости оси X')
-  })
-
-  it('includes input N and calculated u, h0, v and utilization values', () => {
+  it('renders formulas as listing lines rather than trace cards', () => {
     const result = calculatePunchingShear(defaultPunchingShearInput)
     const report = buildPunchingShearReport(defaultPunchingShearInput, result)
     const markdown = buildPunchingShearMarkdownReport(defaultPunchingShearInput, result, report)
+    const html = buildPunchingShearHtmlReport(defaultPunchingShearInput, result, report)
 
-    expect(markdown).toContain(`| N | ${defaultPunchingShearInput.forces.axialForceKn} кН |`)
-    expect(markdown).toContain(`| u | ${result.controlPerimeterMm} mm |`)
-    expect(markdown).toContain(`| h0 | ${result.effectiveDepthMm} mm |`)
-    expect(markdown).toContain(`| v | ${result.shearStressMpa?.toFixed(3)} MPa |`)
-    expect(markdown).toContain(
-      `| коэффициент использования | ${result.utilizationRatio?.toFixed(3)} (${(
-        (result.utilizationRatio ?? 0) * 100
-      ).toFixed(1)}%) |`,
-    )
+    expect(markdown).toContain('Ab = u × h0')
+    expect(markdown).toContain('Ab = 2360 × 190')
+    expect(markdown).toContain('Ab = 448400 мм²')
+    expect(markdown).not.toContain('Формула:')
+    expect(markdown).not.toContain('Подстановка:')
+    expect(markdown).not.toContain('Результат:')
+    expect(html).not.toContain('Формула:')
+    expect(html).not.toContain('Подстановка:')
+    expect(html).not.toContain('Результат:')
   })
 
-  it('generates calculation IDs with timestamp and short commit', () => {
-    expect(createCalculationId(new Date(2026, 4, 26, 4, 17, 54))).toMatch(
-      /^ps-center-20260526-041754-[a-zA-Z0-9-]+$/,
-    )
+  it('does not expose pseudo formulas or raw n/a values in user-facing exports', () => {
+    const result = calculatePunchingShear(defaultPunchingShearInput)
+    const report = buildPunchingShearReport(defaultPunchingShearInput, result)
+    const markdown = buildPunchingShearMarkdownReport(defaultPunchingShearInput, result, report)
+    const html = buildPunchingShearHtmlReport(defaultPunchingShearInput, result, report)
+
+    for (const content of [markdown, html]) {
+      expect(content).not.toMatch(/\bu = u\b|\bh0 = h0\b|\bR = R\b|η = η/)
+      expect(content).not.toContain('n/a')
+      expect(content).toContain('Параметр недоступен для данного режима расчета.')
+    }
   })
 
-  it('formats utilization with ratio and percent', () => {
-    expect(formatUtilization(0.8920606601248884)).toBe('0.892 (89.2%)')
-  })
-
-  it('includes assumptions, unsupported features and verification source in reports', () => {
+  it('keeps verification, evidence, applicability and metadata in service information', () => {
     const result = calculatePunchingShear(defaultPunchingShearInput)
     const report = buildPunchingShearReport(defaultPunchingShearInput, result)
     const metadata = {
@@ -197,166 +100,19 @@ describe('report export', () => {
       metadata,
     )
 
-    expect(html).toContain('допущения')
-    expect(html).toContain('Отверстия используют черновую геометрию вычитания по касательным')
-    expect(html).toContain('Не поддерживается в этом черновике')
-    expect(html).toContain('проверенные коэффициенты СП 63')
-    expect(html).toContain('Источник проверки')
+    expect(html).toContain('6. Служебная информация')
+    expect(html).toContain('Статус проверки')
+    expect(html).toContain('Доказательства проверки')
+    expect(html).toContain('Применимость')
+    expect(html).toContain('Метаданные')
     expect(html).toContain('НЕ ПРОВЕРЕНО')
-    expect(markdown).toContain('допущения')
-    expect(markdown).toContain('## Не поддерживается в этом черновике')
-    expect(markdown).toContain('- Источник проверки: НЕ ПРОВЕРЕНО')
+    expect(markdown).toContain('## 6. Служебная информация')
+    expect(markdown).toContain('### Статус проверки')
+    expect(markdown).toContain('verified-center-rect-001')
+    expect(markdown).toContain('ps-center-20260526-041754-d576a71')
   })
 
-  it('renders SVG numeric labels and axes in HTML report', () => {
-    const result = calculatePunchingShear(defaultPunchingShearInput)
-    const report = buildPunchingShearReport(defaultPunchingShearInput, result)
-    const html = buildPunchingShearHtmlReport(defaultPunchingShearInput, result, report)
-
-    expect(html).toContain('400 mm колонна X')
-    expect(html).toContain('95 mm черновое смещение')
-    expect(html).toContain('X')
-    expect(html).toContain('Y')
-    expect(html).toContain('Масштаб: 1 единица = 1 мм, вписано в область')
-  })
-
-  it('includes wall geometry section in exported reports', () => {
-    const input = {
-      ...defaultPunchingShearInput,
-      caseType: 'wall-end' as const,
-    }
-    const result = calculatePunchingShear(input)
-    const report = buildPunchingShearReport(input, result)
-    const html = buildPunchingShearHtmlReport(input, result, report)
-    const markdown = buildPunchingShearMarkdownReport(input, result, report)
-
-    expect(report.wallGeometrySummary).toMatchObject({
-      enabled: true,
-      wallLengthMm: 1200,
-      wallThicknessMm: 200,
-    })
-    expect(html).toContain('Геометрия стены')
-    expect(html).toContain('длина стены')
-    expect(markdown).toContain('### Геометрия стены')
-    expect(markdown).toContain('| длина стены | 1200 мм |')
-    expect(markdown).toContain('Поддержка продавливания у конца стены является только черновой геометрией.')
-  })
-
-  it('hides unused geometry sections for the center case', () => {
-    const result = calculatePunchingShear(defaultPunchingShearInput)
-    const report = buildPunchingShearReport(defaultPunchingShearInput, result)
-    const html = buildPunchingShearHtmlReport(defaultPunchingShearInput, result, report)
-    const markdown = buildPunchingShearMarkdownReport(defaultPunchingShearInput, result, report)
-
-    expect(html).not.toContain('<h3>Геометрия стены</h3>')
-    expect(html).not.toContain('<h3>Геометрия угла стены</h3>')
-    expect(markdown).not.toContain('### Геометрия стены')
-    expect(markdown).not.toContain('### Геометрия угла стены')
-  })
-
-  it('includes wall corner geometry section in exported reports', () => {
-    const input = {
-      ...defaultPunchingShearInput,
-      caseType: 'wall-corner' as const,
-    }
-    const result = calculatePunchingShear(input)
-    const report = buildPunchingShearReport(input, result)
-    const html = buildPunchingShearHtmlReport(input, result, report)
-    const markdown = buildPunchingShearMarkdownReport(input, result, report)
-
-    expect(report.wallCornerGeometrySummary).toMatchObject({
-      enabled: true,
-      wallLengthXMm: 1200,
-      wallLengthYMm: 1000,
-      wallThicknessXMm: 200,
-      wallThicknessYMm: 220,
-      orientation: 'top-left',
-      applicability: 'draft-only',
-    })
-    expect(html).toContain('Геометрия угла стены')
-    expect(html).toContain('длина стены X')
-    expect(markdown).toContain('### Геометрия угла стены')
-    expect(markdown).toContain('| длина стены X | 1200 мм |')
-    expect(markdown).toContain('Поддержка продавливания в углу стены является только черновой геометрией.')
-  })
-
-  it('includes round column geometry section in exported reports', () => {
-    const input = {
-      ...defaultPunchingShearInput,
-      caseType: 'round' as const,
-      roundColumn: {
-        diameterMm: 400,
-        slabThickness: 220,
-        effectiveDepth: 190,
-        cover: 30,
-        position: 'center' as const,
-      },
-    }
-    const result = calculatePunchingShear(input)
-    const report = buildPunchingShearReport(input, result)
-    const html = buildPunchingShearHtmlReport(input, result, report)
-    const markdown = buildPunchingShearMarkdownReport(input, result, report)
-
-    expect(report.roundGeometrySummary).toMatchObject({
-      enabled: true,
-      diameterMm: 400,
-      position: 'center',
-      applicability: 'draft-only',
-    })
-    expect(html).toContain('диаметр')
-    expect(html).toContain('400 мм')
-    expect(markdown).toContain('| диаметр | 400 мм |')
-    expect(markdown).toContain('Периметр круглой колонны является черновым и требует проверки по СП 63.')
-  })
-
-  it('includes multiple control perimeter section in exported reports', () => {
-    const input = {
-      ...defaultPunchingShearInput,
-      multipleContours: {
-        enabled: true,
-        count: 2,
-        offsetStep: 'h0/2' as const,
-      },
-    }
-    const result = calculatePunchingShear(input)
-    const report = buildPunchingShearReport(input, result)
-    const html = buildPunchingShearHtmlReport(input, result, report)
-    const markdown = buildPunchingShearMarkdownReport(input, result, report)
-
-    expect(html).toContain('Несколько контрольных контуров')
-    expect(html).toContain('Выбор нескольких контуров является черновым и требует проверки по СП 63.')
-    expect(markdown).toContain('## Несколько контрольных контуров')
-    expect(markdown).toContain('draft-contour-1')
-  })
-
-  it('includes shear reinforcement section in exported reports', () => {
-    const input = {
-      ...defaultPunchingShearInput,
-      shearReinforcement: {
-        ...defaultPunchingShearInput.shearReinforcement,
-        enabled: true,
-      },
-    }
-    const result = calculatePunchingShear(input)
-    const report = buildPunchingShearReport(input, result)
-    const html = buildPunchingShearHtmlReport(input, result, report)
-    const markdown = buildPunchingShearMarkdownReport(input, result, report)
-
-    expect(report.shearReinforcementSummary).toMatchObject({
-      enabled: true,
-      steelClass: 'A400',
-      layoutType: 'closed-stirrups',
-      rowCount: 2,
-      legsPerRow: 4,
-    })
-    expect(html).toContain('Поперечная арматура')
-    expect(html).toContain('замкнутые хомуты')
-    expect(markdown).toContain('## Поперечная арматура')
-    expect(markdown).toContain('| класс стали | A400 |')
-    expect(markdown).toContain('Вклад поперечной арматуры является черновым при включении')
-  })
-
-  it('includes SP63 interaction benchmark sections in exported reports', () => {
+  it('includes moment transfer, reinforcement, and SP63 values inside the calculation listing', () => {
     const input = {
       ...defaultPunchingShearInput,
       forces: {
@@ -389,11 +145,27 @@ describe('report export', () => {
     const markdown = buildPunchingShearMarkdownReport(input, result, report)
 
     expect(result.sp63Interaction?.benchmarkStatus).toBe('matched')
-    expect(html).toContain('Предельные усилия по бетону')
-    expect(html).toContain('Значения эталона Mathcad совпадают в пределах допуска теста')
-    expect(html).toContain('Проверка за зоной усиления')
-    expect(markdown).toContain('## Проверка за зоной усиления')
-    expect(markdown).toContain('#### Проверка взаимодействия')
+    expect(html).toContain('Передача моментов')
+    expect(html).toContain('Поперечная арматура')
+    expect(html).toContain('Fb.ult')
+    expect(html).toContain('Mx.ult')
+    expect(html).toContain('Fult')
+    expect(markdown).toContain('### Передача моментов')
+    expect(markdown).toContain('### Поперечная арматура')
+    expect(markdown).toContain('Wx =')
+    expect(markdown).toContain('Wy =')
+  })
+
+  it('renders SVG numeric labels and axes in HTML report', () => {
+    const result = calculatePunchingShear(defaultPunchingShearInput)
+    const report = buildPunchingShearReport(defaultPunchingShearInput, result)
+    const html = buildPunchingShearHtmlReport(defaultPunchingShearInput, result, report)
+
+    expect(html).toContain('400 mm колонна X')
+    expect(html).toContain('95 mm черновое смещение')
+    expect(html).toContain('X')
+    expect(html).toContain('Y')
+    expect(html).toContain('Масштаб: 1 единица = 1 мм, вписано в область')
   })
 
   it('formats copy report summary', () => {
@@ -402,6 +174,16 @@ describe('report export', () => {
     expect(buildReportSummary(result)).toBe(
       'N=420kN | u=2360mm | h0=190mm | v=0.937MPa | util=0.892',
     )
+  })
+
+  it('generates calculation IDs with timestamp and short commit', () => {
+    expect(createCalculationId(new Date(2026, 4, 26, 4, 17, 54))).toMatch(
+      /^ps-center-20260526-041754-[a-zA-Z0-9-]+$/,
+    )
+  })
+
+  it('formats utilization with ratio and percent', () => {
+    expect(formatUtilization(0.8920606601248884)).toBe('0.892 (89.2%)')
   })
 
   it('sanitizes unsafe filenames', () => {
@@ -438,11 +220,11 @@ describe('report export', () => {
       activeCalculationId: 'calc-shared-id',
     })
 
-    expect(exportCurrentCalculationAsHtml()).toMatchObject({
+    expect(exportCurrentCalculationAsHtml()).toEqual({
       ok: true,
       filename: 'truebim-punching-shear-report-calc-shared-id.html',
     })
-    expect(exportCurrentCalculationAsMarkdown()).toMatchObject({
+    expect(exportCurrentCalculationAsMarkdown()).toEqual({
       ok: true,
       filename: 'truebim-punching-shear-report-calc-shared-id.md',
     })
@@ -452,6 +234,10 @@ describe('report export', () => {
 
   it('guards export when no calculation exists', () => {
     expect(exportCurrentCalculationAsHtml()).toEqual({
+      ok: false,
+      error: 'Сначала выполните расчет, затем выгрузите отчет.',
+    })
+    expect(exportCurrentCalculationAsMarkdown()).toEqual({
       ok: false,
       error: 'Сначала выполните расчет, затем выгрузите отчет.',
     })
