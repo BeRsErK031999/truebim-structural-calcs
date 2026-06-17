@@ -7,6 +7,7 @@ import { defaultPunchingShearInput } from '../defaults'
 import { calculatePunchingShear } from '../engine'
 import { buildPunchingShearReport } from '../report'
 import { buildPunchingShearTrace } from '../trace/traceBuilder'
+import { formatTraceStepPath } from '../trace/tracePresentation'
 import type { PunchingShearInput } from '../types'
 import { formatTraceSourceLabel, traceSourceLabels } from '../trace/traceLabels'
 import type { TraceSourceType } from '../trace/traceStep'
@@ -190,12 +191,11 @@ describe('trace consistency audit', () => {
     expect(markdown).toContain('## Трассировка расчета')
 
     for (const section of report.calculationTrace) {
-      expect(html).toContain(section.title)
-      expect(markdown).toContain(section.title)
-
       for (const step of section.steps) {
-        expect(html).toContain(step.title)
-        expect(markdown).toContain(step.title)
+        const localizedPath = formatTraceStepPath({ section, step })
+
+        expect(html).toContain(localizedPath)
+        expect(markdown).toContain(localizedPath)
         expect(decodeHtml(html)).toContain(step.formula)
         expect(markdown).toContain(step.formula)
         expect(html).toContain(formatTraceSourceLabel(step.sourceType))

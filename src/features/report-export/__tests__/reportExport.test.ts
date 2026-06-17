@@ -87,12 +87,12 @@ describe('report export', () => {
     expect(html).toContain('Трассировка')
     expect(html).toContain('раздел / шаг')
     expect(html).toContain('формула | подстановка | результат | источник проверки')
-    expect(html).toContain('Input validation')
-    expect(html).toContain('Verified evidence - center-force-only evidence: verified-center-rect-001')
+    expect(html).toContain('Трассировка расчета / Проверка исходных данных')
+    expect(html).toContain('Проверенное доказательство - доказательство для центральной колонны только от силы: verified-center-rect-001')
     expect(markdown).toContain('## Трассировка расчета')
     expect(markdown).not.toContain('## Трассировка\n\n## Трассировка расчета')
     expect(markdown).toContain('| раздел / шаг | формула \\| подстановка \\| результат \\| источник проверки |')
-    expect(markdown).toContain('Calculation Trace / Stress')
+    expect(markdown).toContain('Трассировка расчета / Напряжение')
     expect(markdown).toContain('v = N / (u * h0)')
   })
 
@@ -119,11 +119,11 @@ describe('report export', () => {
     const html = buildPunchingShearHtmlReport(input, result, report)
     const markdown = buildPunchingShearMarkdownReport(input, result, report)
 
-    expect(html).toContain('Center Moment Trace / Moment eccentricity')
+    expect(html).toContain('Трассировка передачи моментов / Эксцентриситет от моментов')
     expect(html).toContain('Трассировка нескольких контуров / Выбор критического чернового контура')
-    expect(html).toContain('Shear Reinforcement Trace / Draft reinforcement contribution')
-    expect(markdown).toContain('Center Moment Trace / Moment eccentricity')
-    expect(markdown).toContain('Moment transfer is partial/draft and requires trusted evidence.')
+    expect(html).toContain('Трассировка поперечной арматуры / Черновой вклад поперечной арматуры')
+    expect(markdown).toContain('Трассировка передачи моментов / Эксцентриситет от моментов')
+    expect(markdown).toContain('Передача моментов частично/черновая и требует доверенного подтверждения.')
   })
 
   it('includes moment transfer and stress distribution sections', () => {
@@ -207,11 +207,11 @@ describe('report export', () => {
     const report = buildPunchingShearReport(defaultPunchingShearInput, result)
     const html = buildPunchingShearHtmlReport(defaultPunchingShearInput, result, report)
 
-    expect(html).toContain('400 mm column X')
-    expect(html).toContain('95 mm draft offset')
+    expect(html).toContain('400 mm колонна X')
+    expect(html).toContain('95 mm черновое смещение')
     expect(html).toContain('X')
     expect(html).toContain('Y')
-    expect(html).toContain('Scale: 1 unit = 1 mm, fit-to-view')
+    expect(html).toContain('Масштаб: 1 единица = 1 мм, вписано в область')
   })
 
   it('includes wall geometry section in exported reports', () => {
@@ -344,7 +344,7 @@ describe('report export', () => {
       legsPerRow: 4,
     })
     expect(html).toContain('Поперечная арматура')
-    expect(html).toContain('closed-stirrups')
+    expect(html).toContain('замкнутые хомуты')
     expect(markdown).toContain('## Поперечная арматура')
     expect(markdown).toContain('| класс стали | A400 |')
     expect(markdown).toContain('Вклад поперечной арматуры является черновым при включении')
@@ -384,10 +384,10 @@ describe('report export', () => {
 
     expect(result.sp63Interaction?.benchmarkStatus).toBe('matched')
     expect(html).toContain('Предельные усилия по бетону')
-    expect(html).toContain('Mathcad benchmark values match within test tolerance')
+    expect(html).toContain('Значения эталона Mathcad совпадают в пределах допуска теста')
     expect(html).toContain('Проверка за зоной усиления')
     expect(markdown).toContain('## Проверка за зоной усиления')
-    expect(markdown).toContain('SP63 Interaction Benchmark Trace / Interaction check')
+    expect(markdown).toContain('Трассировка проверки взаимодействия СП63 / Проверка взаимодействия')
   })
 
   it('formats copy report summary', () => {

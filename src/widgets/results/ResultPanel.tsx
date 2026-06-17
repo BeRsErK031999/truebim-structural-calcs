@@ -14,6 +14,7 @@ import {
   formatTraceStepDetails,
   formatTraceStepPath,
 } from '@/calculations/punching-shear/trace/tracePresentation'
+import { localizeTraceText } from '@/calculations/punching-shear/trace/traceLocalization'
 import { useCalculationStore } from '@/entities/calculation/model/store'
 import {
   buildReportSummary,
@@ -197,7 +198,7 @@ export function ResultPanel() {
             <div className="flex items-center justify-between gap-3">
               <p className="text-sm font-semibold text-cyan-950">Кандидат бенчмарка СП 63</p>
               <span className="rounded-md bg-white px-2 py-1 text-xs font-semibold text-cyan-700">
-                {result.sp63Interaction.benchmarkStatus}
+                {localizeTraceText(result.sp63Interaction.benchmarkStatus)}
               </span>
             </div>
             <div className="grid grid-cols-3 gap-2">
@@ -230,7 +231,7 @@ export function ResultPanel() {
             <p className="text-sm font-semibold text-slate-900">Предупреждения</p>
             <ul className="mt-3 grid gap-1 text-sm text-slate-700">
               {result.warnings.length > 0 ? (
-                result.warnings.map((warning) => <li key={warning}>- {warning}</li>)
+                result.warnings.map((warning) => <li key={warning}>- {localizeTraceText(warning)}</li>)
               ) : (
                 <li>- Предупреждений нет</li>
               )}

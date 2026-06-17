@@ -1,11 +1,11 @@
 import type { TraceSourceType } from './traceStep'
 
 export const traceSourceLabels: Record<TraceSourceType, string> = {
-  verified: 'Verified evidence',
-  partial: 'Partially verified',
-  draft: 'Draft explainability',
-  manual: 'Manual input/schema',
-  placeholder: 'Unsupported placeholder',
+  verified: 'Проверенное доказательство',
+  partial: 'Частично проверено',
+  draft: 'Черновое пояснение',
+  manual: 'Ручной ввод/схема',
+  placeholder: 'Неподдерживаемый заполнитель',
 }
 
 export function formatTraceSourceLabel(sourceType: TraceSourceType) {

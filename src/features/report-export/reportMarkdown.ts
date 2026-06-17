@@ -9,6 +9,7 @@ import {
   formatTraceStepDetails,
   formatTraceStepPath,
 } from '@/calculations/punching-shear/trace/tracePresentation'
+import { localizeTraceText } from '@/calculations/punching-shear/trace/traceLocalization'
 import { getRelatedKnowledgeEntries } from '@/features/knowledge-base'
 import { formatFeatureLabel } from '@/shared/labels/featureLabels'
 
@@ -168,7 +169,7 @@ export function buildPunchingShearMarkdownReport(
     '## Передача моментов',
     '',
     table([
-      ['статус', result.momentTransfer.status],
+      ['статус', localizeTraceText(result.momentTransfer.status)],
       ['Mx - момент в плоскости оси X', formatValueWithUnit(input.forces.momentXKnM, 'кН*м')],
       ['My - момент в плоскости оси Y', formatValueWithUnit(input.forces.momentYKnM, 'кН*м')],
       ['эксцентриситет X', formatValueWithUnit(result.eccentricityX, 'мм', 3)],
@@ -195,7 +196,7 @@ export function buildPunchingShearMarkdownReport(
           ['ID случая', 'источник | проверил | дата проверки | статус'],
           ...result.verificationEvidence.map((evidence) => [
             evidence.id,
-            `${evidence.verificationSource} | ${evidence.checkedBy ?? 'н/д'} | ${evidence.checkedAt ?? 'н/д'} | ${evidence.status}`,
+            `${formatVerificationSource(evidence.verificationSource)} | ${evidence.checkedBy ?? 'н/д'} | ${evidence.checkedAt ?? 'н/д'} | ${localizeTraceText(evidence.status)}`,
           ] satisfies [string, string]),
         ])
       : 'Проверенные доказательства не привязаны.',
@@ -352,7 +353,7 @@ function renderShearReinforcement(result: PunchingShearResult) {
   return table([
     ['включено', formatBoolean(result.shearReinforcement.enabled)],
     ['класс стали', result.shearReinforcement.steelClass ?? 'н/д'],
-    ['схема армирования', result.shearReinforcement.layoutType ?? 'н/д'],
+    ['схема армирования', localizeTraceText(result.shearReinforcement.layoutType ?? 'н/д')],
     ['Asw', formatValueWithUnit(sp63?.Asw ?? result.reinforcementAreaMm2, sp63 ? 'cm2' : 'mm2', 3)],
     ['qsw', formatValueWithUnit(sp63?.qsw, 'kN/m', 3)],
     ['Fsw.ult', formatValueWithUnit(sp63?.FswUlt, 'kN', 3)],
@@ -457,7 +458,7 @@ function createReportWarnings(result: PunchingShearResult) {
     'Выбор нескольких контуров является черновым и требует проверки по СП 63.',
     'Вклад поперечной арматуры является черновым при включении',
     'Проверьте по СП 63 перед проектным применением',
-  ])
+  ]).map(localizeTraceText)
 }
 
 function formatPassFail(value: boolean) {

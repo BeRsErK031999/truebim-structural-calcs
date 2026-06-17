@@ -412,27 +412,27 @@ describe('punching shear draft center check', () => {
         expect.objectContaining({
           role: 'label',
           type: 'text',
-          text: 'Draft wall corner punching geometry',
+          text: 'Черновая геометрия продавливания в углу стены',
         }),
         expect.objectContaining({
           role: 'dimension',
           type: 'line',
-          label: '1200 mm wall length X',
+          label: '1200 mm длина стены X',
         }),
         expect.objectContaining({
           role: 'dimension',
           type: 'line',
-          label: '1000 mm wall length Y',
+          label: '1000 mm длина стены Y',
         }),
         expect.objectContaining({
           role: 'label',
           type: 'text',
-          text: 'inner corner',
+          text: 'внутренний угол',
         }),
         expect.objectContaining({
           role: 'label',
           type: 'text',
-          text: 'outer corner',
+          text: 'наружный угол',
         }),
       ]),
     )
@@ -451,17 +451,17 @@ describe('punching shear draft center check', () => {
         expect.objectContaining({
           role: 'label',
           type: 'text',
-          text: 'Draft wall punching geometry',
+          text: 'Черновая геометрия продавливания у стены',
         }),
         expect.objectContaining({
           role: 'dimension',
           type: 'line',
-          label: '1200 mm wall length',
+          label: '1200 mm длина стены',
         }),
         expect.objectContaining({
           role: 'dimension',
           type: 'line',
-          label: '200 mm wall thickness',
+          label: '200 mm толщина стены',
         }),
       ]),
     )
@@ -533,22 +533,22 @@ describe('punching shear draft center check', () => {
         expect.objectContaining({
           role: 'label',
           type: 'text',
-          text: 'Draft round column control perimeter',
+          text: 'Черновой контрольный периметр круглой колонны',
         }),
         expect.objectContaining({
           role: 'dimension',
           type: 'line',
-          label: '400 mm diameter',
+          label: '400 mm диаметр',
         }),
         expect.objectContaining({
           role: 'dimension',
           type: 'line',
-          label: '95 mm draft offset',
+          label: '95 mm черновое смещение',
         }),
         expect.objectContaining({
           role: 'label',
           type: 'text',
-          text: 'round control contour draft',
+          text: 'черновой контрольный контур круглой колонны',
         }),
       ]),
     )
@@ -650,11 +650,11 @@ describe('punching shear draft center check', () => {
 
     expect(result.svgModel.elements).toEqual(
       expect.arrayContaining([
-        expect.objectContaining({ role: 'label', type: 'text', text: 'contour 2' }),
+        expect.objectContaining({ role: 'label', type: 'text', text: 'контур 2' }),
         expect.objectContaining({
           role: 'label',
           type: 'text',
-          text: 'contour 1 - selected draft critical contour',
+          text: 'контур 1 - выбранный черновой критический контур',
         }),
       ]),
     )
@@ -769,7 +769,7 @@ describe('punching shear draft center check', () => {
         expect.objectContaining({
           role: 'label',
           type: 'text',
-          text: 'Draft reinforcement layout: closed-stirrups',
+          text: 'Черновая схема армирования: замкнутые хомуты',
         }),
       ]),
     )

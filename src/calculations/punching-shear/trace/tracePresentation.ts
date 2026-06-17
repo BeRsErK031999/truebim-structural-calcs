@@ -1,4 +1,5 @@
 import { formatTraceSourceLabel } from './traceLabels'
+import { localizeTraceText, localizeTraceWarnings } from './traceLocalization'
 import type { TraceSection } from './traceSection'
 import type { TraceStep } from './traceStep'
 
@@ -14,14 +15,18 @@ export function flattenTraceSteps(sections: TraceSection[]): FlatTraceStep[] {
 }
 
 export function formatTraceStepPath({ section, step }: FlatTraceStep) {
-  return `${section.title} / ${step.title}`
+  return `${localizeTraceText(section.title)} / ${localizeTraceText(step.title)}`
 }
 
 export function formatTraceStepDetails(step: TraceStep) {
-  const result = [step.result, step.units].filter((part) => part.trim().length > 0).join(' ')
-  const source = `${formatTraceSourceLabel(step.sourceType)} - ${step.sourceReference}`
+  const result = [localizeTraceText(step.result), localizeTraceText(step.units)]
+    .filter((part) => part.trim().length > 0)
+    .join(' ')
+  const source = `${formatTraceSourceLabel(step.sourceType)} - ${localizeTraceText(step.sourceReference)}`
   const warnings =
-    step.warnings.length > 0 ? ` | предупреждения: ${step.warnings.join('; ')}` : ''
+    step.warnings.length > 0
+      ? ` | предупреждения: ${localizeTraceWarnings(step.warnings).join('; ')}`
+      : ''
 
-  return `${step.formula} | ${step.substitutedFormula} | ${result} | ${source}${warnings}`
+  return `${step.formula} | ${localizeTraceText(step.substitutedFormula)} | ${result} | ${source}${warnings}`
 }
