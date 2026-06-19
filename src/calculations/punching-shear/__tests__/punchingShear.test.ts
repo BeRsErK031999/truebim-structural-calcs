@@ -694,7 +694,7 @@ describe('punching shear draft center check', () => {
     ).toBe(true)
   })
 
-  it('calculates simplified shear reinforcement area from bar count and diameter', () => {
+  it('migrates legacy bar-count shear reinforcement to manual Asw', () => {
     const result = calculatePunchingShear({
       ...defaultPunchingShearInput,
       shearReinforcement: {
@@ -708,10 +708,10 @@ describe('punching shear draft center check', () => {
     })
 
     expect(result.reinforcementAreaMm2).toBeCloseTo(8 * Math.PI * 8 ** 2 / 4)
-    expect(result.shearReinforcement.inputMode).toBe('bar-count')
-    expect(result.shearReinforcement.simpleBarCount).toBe(8)
-    expect(result.shearReinforcement.totalBarCount).toBe(8)
-    expect(result.shearReinforcement.effectiveBarCount).toBe(8)
+    expect(result.shearReinforcement.inputMode).toBe('manual')
+    expect(result.shearReinforcement.simpleBarCount).toBeNull()
+    expect(result.shearReinforcement.totalBarCount).toBeNull()
+    expect(result.shearReinforcement.effectiveBarCount).toBeNull()
     expect(result.shearReinforcement.qswNPerMm).toBeGreaterThan(0)
     expect(result.governingUtilization).toBe(result.utilizationWithReinforcement)
   })

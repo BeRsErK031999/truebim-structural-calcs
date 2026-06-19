@@ -101,7 +101,7 @@ describe('report export', () => {
     expect(markdown).toContain(`= ${result.governingUtilization?.toFixed(3)}`)
   })
 
-  it('renders simplified reinforcement input without layout service parameters', () => {
+  it('renders migrated bar-count reinforcement as manual Asw without calculation count fields', () => {
     const input = {
       ...defaultPunchingShearInput,
       shearReinforcement: {
@@ -117,15 +117,13 @@ describe('report export', () => {
     const report = buildPunchingShearReport(input, result)
     const markdown = buildPunchingShearMarkdownReport(input, result, report)
 
-    expect(markdown).toContain('Арматура A240')
-    expect(markdown).toContain('Ø8')
-    expect(markdown).toContain('количество стержней = 8')
+    expect(result.shearReinforcement.inputMode).toBe('manual')
+    expect(markdown).toContain('A240')
     expect(markdown).toContain('Asw =')
-    expect(markdown).not.toContain('Параметры раскладки арматуры')
-    expect(markdown).not.toContain('Количество рядов')
-    expect(markdown).not.toContain('Шаг рядов')
-    expect(markdown).not.toContain('Расстояние до первого ряда')
+    expect(markdown).toContain('sw')
+    expect(markdown).not.toContain('\u00d88')
   })
+
 
   it('omits inactive scenario noise and forbidden report text', () => {
     const result = calculatePunchingShear(defaultPunchingShearInput)

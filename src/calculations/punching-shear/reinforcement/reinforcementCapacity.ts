@@ -170,10 +170,7 @@ export function calculateShearReinforcementCapacity({
     }
   }
 
-  const reinforcementAreaMm2 =
-    reinforcement.inputMode === 'bar-count'
-      ? reinforcement.simpleBarCount * barAreaMm2
-      : reinforcement.manualAswMm2
+  const reinforcementAreaMm2 = reinforcement.manualAswMm2
   const swMm = reinforcement.manualSwMm
   const qswNPerMm =
     reinforcementAreaMm2 === null || swMm === null
@@ -210,9 +207,9 @@ export function calculateShearReinforcementCapacity({
     rowCount: reinforcement.rowCount,
     legsPerRow: reinforcement.legsPerRow,
     totalLegs,
-    totalBarCount: reinforcement.inputMode === 'bar-count' ? reinforcement.simpleBarCount : null,
-    effectiveBarCount: reinforcement.inputMode === 'bar-count' ? reinforcement.simpleBarCount : null,
-    simpleBarCount: reinforcement.inputMode === 'bar-count' ? reinforcement.simpleBarCount : null,
+    totalBarCount: null,
+    effectiveBarCount: null,
+    simpleBarCount: null,
     barAreaMm2,
     firstRowDistanceMm: reinforcement.firstRowDistanceMm,
     rowSpacingMm: reinforcement.rowSpacingMm,

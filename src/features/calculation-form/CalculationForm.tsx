@@ -65,6 +65,7 @@ export function CalculationForm() {
     formState: { errors, isSubmitting, isValid },
     control,
     handleSubmit,
+    getValues,
     register,
     reset,
     setValue,
@@ -156,13 +157,41 @@ export function CalculationForm() {
       setFormError(error instanceof Error ? error.message : 'Не удалось импортировать JSON')
     }
   }
-  const isShearReinforcementAdvanced = shearReinforcementInputMode === 'manual'
-  const toggleShearReinforcementAdvanced = () => {
-    setValue('shearReinforcement.inputMode', isShearReinforcementAdvanced ? 'bar-count' : 'manual', {
-      shouldDirty: true,
-      shouldValidate: true,
-    })
-  }
+  useEffect(() => {
+    if (shearReinforcementEnabled && shearReinforcementInputMode !== 'manual') {
+      const reinforcement = getValues('shearReinforcement')
+      const migratedAsw =
+        typeof reinforcement.manualAswMm2 === 'number'
+          ? reinforcement.manualAswMm2
+          : typeof reinforcement.simpleBarCount === 'number' &&
+              typeof reinforcement.barDiameterMm === 'number'
+            ? reinforcement.simpleBarCount * Math.PI * reinforcement.barDiameterMm ** 2 / 4
+            : undefined
+      const migratedSw =
+        typeof reinforcement.manualSwMm === 'number'
+          ? reinforcement.manualSwMm
+          : reinforcement.barSpacingMm
+
+      if (typeof migratedAsw === 'number') {
+        setValue('shearReinforcement.manualAswMm2', migratedAsw, {
+          shouldDirty: true,
+          shouldValidate: true,
+        })
+      }
+
+      if (typeof migratedSw === 'number') {
+        setValue('shearReinforcement.manualSwMm', migratedSw, {
+          shouldDirty: true,
+          shouldValidate: true,
+        })
+      }
+
+      setValue('shearReinforcement.inputMode', 'manual', {
+        shouldDirty: true,
+        shouldValidate: true,
+      })
+    }
+  }, [getValues, setValue, shearReinforcementEnabled, shearReinforcementInputMode])
 
   return (
     <form className="grid gap-5" onSubmit={handleSubmit(runCalculation)}>
@@ -260,31 +289,32 @@ export function CalculationForm() {
               }
             />
             <NumberField
-              label="Диаметр стержня"
+              label="Asw - принятая расчетная площадь поперечной арматуры"
+              min={1}
+              step={0.001}
+              unit="мм²"
+              registration={register('shearReinforcement.manualAswMm2', { valueAsNumber: true })}
+              error={errors.shearReinforcement?.manualAswMm2?.message}
+            />
+            <NumberField
+              label="sw - расчетный шаг поперечной арматуры для qsw"
               min={1}
               step={1}
               unit="мм"
-              registration={register('shearReinforcement.barDiameterMm', { valueAsNumber: true })}
-              error={errors.shearReinforcement?.barDiameterMm?.message}
+              registration={register('shearReinforcement.manualSwMm', { valueAsNumber: true })}
+              error={errors.shearReinforcement?.manualSwMm?.message}
             />
-            <NumberField
-              label="Количество стержней"
-              min={1}
-              step={1}
-              unit="шт."
-              registration={register('shearReinforcement.simpleBarCount', { valueAsNumber: true })}
-              error={errors.shearReinforcement?.simpleBarCount?.message}
-            />
-            <Button
-              className="h-10 w-fit rounded-lg"
-              type="button"
-              variant="outline"
-              onClick={toggleShearReinforcementAdvanced}
-            >
-              {isShearReinforcementAdvanced ? 'Скрыть расширенные параметры' : 'Показать расширенные параметры'}
-            </Button>
-            {isShearReinforcementAdvanced ? (
-              <>
+            <p className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm leading-6 text-amber-900">
+              В текущей версии калькулятор не определяет рабочие стержни автоматически. Пользователь задает расчетные Asw и sw вручную.
+            </p>
+            <details className="rounded-lg border border-slate-200 bg-slate-50 p-3">
+              <summary className="cursor-pointer text-sm font-semibold text-slate-900">
+                Схема для визуальной проверки
+              </summary>
+              <div className="mt-4 grid gap-4">
+                <p className="rounded-lg border border-slate-200 bg-white p-3 text-sm leading-6 text-slate-700">
+                  Эти параметры не участвуют в расчете несущей способности. Они используются только для отображения условной схемы.
+                </p>
                 <SelectField
                   label="Схема армирования"
                   placeholder="Выберите схему"
@@ -299,23 +329,23 @@ export function CalculationForm() {
                   }
                 />
                 <NumberField
-                  label="Asw - принятая площадь поперечной арматуры"
-                  min={1}
-                  step={0.001}
-                  unit="мм²"
-                  registration={register('shearReinforcement.manualAswMm2', { valueAsNumber: true })}
-                  error={errors.shearReinforcement?.manualAswMm2?.message}
-                />
-                <NumberField
-                  label="sw - шаг для формулы qsw"
+                  label="Диаметр стержня для отображения"
                   min={1}
                   step={1}
                   unit="мм"
-                  registration={register('shearReinforcement.manualSwMm', { valueAsNumber: true })}
-                  error={errors.shearReinforcement?.manualSwMm?.message}
+                  registration={register('shearReinforcement.barDiameterMm', { valueAsNumber: true })}
+                  error={errors.shearReinforcement?.barDiameterMm?.message}
                 />
                 <NumberField
-                  label="Шаг стержней"
+                  label="Количество стержней/маркеров на схеме"
+                  min={1}
+                  step={1}
+                  unit="шт."
+                  registration={register('shearReinforcement.simpleBarCount', { valueAsNumber: true })}
+                  error={errors.shearReinforcement?.simpleBarCount?.message}
+                />
+                <NumberField
+                  label="Шаг стержней на схеме"
                   min={1}
                   step={1}
                   unit="мм"
@@ -354,8 +384,8 @@ export function CalculationForm() {
                   registration={register('shearReinforcement.rowSpacingMm', { valueAsNumber: true })}
                   error={errors.shearReinforcement?.rowSpacingMm?.message}
                 />
-              </>
-            ) : null}
+              </div>
+            </details>
           </>
         ) : null}
       </FormSection>

@@ -193,7 +193,7 @@ function createSimpleReinforcementElements(
       role: 'label',
       type: 'text',
       position: { x: minX, y: maxY + 96 },
-      text: `Поперечная арматура: учтено ${barCount} стерж.`,
+      text: `Условная схема арматуры: ${barCount} маркеров; Asw задается вручную`,
     },
   ]
 }

@@ -116,6 +116,50 @@ export const shearReinforcementInputSchema = z.object({
   rows: z.number().int().positive().optional(),
   manualAswMm2: positiveNumber.optional(),
   manualSwMm: positiveNumber.optional(),
+}).superRefine((input, context) => {
+  if (!input.enabled) {
+    return
+  }
+
+  if (!input.steelClass) {
+    context.addIssue({
+      code: 'custom',
+      path: ['steelClass'],
+      message: 'Выберите класс стали',
+    })
+  }
+
+  const hasLegacyBarCountAsw =
+    input.inputMode !== 'manual' &&
+    typeof input.simpleBarCount === 'number' &&
+    input.simpleBarCount > 0 &&
+    typeof input.barDiameterMm === 'number' &&
+    input.barDiameterMm > 0
+  const hasManualAsw = typeof input.manualAswMm2 === 'number' && input.manualAswMm2 > 0
+  const hasManualSw = typeof input.manualSwMm === 'number' && input.manualSwMm > 0
+  const hasLegacySw = input.inputMode !== 'manual' && typeof input.barSpacingMm === 'number' && input.barSpacingMm > 0
+  const hasLegacyLayout =
+    input.inputMode !== 'manual' &&
+    typeof input.rowCount === 'number' &&
+    input.rowCount > 0 &&
+    typeof input.legsPerRow === 'number' &&
+    input.legsPerRow > 0
+
+  if (!hasManualAsw && !hasLegacyBarCountAsw && !hasLegacyLayout) {
+    context.addIssue({
+      code: 'custom',
+      path: ['manualAswMm2'],
+      message: 'Asw должна быть больше 0',
+    })
+  }
+
+  if (!hasManualSw && !hasLegacySw && !hasLegacyLayout) {
+    context.addIssue({
+      code: 'custom',
+      path: ['manualSwMm'],
+      message: 'sw должен быть больше 0',
+    })
+  }
 })
 
 export const multipleControlContoursInputSchema = z.object({

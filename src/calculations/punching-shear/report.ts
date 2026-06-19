@@ -147,7 +147,7 @@ export function buildPunchingShearReport(
       'h0 = рабочая высота',
       'ЧЕРНОВОЕ перераспределение моментов: v(point) = vbase * (1 + ex*x/rx^2 + ey*y/ry^2)',
       'ЧЕРНОВОЙ выбор нескольких контуров: вычислить v = N / (u * h0) по каждому контуру и выбрать максимальное использование',
-      'ЧЕРНОВАЯ поперечная арматура: Vsw = Asw,total * Rsw,draft',
+      'ЧЕРНОВАЯ поперечная арматура: qsw = Rsw * Asw / sw; Fsw,raw = 0.8 * qsw * u',
     ],
     calculationValues: {
       N: result.designShearForceN,

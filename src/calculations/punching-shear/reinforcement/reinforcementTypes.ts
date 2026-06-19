@@ -37,7 +37,7 @@ export const defaultShearReinforcementInput: Required<
   Omit<ShearReinforcementInput, 'rows'>
 > = {
   enabled: false,
-  inputMode: 'bar-count',
+  inputMode: 'manual',
   barDiameterMm: 10,
   simpleBarCount: 8,
   barSpacingMm: 100,

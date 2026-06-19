@@ -104,9 +104,7 @@ function buildAssumptionsText(input: PunchingShearInput, result: PunchingShearRe
       : 'моменты отсутствуют'
   const reinforcement = input.shearReinforcement.enabled
     ? result.shearReinforcement.contributionAccepted
-      ? result.shearReinforcement.inputMode === 'bar-count'
-        ? 'поперечная арматура учитывается по количеству и диаметру стержней'
-        : 'поперечная арматура учитывается по ручным Asw и sw'
+      ? 'поперечная арматура учитывается по ручным Asw и sw'
       : 'поперечная арматура задана, но ее вклад не включен в итоговую проверку'
     : 'поперечная арматура не задана'
   const openings =
@@ -252,20 +250,17 @@ function buildReinforcementLines(result: PunchingShearResult): EngineeringReport
   if (summary.inputMode === 'bar-count') {
     return [
       formula(
-        'asw-bar-area',
-        `A_φ = πd²/4 = π · ${formatPlain(summary.barDiameterMm)}² / 4 = ${formatMm2(summary.barAreaMm2, 3)}`,
-      ),
-      formula(
-        'asw-bar-count',
-        `Asw = n · A_φ = ${formatPlain(summary.simpleBarCount)} · ${formatPlain(summary.barAreaMm2, 3)} = ${formatMm2(summary.reinforcementAreaMm2, 3)}`,
+        'legacy-bar-count',
+        'Старый расчет использовал количество стержней для оценки Asw. Проверьте и подтвердите Asw вручную.',
+        'strong',
       ),
       ...buildReinforcementCapacityLines(result),
     ]
   }
 
   return [
-    formula('asw-manual', `Asw = ${formatMm2(summary.reinforcementAreaMm2, 3)} (ручной ввод для формулы q_sw)`),
-    formula('sw-manual', `sw = ${formatMm(summary.swMm)}`),
+    formula('asw-manual', `Asw принято пользователем = ${formatMm2(summary.reinforcementAreaMm2, 3)}`),
+    formula('sw-manual', `sw принято пользователем = ${formatMm(summary.swMm)}`),
     ...buildReinforcementCapacityLines(result),
   ]
 }
@@ -364,8 +359,9 @@ function buildServiceBlocks(
   if (input.shearReinforcement.enabled && result.shearReinforcement.inputMode === 'manual') {
     blocks.push({
       id: 'reinforcement-layout',
-      title: 'Параметры раскладки арматуры',
+      title: 'Условная схема армирования',
       rows: [
+        { label: 'Назначение', value: 'Схема приведена только для визуальной проверки и не используется для определения Asw.' },
         { label: 'Схема армирования', value: formatLayoutType(result.shearReinforcement.layoutType) },
         { label: 'Количество рядов', value: formatPlain(result.shearReinforcement.rowCount) },
         { label: 'Ветвей в ряду', value: formatPlain(result.shearReinforcement.legsPerRow) },
@@ -459,10 +455,6 @@ function formatReinforcementInputSentence(result: PunchingShearResult) {
     return `${summary.steelClass ?? 'сталь не задана'}, старая схема ${summary.totalLegs} условных стерж.; требуется ручной Asw/sw`
   }
 
-  if (summary.inputMode === 'bar-count') {
-    return `Арматура ${summary.steelClass ?? 'сталь не задана'}, Ø${formatPlain(summary.barDiameterMm)}; количество стержней = ${formatPlain(summary.simpleBarCount)}; Asw = ${formatMm2(summary.reinforcementAreaMm2, 3)}`
-  }
-
   return `${summary.steelClass ?? 'сталь не задана'}, Asw = ${formatMm2(summary.reinforcementAreaMm2, 3)}, sw = ${formatMm(summary.swMm)}`
 }
 
@@ -474,13 +466,7 @@ function buildReinforcementInputRows(result: PunchingShearResult): EngineeringRe
     { label: 'Asw', value: formatMm2(result.reinforcementAreaMm2, 3) },
   ]
 
-  return summary.inputMode === 'bar-count'
-    ? [
-        ...commonRows,
-        { label: 'Диаметр стержня', value: `Ø${formatPlain(summary.barDiameterMm)} мм` },
-        { label: 'Количество стержней', value: formatPlain(summary.simpleBarCount) },
-      ]
-    : [...commonRows, { label: 'sw', value: formatMm(summary.swMm) }]
+  return [...commonRows, { label: 'sw', value: formatMm(summary.swMm) }]
 }
 
 function formatLayoutType(value: PunchingShearResult['shearReinforcement']['layoutType']) {
