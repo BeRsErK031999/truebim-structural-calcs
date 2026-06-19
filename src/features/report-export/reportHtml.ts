@@ -14,11 +14,7 @@ import {
 } from '@/calculations/punching-shear/trace/engineeringReportLines'
 import { getAppMetadata } from '@/shared/config/appMetadata'
 
-import {
-  createReportMetadata,
-  reportApplicabilityItems,
-  type ReportMetadata,
-} from './reportMetadata'
+import { createReportMetadata, type ReportMetadata } from './reportMetadata'
 
 export function buildPunchingShearHtmlReport(
   input: PunchingShearInput,
@@ -42,15 +38,6 @@ export function buildPunchingShearHtmlReport(
         { label: 'источник проверки', value: formatVerificationSource(reportMetadata.verificationSource) },
       ],
     },
-    {
-      id: 'applicability',
-      title: 'Применимость',
-      items: [
-        'Подходит для пилотной проверки, сравнения и сбора доказательств.',
-        'Это не финальный проектный документ.',
-        ...reportApplicabilityItems.map(cleanServiceText),
-      ],
-    },
   ]
 
   return `<!doctype html>
@@ -58,45 +45,51 @@ export function buildPunchingShearHtmlReport(
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>TrueBIM: отчет по продавливанию</title>
+  <title>Расчет на продавливание</title>
   <style>
-    body { margin: 0; font-family: Arial, sans-serif; color: #0f172a; background: #f8fafc; }
-    main { max-width: 980px; margin: 0 auto; padding: 32px 20px 48px; }
-    h1 { margin: 0 0 8px; font-size: 30px; }
-    h2 { margin: 34px 0 14px; font-size: 21px; border-bottom: 2px solid #cbd5e1; padding-bottom: 7px; }
-    h3 { margin: 22px 0 10px; font-size: 17px; }
+    @page { size: A4; margin: 18mm 20mm; }
+    body { margin: 0; font-family: Georgia, "Times New Roman", serif; color: #111; background: #fff; }
+    main { max-width: 190mm; margin: 0 auto; padding: 18mm 12mm 22mm; }
+    h1 { margin: 0 0 5mm; font-size: 24pt; font-weight: 700; }
+    h2 { margin: 9mm 0 3mm; font-size: 15pt; border-bottom: 1px solid #222; padding-bottom: 1.5mm; }
+    h3 { margin: 5mm 0 2mm; font-size: 12.5pt; }
+    p { margin: 0 0 3mm; line-height: 1.45; }
     table { width: 100%; border-collapse: collapse; background: #fff; }
-    th, td { border: 1px solid #cbd5e1; padding: 9px 10px; text-align: left; vertical-align: top; }
-    th { background: #f1f5f9; width: 30%; }
-    details { margin: 12px 0; padding: 12px; border: 1px solid #cbd5e1; background: #fff; border-radius: 8px; }
+    th, td { border: 1px solid #777; padding: 2mm 2.5mm; text-align: left; vertical-align: top; }
+    th { width: 34%; font-weight: 700; }
+    details { margin: 3mm 0; padding: 0; border: 0; }
     summary { cursor: pointer; font-weight: 700; }
-    .warning { margin: 16px 0 22px; padding: 14px; border: 1px solid #b45309; background: #fffbeb; color: #78350f; font-weight: 700; }
-    .result { padding: 18px; border: 1px solid #cbd5e1; background: #fff; border-radius: 8px; }
-    .result p { margin: 7px 0; }
-    .calc-lines { margin: 10px 0 22px; font-family: Consolas, monospace; font-size: 14px; line-height: 1.75; white-space: pre-wrap; }
-    .muted { color: #64748b; }
+    .status-line { margin: 0 0 5mm; font-weight: 700; }
+    .formula-list { margin: 2mm 0 5mm; display: grid; gap: 2mm; }
+    .formula { break-inside: avoid; padding: 1.5mm 0; line-height: 1.45; }
+    .muted { color: #555; }
     .strong { font-weight: 700; }
-    .svg-wrap { background: #fff; border: 1px solid #cbd5e1; padding: 12px; overflow: auto; }
+    .svg-wrap { break-inside: avoid; margin: 4mm 0 5mm; overflow: visible; }
     svg { max-width: 100%; height: auto; background: #fff; }
+    footer { margin-top: 9mm; padding-top: 3mm; border-top: 1px solid #777; font-size: 9pt; color: #333; }
+    .toolbar { position: sticky; top: 0; display: flex; justify-content: flex-end; padding: 8px 0; background: #fff; }
+    .toolbar button { border: 1px solid #555; background: #fff; padding: 7px 12px; font: inherit; cursor: pointer; }
+    @media print {
+      main { padding: 0; max-width: none; }
+      .toolbar, details { display: none; }
+      h2, h3, .formula, .svg-wrap { break-inside: avoid; }
+    }
   </style>
 </head>
 <body>
   <main>
-    <h1>TrueBIM: отчет по продавливанию</h1>
-    <div class="warning">ЧЕРНОВОЙ РАСЧЕТ - НЕ ДЛЯ ПРОЕКТНОГО ПРИМЕНЕНИЯ</div>
+    <div class="toolbar"><button type="button" onclick="window.print()">Печать / Сохранить PDF</button></div>
+    <h1>Расчет на продавливание</h1>
+    <p class="status-line">${escapeHtml(listing.resultSummary.verificationText)}. ${escapeHtml(listing.resultSummary.statusText)}. η = ${escapeHtml(listing.resultSummary.utilizationText)}.</p>
 
-    <h2>1. Итог проверки</h2>
-    <div class="result">
-      <p><strong>${escapeHtml(listing.resultSummary.statusText)}</strong></p>
-      <p>η = ${escapeHtml(listing.resultSummary.utilizationText)}</p>
-      <p>Запас = ${escapeHtml(listing.resultSummary.reservePercentText)}</p>
-      <p><strong>${escapeHtml(listing.resultSummary.conditionText)}</strong></p>
-    </div>
+    <h2>1. Допущения и предпосылки</h2>
+    <p>${escapeHtml(listing.assumptionsText)}</p>
 
     <h2>2. Исходные данные</h2>
-    ${renderTable(listing.inputRows.map((row) => [row.label, row.value]))}
+    <p>${escapeHtml(listing.inputText)}</p>
 
-    <h2>3. Ход расчета</h2>
+    <h2>3. Расчет</h2>
+    ${renderSvg(result)}
     ${listing.calculationSections.map((section) => `
       <h3>${escapeHtml(section.title)}</h3>
       ${renderCalculationLines(section.lines)}
@@ -105,12 +98,14 @@ export function buildPunchingShearHtmlReport(
     <h2>4. Проверка условия</h2>
     ${renderCalculationLines(listing.conditionLines)}
 
-    <h2>5. Заключение</h2>
+    <h2>5. Вывод</h2>
     ${renderCalculationLines(listing.conclusionLines)}
 
-    ${renderSvg(result)}
+    <footer>
+      calculationId: ${escapeHtml(reportMetadata.calculationId)}; версия расчетного движка: ${escapeHtml(metadata.version)}; дата формирования: ${escapeHtml(reportMetadata.generatedAt)}; commit: ${escapeHtml(metadata.commit)}; verificationStatus: ${escapeHtml(result.verificationStatus)}.
+    </footer>
 
-    <h2>6. Служебная информация</h2>
+    <h2>Техническое приложение</h2>
     ${serviceBlocks.map(renderServiceBlock).join('')}
   </main>
 </body>
@@ -118,10 +113,10 @@ export function buildPunchingShearHtmlReport(
 }
 
 function renderCalculationLines(lines: EngineeringReportLine[]) {
-  return `<div class="calc-lines">${lines.map((line) => {
-    const className = line.tone === 'muted' ? ' class="muted"' : line.tone === 'strong' ? ' class="strong"' : ''
+  return `<div class="formula-list">${lines.map((line) => {
+    const className = line.tone === 'muted' ? ' muted' : line.tone === 'strong' ? ' strong' : ''
 
-    return `<div${className}>${escapeHtml(cleanReportText(line.text))}</div>`
+    return `<div class="formula${className}">${escapeHtml(cleanReportText(line.text))}</div>`
   }).join('')}</div>`
 }
 
@@ -147,14 +142,17 @@ function renderSvg(result: PunchingShearResult) {
     return ''
   }
 
-  return `<h2>Схема геометрии</h2><div class="svg-wrap"><svg role="img" viewBox="${escapeHtml(viewBoxToString(svgModel.viewBox))}" xmlns="http://www.w3.org/2000/svg">
+  return `<div class="svg-wrap"><svg role="img" viewBox="${escapeHtml(viewBoxToString(svgModel.viewBox))}" xmlns="http://www.w3.org/2000/svg">
+    <title>Расчетная схема продавливания</title>
+    <desc>Колонна, контрольный контур, оси и поперечная арматура по расчетной модели.</desc>
     <defs>
       <marker id="dimension-arrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-        <path d="M 0 0 L 10 5 L 0 10 z" fill="#64748b" />
+        <path d="M 0 0 L 10 5 L 0 10 z" fill="#555" />
       </marker>
     </defs>
-    <rect x="${svgModel.viewBox.minX}" y="${svgModel.viewBox.minY}" width="${svgModel.viewBox.width}" height="${svgModel.viewBox.height}" fill="#f8fafc" />
+    <rect x="${svgModel.viewBox.minX}" y="${svgModel.viewBox.minY}" width="${svgModel.viewBox.width}" height="${svgModel.viewBox.height}" fill="#fff" />
     ${svgModel.elements.map(renderSvgElement).join('\n')}
+    <text x="${svgModel.viewBox.minX + 16}" y="${svgModel.viewBox.maxY - 16}" fill="#111" font-size="16">Легенда: темный прямоугольник - колонна; зеленая линия - контрольный контур; зеленые точки - поперечная арматура.</text>
   </svg></div>`
 }
 
@@ -174,7 +172,7 @@ function renderSvgElement(element: SvgSketchElement): string {
     const stressColor =
       element.role === 'stress-segment' ? getStressColor(element.stressRatio ?? 0) : stroke
     const label = element.label
-      ? `<text x="${(element.start.x + element.end.x) / 2}" y="${(element.start.y + element.end.y) / 2 - 8}" fill="#475569" font-size="18" text-anchor="middle">${escapeHtml(cleanReportText(element.label))}</text>`
+      ? `<text x="${(element.start.x + element.end.x) / 2}" y="${(element.start.y + element.end.y) / 2 - 8}" fill="#333" font-size="18" text-anchor="middle">${escapeHtml(cleanReportText(element.label))}</text>`
       : ''
     const marker =
       element.role === 'dimension' ||
@@ -193,7 +191,7 @@ function renderSvgElement(element: SvgSketchElement): string {
     return `<circle cx="${element.center.x}" cy="${element.center.y}" r="${element.radius}" fill="${fillColor}" stroke="${stroke}" stroke-width="2" vector-effect="non-scaling-stroke" />`
   }
 
-  return `<text x="${element.position.x}" y="${element.position.y}" fill="#475569" font-size="18">${escapeHtml(cleanReportText(element.text))}</text>`
+  return `<text x="${element.position.x}" y="${element.position.y}" fill="#333" font-size="18">${escapeHtml(cleanReportText(element.text))}</text>`
 }
 
 function cleanReportText(value: string) {
@@ -206,7 +204,7 @@ function cleanServiceText(value: string) {
 
 function formatVerificationSource(value: string) {
   const labels: Record<string, string> = {
-    'NOT VERIFIED': 'НЕ ПРОВЕРЕНО',
+    'NOT VERIFIED': 'не проверено',
     'WebCAD checked': 'проверено в WebCAD',
     'Manual engineer calculation': 'ручной инженерный расчет',
     'Verified Excel': 'проверенный Excel',
@@ -227,22 +225,22 @@ function escapeHtml(value: string) {
 
 function getStroke(role: SvgSketchElement['role']) {
   const colors: Record<SvgSketchElement['role'], string> = {
-    slab: '#cbd5e1',
-    'slab-boundary': '#64748b',
-    column: '#020617',
-    wall: '#020617',
-    'control-perimeter': '#0f766e',
-    'control-contour': '#14b8a6',
-    'selected-control-contour': '#115e59',
-    'removed-perimeter': '#dc2626',
-    opening: '#ef4444',
-    'opening-tangent': '#94a3b8',
-    label: '#475569',
-    dimension: '#64748b',
-    'stress-segment': '#dc2626',
-    'stress-marker': '#dc2626',
-    'moment-arrow': '#7c3aed',
-    eccentricity: '#0891b2',
+    slab: '#d4d4d4',
+    'slab-boundary': '#666',
+    column: '#111',
+    wall: '#111',
+    'control-perimeter': '#047857',
+    'control-contour': '#059669',
+    'selected-control-contour': '#065f46',
+    'removed-perimeter': '#b91c1c',
+    opening: '#b91c1c',
+    'opening-tangent': '#777',
+    label: '#333',
+    dimension: '#555',
+    'stress-segment': '#b91c1c',
+    'stress-marker': '#b91c1c',
+    'moment-arrow': '#6d28d9',
+    eccentricity: '#0369a1',
     'reinforcement-marker': '#047857',
     'reinforcement-row': '#059669',
   }
@@ -252,23 +250,23 @@ function getStroke(role: SvgSketchElement['role']) {
 
 function getFill(role: SvgSketchElement['role']) {
   const colors: Record<SvgSketchElement['role'], string> = {
-    slab: '#f1f5f9',
+    slab: '#fff',
     'slab-boundary': 'none',
-    column: '#1e293b',
-    wall: '#334155',
+    column: '#222',
+    wall: '#333',
     'control-perimeter': 'none',
     'control-contour': 'none',
     'selected-control-contour': 'none',
     'removed-perimeter': 'none',
-    opening: '#ffedd5',
+    opening: '#fff',
     'opening-tangent': 'none',
     label: 'none',
     dimension: 'none',
     'stress-segment': 'none',
-    'stress-marker': '#dc2626',
+    'stress-marker': '#b91c1c',
     'moment-arrow': 'none',
-    eccentricity: '#cffafe',
-    'reinforcement-marker': '#34d399',
+    eccentricity: 'none',
+    'reinforcement-marker': '#10b981',
     'reinforcement-row': 'none',
   }
 
@@ -279,5 +277,5 @@ function getStressColor(ratio: number) {
   const normalized = Math.max(0, Math.min(1, ratio))
   const hue = 200 - normalized * 200
 
-  return `hsl(${hue.toFixed(0)} 82% 48%)`
+  return `hsl(${hue.toFixed(0)} 82% 40%)`
 }

@@ -54,6 +54,33 @@ describe('calculation local storage', () => {
     expect(getSavedCalculation('missing')).toBeNull()
   })
 
+  it('migrates old enabled reinforcement inputs to legacy layout mode', () => {
+    const savedCalculation = createSavedCalculation('legacy-reinforcement')
+    const legacyInput = {
+      ...savedCalculation.input,
+      shearReinforcement: {
+        enabled: true,
+        barDiameterMm: 10,
+        barSpacingMm: 100,
+        rowCount: 2,
+        legsPerRow: 4,
+        steelClass: 'A400' as const,
+        firstRowDistanceMm: 80,
+        rowSpacingMm: 100,
+        layoutType: 'closed-stirrups' as const,
+      },
+    }
+
+    localStorage.setItem(
+      SAVED_CALCULATIONS_STORAGE_KEY,
+      JSON.stringify([{ ...savedCalculation, input: legacyInput }]),
+    )
+
+    expect(getSavedCalculation('legacy-reinforcement')?.input.shearReinforcement.inputMode).toBe(
+      'legacy-layout',
+    )
+  })
+
   it('rejects invalid JSON imports', () => {
     expect(() => importCalculationFromJson('{bad json')).toThrow('Не удалось прочитать JSON')
     expect(() => importCalculationFromJson('{"id":"missing-fields"}')).toThrow(

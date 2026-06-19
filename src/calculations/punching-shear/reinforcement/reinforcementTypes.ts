@@ -12,6 +12,7 @@ export type DraftSteelClassData = {
 
 export type NormalizedShearReinforcement = {
   enabled: boolean
+  inputMode: 'manual' | 'legacy-layout'
   steelClass: ShearReinforcementSteelClass
   layoutType: ShearReinforcementLayoutType
   barDiameterMm: number
@@ -20,18 +21,22 @@ export type NormalizedShearReinforcement = {
   legsPerRow: number
   firstRowDistanceMm: number
   rowSpacingMm: number
+  manualAswMm2: number | null
+  manualSwMm: number | null
 }
 
 export type ShearReinforcementCapacityInput = {
   reinforcement: NormalizedShearReinforcement
   concreteCapacityN: number | null
   designDemandN: number | null
+  controlPerimeterMm?: number | null
 }
 
 export const defaultShearReinforcementInput: Required<
   Omit<ShearReinforcementInput, 'rows'>
 > = {
   enabled: false,
+  inputMode: 'manual',
   barDiameterMm: 10,
   barSpacingMm: 100,
   rowCount: 2,
@@ -40,4 +45,6 @@ export const defaultShearReinforcementInput: Required<
   firstRowDistanceMm: 80,
   rowSpacingMm: 100,
   layoutType: 'closed-stirrups',
+  manualAswMm2: 628.319,
+  manualSwMm: 100,
 }

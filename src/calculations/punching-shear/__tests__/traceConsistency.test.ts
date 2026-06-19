@@ -20,7 +20,6 @@ const allowedSourceTypes = new Set<TraceSourceType>([
   'placeholder',
 ])
 const eta = '\u03b7'
-const multiply = '\u00d7'
 
 const scenarios: Array<{
   name: string
@@ -177,33 +176,24 @@ describe('trace consistency audit', () => {
     const markdown = buildPunchingShearMarkdownReport(input, result, report)
     const listing = buildEngineeringReportListing(input, result, report)
 
-    expect(html).toContain('1. Итог проверки')
+    expect(html).toContain('Расчет на продавливание')
+    expect(html).toContain('1. Допущения и предпосылки')
     expect(html).toContain('2. Исходные данные')
-    expect(html).toContain('3. Ход расчета')
+    expect(html).toContain('3. Расчет')
     expect(html).toContain('4. Проверка условия')
-    expect(html).toContain('5. Заключение')
-    expect(markdown).toContain('## 1. Итог проверки')
-    expect(markdown).toContain('## 3. Ход расчета')
-    if (
-      input.caseType === 'center' &&
-      input.forces.momentXKnM === 0 &&
-      input.forces.momentYKnM === 0 &&
-      !input.shearReinforcement.enabled &&
-      !input.multipleContours?.enabled
-    ) {
-      expect(markdown).toContain('offset = h0 / 2')
-      expect(markdown).toContain(`contourX = columnX + 2 ${multiply} offset`)
-      expect(markdown).toContain(`contourY = columnY + 2 ${multiply} offset`)
-      expect(markdown).toContain(`u = 2 ${multiply} contourX + 2 ${multiply} contourY`)
-      expect(markdown).toContain(`Ab = u ${multiply} h0`)
-      expect(markdown).toContain('v = N / Ab')
-    } else {
-      expect(markdown).toContain(`v = N / (u ${multiply} h0)`)
+    expect(html).toContain('5. Вывод')
+    expect(markdown).toContain('## 1. Допущения и предпосылки')
+    expect(markdown).toContain('## 3. Расчет')
+    if (result.status !== 'not_implemented' && result.status !== 'invalid_input') {
+      expect(markdown).toContain('A_b = u · h₀')
+      expect(markdown).toContain('F_b,ult = Rbt · A_b')
     }
-    expect(markdown).toContain(`${eta} = v / R`)
+    expect(markdown).toContain(`${eta} =`)
     expect(markdown).not.toContain('Формула:')
     expect(markdown).not.toContain('Подстановка:')
     expect(markdown).not.toContain('Результат:')
+    expect(markdown).not.toContain('offset')
+    expect(html).not.toContain('черновое смещение')
 
     for (const section of listing.calculationSections) {
       expect(html).toContain(section.title)

@@ -35,7 +35,7 @@ export function SavedCalculationCard({
         </div>
 
         <div className="grid grid-cols-2 gap-2 text-sm">
-          <HistoryMetric label="Использование" value={formatUtilization(calculation.result.utilizationRatio)} />
+          <HistoryMetric label="Использование" value={formatUtilization(calculation.result.governingUtilization)} />
           <HistoryMetric label="Тип" value="Продавливание" />
         </div>
 

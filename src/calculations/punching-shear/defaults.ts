@@ -46,6 +46,7 @@ export const defaultPunchingShearInput: PunchingShearInput = {
   openings: [],
   shearReinforcement: {
     enabled: false,
+    inputMode: 'manual',
     barDiameterMm: 10,
     barSpacingMm: 100,
     rowCount: 2,
@@ -54,6 +55,8 @@ export const defaultPunchingShearInput: PunchingShearInput = {
     firstRowDistanceMm: 80,
     rowSpacingMm: 100,
     layoutType: 'closed-stirrups',
+    manualAswMm2: 628.319,
+    manualSwMm: 100,
   },
   multipleContours: {
     enabled: false,

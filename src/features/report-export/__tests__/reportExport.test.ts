@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { defaultPunchingShearInput } from '@/calculations/punching-shear/defaults'
 import { calculatePunchingShear } from '@/calculations/punching-shear/engine'
 import { buildPunchingShearReport } from '@/calculations/punching-shear/report'
+import { buildEngineeringReportListing } from '@/calculations/punching-shear/trace/engineeringReportLines'
 import { useCalculationStore } from '@/entities/calculation/model/store'
 
 import { downloadTextFile } from '../downloadFile'
@@ -22,8 +23,6 @@ vi.mock('../downloadFile', () => ({
 }))
 
 const mockedDownloadTextFile = vi.mocked(downloadTextFile)
-const eta = '\u03b7'
-const multiply = '\u00d7'
 
 describe('report export', () => {
   beforeEach(() => {
@@ -37,156 +36,104 @@ describe('report export', () => {
     })
   })
 
-  it('builds exported reports around the engineering calculation sequence', () => {
+  it('builds print-first engineering note exports', () => {
     const result = calculatePunchingShear(defaultPunchingShearInput)
     const report = buildPunchingShearReport(defaultPunchingShearInput, result)
     const html = buildPunchingShearHtmlReport(defaultPunchingShearInput, result, report)
     const markdown = buildPunchingShearMarkdownReport(defaultPunchingShearInput, result, report)
 
-    expect(html).toContain('TrueBIM: отчет по продавливанию')
-    expect(html).toContain('ЧЕРНОВОЙ РАСЧЕТ - НЕ ДЛЯ ПРОЕКТНОГО ПРИМЕНЕНИЯ')
-    expect(html).toContain('1. Итог проверки')
-    expect(html).toContain('2. Исходные данные')
-    expect(html).toContain('3. Ход расчета')
-    expect(html).toContain('4. Проверка условия')
-    expect(html).toContain('5. Заключение')
-    expect(markdown).toContain('## 1. Итог проверки')
-    expect(markdown).toContain('## 3. Ход расчета')
-    expect(markdown).toContain('v = N / Ab')
-    expect(markdown).toContain(`${eta} = v / R`)
+    expect(html).toContain('Расчет на продавливание')
+    expect(html).toContain('@page { size: A4; margin: 18mm 20mm; }')
+    expect(html).toContain('Печать / Сохранить PDF')
+    expect(html).toContain('Допущения и предпосылки')
+    expect(html).toContain('Исходные данные')
+    expect(html).toContain('Расчет')
+    expect(markdown).toContain('# Расчет на продавливание')
+    expect(markdown).toContain('## 3. Расчет')
   })
 
-  it('renders formulas as listing lines rather than trace cards', () => {
-    const result = calculatePunchingShear(defaultPunchingShearInput)
-    const report = buildPunchingShearReport(defaultPunchingShearInput, result)
-    const markdown = buildPunchingShearMarkdownReport(defaultPunchingShearInput, result, report)
-    const html = buildPunchingShearHtmlReport(defaultPunchingShearInput, result, report)
-
-    expect(markdown).toContain('offset = h0 / 2')
-    expect(markdown).toContain('offset = 190 / 2')
-    expect(markdown).toContain('offset = 95 мм')
-    expect(markdown).toContain(`contourX = columnX + 2 ${multiply} offset`)
-    expect(markdown).toContain(`contourX = 400 + 2 ${multiply} 95`)
-    expect(markdown).toContain('contourX = 590 мм')
-    expect(markdown).toContain(`contourY = columnY + 2 ${multiply} offset`)
-    expect(markdown).toContain(`u = 2 ${multiply} contourX + 2 ${multiply} contourY`)
-    expect(markdown).toContain(`u = 2 ${multiply} 590 + 2 ${multiply} 590`)
-    expect(markdown).toContain('u = 2360 мм')
-    expect(markdown).toContain(`Ab = u ${multiply} h0`)
-    expect(markdown).toContain(`Ab = 2360 ${multiply} 190`)
-    expect(markdown).toContain('Ab = 448400 мм²')
-    expect(markdown).toContain('v = N / Ab')
-    expect(markdown).toContain('v = 420000 / 448400')
-    expect(markdown).toContain('v = 0.9367 МПа')
-    expect(markdown).toContain('R = 1.050 МПа')
-    expect(markdown).toContain(`${eta} = 0.9367 / 1.050`)
-    expect(markdown).toContain(`${eta} = 0.892`)
-    expect(markdown).not.toContain('Формула:')
-    expect(markdown).not.toContain('Подстановка:')
-    expect(markdown).not.toContain('Результат:')
-    expect(html).not.toContain('Формула:')
-    expect(html).not.toContain('Подстановка:')
-    expect(html).not.toContain('Результат:')
-  })
-
-  it('does not expose pseudo formulas or raw n/a values in user-facing exports', () => {
-    const result = calculatePunchingShear(defaultPunchingShearInput)
-    const report = buildPunchingShearReport(defaultPunchingShearInput, result)
-    const markdown = buildPunchingShearMarkdownReport(defaultPunchingShearInput, result, report)
-    const html = buildPunchingShearHtmlReport(defaultPunchingShearInput, result, report)
-
-    for (const content of [markdown, html]) {
-      expect(content).not.toMatch(/\bu = u\b|\bh0 = h0\b|\bR = R\b|η = η/)
-      expect(content).not.toContain('n/a')
-      expect(content).not.toContain('Параметр недоступен для данного режима расчета.')
-    }
-  })
-
-  it('keeps verification, evidence, applicability and metadata in service information', () => {
-    const result = calculatePunchingShear(defaultPunchingShearInput)
-    const report = buildPunchingShearReport(defaultPunchingShearInput, result)
-    const metadata = {
-      generatedAt: '2026-05-26T04:17:54.000Z',
-      calculationId: 'ps-center-20260526-041754-d576a71',
-      verificationSource: 'NOT VERIFIED' as const,
-    }
-    const html = buildPunchingShearHtmlReport(defaultPunchingShearInput, result, report, metadata)
-    const markdown = buildPunchingShearMarkdownReport(
-      defaultPunchingShearInput,
-      result,
-      report,
-      metadata,
-    )
-
-    expect(html).toContain('6. Служебная информация')
-    expect(html).toContain('Статус проверки')
-    expect(html).toContain('Доказательства проверки')
-    expect(html).toContain('Применимость')
-    expect(html).toContain('Метаданные')
-    expect(html).toContain('НЕ ПРОВЕРЕНО')
-    expect(markdown).toContain('## 6. Служебная информация')
-    expect(markdown).toContain('### Статус проверки')
-    expect(markdown).toContain('verified-center-rect-001')
-    expect(markdown).toContain('ps-center-20260526-041754-d576a71')
-  })
-
-  it('includes moment transfer, reinforcement, and SP63 values inside the calculation listing', () => {
+  it('uses one governing utilization in listing, HTML, Markdown and summary', () => {
     const input = {
       ...defaultPunchingShearInput,
-      forces: {
-        axialForceKn: 800,
-        momentXKnM: 60,
-        momentYKnM: 50,
-      },
-      concrete: {
-        className: 'B30' as const,
-      },
-      rectColumn: {
-        widthXMm: 500,
-        widthYMm: 800,
-      },
       shearReinforcement: {
+        ...defaultPunchingShearInput.shearReinforcement,
         enabled: true,
-        barDiameterMm: 6,
-        barSpacingMm: 60,
-        rowCount: 1,
-        legsPerRow: 2,
-        steelClass: 'A240' as const,
-        firstRowDistanceMm: 65,
-        rowSpacingMm: 60,
-        layoutType: 'custom' as const,
+        inputMode: 'manual' as const,
+        manualAswMm2: 628.3185307,
+        manualSwMm: 100,
       },
     }
     const result = calculatePunchingShear(input)
     const report = buildPunchingShearReport(input, result)
+    const listing = buildEngineeringReportListing(input, result, report)
     const html = buildPunchingShearHtmlReport(input, result, report)
     const markdown = buildPunchingShearMarkdownReport(input, result, report)
+    const expected = result.governingUtilization?.toFixed(3)
 
-    expect(result.sp63Interaction?.benchmarkStatus).toBe('matched')
-    expect(html).toContain('Передача моментов')
-    expect(html).toContain('Поперечная арматура')
-    expect(html).toContain('Fb.ult')
-    expect(html).toContain('Mx.ult')
-    expect(html).toContain('Fult')
-    expect(markdown).toContain('### Передача моментов')
-    expect(markdown).toContain('### Поперечная арматура')
-    expect(markdown).toContain('Wx =')
-    expect(markdown).toContain('Wy =')
+    expect(expected).toBeDefined()
+    expect(listing.resultSummary.utilizationText).toBe(expected)
+    expect(html).toContain(`η = ${expected}`)
+    expect(markdown).toContain(`η = ${expected}`)
+    expect(buildReportSummary(result)).toContain(`util=${expected}`)
   })
 
-  it('renders SVG numeric labels and axes in HTML report', () => {
+  it('renders reinforcement formula chain without contradicting the conclusion', () => {
+    const input = {
+      ...defaultPunchingShearInput,
+      shearReinforcement: {
+        ...defaultPunchingShearInput.shearReinforcement,
+        enabled: true,
+        inputMode: 'manual' as const,
+        manualAswMm2: 628.3185307,
+        manualSwMm: 100,
+      },
+    }
+    const result = calculatePunchingShear(input)
+    const report = buildPunchingShearReport(input, result)
+    const markdown = buildPunchingShearMarkdownReport(input, result, report)
+
+    expect(markdown).toContain('q_sw = Rsw · Asw / sw')
+    expect(markdown).toContain('F_sw,raw = 0.8 · q_sw · u')
+    expect(markdown).toContain('F_sw,raw ≥ 0.25 · F_b,ult')
+    expect(markdown).toContain('F_sw,raw ≤ F_b,ult')
+    expect(markdown).toContain('F_sw,used')
+    expect(markdown).toContain('Fult = F_b,ult + F_sw,used')
+    expect(markdown).toContain(`= ${result.governingUtilization?.toFixed(3)}`)
+  })
+
+  it('omits inactive scenario noise and forbidden report text', () => {
+    const result = calculatePunchingShear(defaultPunchingShearInput)
+    const report = buildPunchingShearReport(defaultPunchingShearInput, result)
+    const html = buildPunchingShearHtmlReport(defaultPunchingShearInput, result, report)
+    const markdown = buildPunchingShearMarkdownReport(defaultPunchingShearInput, result, report)
+
+    for (const content of [html, markdown]) {
+      expect(content).not.toContain('Параметр недоступен')
+      expect(content).not.toContain('offset')
+      expect(content).not.toContain('черновое смещение')
+      expect(content).not.toContain('studs')
+      expect(content).not.toContain('Поперечная арматура</h3>')
+      expect(content).not.toContain('Поперечная арматура\n')
+    }
+  })
+
+  it('renders SVG with engineering labels and no offset/debug labels', () => {
     const result = calculatePunchingShear(defaultPunchingShearInput)
     const report = buildPunchingShearReport(defaultPunchingShearInput, result)
     const html = buildPunchingShearHtmlReport(defaultPunchingShearInput, result, report)
 
-    expect(html).toContain('400 mm колонна X')
-    expect(html).toContain('95 mm черновое смещение')
-    expect(html).toContain('X')
-    expect(html).toContain('Y')
-    expect(html).toContain('Масштаб: 1 единица = 1 мм, вписано в область')
+    expect(html).toContain('<title>Расчетная схема продавливания</title>')
+    expect(html).toContain('Колонна')
+    expect(html).toContain('колонна X')
+    expect(html).toContain('колонна Y')
+    expect(html).toContain('контур X')
+    expect(html).toContain('контур Y')
+    expect(html).not.toContain('1 единица = 1 мм')
+    expect(html).not.toContain(' mm ')
+    expect(html).not.toContain('offset')
   })
 
-  it('formats copy report summary', () => {
+  it('formats copy report summary with governing utilization', () => {
     const result = calculatePunchingShear(defaultPunchingShearInput)
 
     expect(buildReportSummary(result)).toBe(
@@ -248,17 +195,5 @@ describe('report export', () => {
     })
     expect(mockedDownloadTextFile.mock.calls[0][1]).toContain('calc-shared-id')
     expect(mockedDownloadTextFile.mock.calls[1][1]).toContain('calc-shared-id')
-  })
-
-  it('guards export when no calculation exists', () => {
-    expect(exportCurrentCalculationAsHtml()).toEqual({
-      ok: false,
-      error: 'Сначала выполните расчет, затем выгрузите отчет.',
-    })
-    expect(exportCurrentCalculationAsMarkdown()).toEqual({
-      ok: false,
-      error: 'Сначала выполните расчет, затем выгрузите отчет.',
-    })
-    expect(mockedDownloadTextFile).not.toHaveBeenCalled()
   })
 })

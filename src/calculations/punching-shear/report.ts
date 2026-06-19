@@ -10,8 +10,8 @@ export function buildPunchingShearReport(
   const calculationTrace = buildPunchingShearTrace(input, result)
 
   return {
-    title: 'Черновая проверка продавливания',
-    standard: 'СП 63.13330 - ожидается проверка черновика',
+    title: 'Расчет на продавливание',
+    standard: 'СП 63.13330 - статус зависит от verificationStatus результата',
     caseType: input.caseType,
     inputSummary: {
       caseType: input.caseType,
@@ -25,7 +25,7 @@ export function buildPunchingShearReport(
     },
     resultSummary: {
       status: result.status,
-      utilization: result.utilizationRatio,
+      utilization: result.governingUtilization,
       perimeterMm: result.controlPerimeterMm,
       effectiveDepthMm: result.effectiveDepthMm,
       passed: result.passed === null ? 'не оценено' : String(result.passed),
@@ -156,7 +156,12 @@ export function buildPunchingShearReport(
       vmax: result.maxShearStressMpa,
       vmin: result.minShearStressMpa,
       R: result.draftConcreteResistanceMpa,
-      utilization: result.utilizationRatio,
+      utilization: result.governingUtilization,
+      utilizationConcrete: result.utilizationConcrete,
+      utilizationTotal: result.utilizationTotal,
+      governingUtilization: result.governingUtilization,
+      concreteCapacityN: result.concreteCapacityN,
+      totalCapacityN: result.totalCapacityN,
       reinforcementAreaMm2: result.reinforcementAreaMm2,
       reinforcementContributionN: result.reinforcementContributionN,
       draftCapacityWithReinforcementN: result.draftCapacityWithReinforcementN,

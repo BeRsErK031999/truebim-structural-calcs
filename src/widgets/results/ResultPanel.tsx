@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import type { ReactNode } from 'react'
-import { Copy, Download, FileText, X } from 'lucide-react'
+import { Copy, Download, FileText, Printer, X } from 'lucide-react'
 
 import {
   pointsToSvg,
@@ -225,6 +225,10 @@ function EngineeringReportModal({
             <Button type="button" variant="outline" onClick={onExportMarkdown}>
               <Download />
               Выгрузить Markdown
+            </Button>
+            <Button type="button" variant="outline" onClick={() => window.print()}>
+              <Printer />
+              Печать / Сохранить PDF
             </Button>
             <Button type="button" variant="ghost" size="icon" aria-label="Закрыть отчет" onClick={onClose}>
               <X />

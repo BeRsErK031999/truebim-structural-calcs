@@ -1,5 +1,4 @@
 import type { PunchingShearInput, PunchingShearReportModel, PunchingShearResult } from '../types'
-import type { TraceStep } from './traceStep'
 import { localizeTraceText } from './traceLocalization'
 
 export type EngineeringReportLine = {
@@ -29,57 +28,67 @@ export type EngineeringReportServiceBlock = {
 export type EngineeringReportListing = {
   resultSummary: {
     statusText: string
+    verificationText: string
     conditionText: string
     utilizationText: string
     reserveText: string
     reservePercentText: string
     passed: boolean | null
   }
+  assumptionsText: string
+  inputText: string
   inputRows: EngineeringReportTableRow[]
   quickRows: EngineeringReportTableRow[]
   calculationSections: EngineeringReportSection[]
   conditionLines: EngineeringReportLine[]
   conclusionLines: EngineeringReportLine[]
+  footerRows: EngineeringReportTableRow[]
   serviceBlocks: EngineeringReportServiceBlock[]
 }
 
-const unavailable = 'Параметр недоступен для данного режима расчета.'
-
+const unavailable = 'Не задано'
 const etaSymbol = '\u03b7'
-const multiplySymbol = '\u00d7'
 
 export function buildEngineeringReportListing(
   input: PunchingShearInput,
   result: PunchingShearResult,
   report: PunchingShearReportModel,
 ): EngineeringReportListing {
-  const utilization = formatRatio(result.utilizationRatio)
-  const reserve = calculateReserve(result.utilizationRatio)
+  const governingUtilization = result.governingUtilization
+  const reserve = calculateReserve(governingUtilization)
   const reserveText = reserve === null ? unavailable : `${formatNumber(reserve, 1)} %`
-  const statusText = result.status === 'invalid_input' || result.status === 'not_implemented'
-    ? 'Проверка не выполнена'
-    : 'Проверка выполнена'
-  const conditionText = result.passed === null
-    ? 'Условие прочности не оценено.'
-    : result.passed
-      ? 'Условие прочности выполняется.'
-      : 'Условие прочности не выполняется.'
+  const statusText =
+    result.status === 'invalid_input' || result.status === 'not_implemented'
+      ? 'Проверка не выполнена'
+      : result.passed
+        ? 'Прочность обеспечена'
+        : 'Прочность не обеспечена'
+  const conditionText =
+    result.passed === null
+      ? 'Условие прочности не оценено.'
+      : result.passed
+        ? 'Условие прочности выполняется.'
+        : 'Условие прочности не выполняется.'
 
   return {
     resultSummary: {
       statusText,
+      verificationText: localizeVerificationLevel(result.verificationStatus),
       conditionText,
-      utilizationText: utilization,
+      utilizationText: formatRatio(governingUtilization),
       reserveText,
       reservePercentText: reserveText,
       passed: result.passed,
     },
+    assumptionsText: buildAssumptionsText(input, result),
+    inputText: buildInputText(input, result),
     inputRows: buildInputRows(input, result),
     quickRows: buildQuickRows(result),
-    calculationSections: buildCalculationSections(input, result, report),
+    calculationSections: buildCalculationSections(input, result),
     conditionLines: buildConditionLines(result),
     conclusionLines: buildConclusionLines(result),
-    serviceBlocks: buildServiceBlocks(result, report),
+    footerRows: [],
+    serviceBlocks: buildServiceBlocks(input, result, report),
   }
 }
 
@@ -87,16 +96,61 @@ export function unavailableParameterText() {
   return unavailable
 }
 
+function buildAssumptionsText(input: PunchingShearInput, result: PunchingShearResult) {
+  const support = formatSupportKind(input)
+  const moments =
+    input.forces.momentXKnM !== 0 || input.forces.momentYKnM !== 0
+      ? 'моменты Mx/My учитываются черновым перераспределением напряжений'
+      : 'моменты отсутствуют'
+  const reinforcement = input.shearReinforcement.enabled
+    ? result.shearReinforcement.contributionAccepted
+      ? 'поперечная арматура учитывается по ручным Asw и sw'
+      : 'поперечная арматура задана, но ее вклад не включен в итоговую проверку'
+    : 'поперечная арматура не задана'
+  const openings =
+    input.openings.length > 0 ? `учтены отверстия: ${input.openings.length}` : 'отверстия отсутствуют'
+  const method =
+    input.caseType === 'center' && input.rectColumn
+      ? 'контрольный периметр принят на расстоянии h0/2 от грани колонны'
+      : 'геометрия расчетного контура является черновой подготовкой'
+
+  return `${support}; ${moments}; ${reinforcement}; ${openings}. ${method}. ${localizeVerificationLevel(result.verificationStatus)}.`
+}
+
+function buildInputText(input: PunchingShearInput, result: PunchingShearResult) {
+  const values = [
+    `N = ${formatKn(input.forces.axialForceKn)}`,
+    input.forces.momentXKnM !== 0 ? `Mx = ${formatKnM(input.forces.momentXKnM)}` : null,
+    input.forces.momentYKnM !== 0 ? `My = ${formatKnM(input.forces.momentYKnM)}` : null,
+    `h = ${formatMm(input.slab.thicknessMm)}`,
+    `h₀ = ${formatMm(result.effectiveDepthMm ?? input.slab.effectiveDepthMm)}`,
+    `колонна ${formatSupportSize(input)}`,
+    `бетон ${input.concrete.className}`,
+    `Rbt = ${formatMpa(result.draftConcreteResistanceMpa, 3)}`,
+    input.shearReinforcement.enabled ? formatReinforcementInputSentence(result) : null,
+  ].filter((value): value is string => Boolean(value))
+
+  return `${values.join('; ')}.`
+}
+
 function buildInputRows(input: PunchingShearInput, result: PunchingShearResult): EngineeringReportTableRow[] {
   return [
     { label: 'N', value: formatKn(input.forces.axialForceKn) },
-    { label: 'Mx', value: formatKnM(input.forces.momentXKnM) },
-    { label: 'My', value: formatKnM(input.forces.momentYKnM) },
+    ...(input.forces.momentXKnM !== 0 ? [{ label: 'Mx', value: formatKnM(input.forces.momentXKnM) }] : []),
+    ...(input.forces.momentYKnM !== 0 ? [{ label: 'My', value: formatKnM(input.forces.momentYKnM) }] : []),
     { label: 'h', value: formatMm(input.slab.thicknessMm) },
-    { label: 'h0', value: formatMm(result.effectiveDepthMm ?? input.slab.effectiveDepthMm) },
-    { label: 'Размер колонны', value: formatSupportSize(input) },
-    { label: 'Класс бетона', value: input.concrete.className },
-    { label: 'Поперечная арматура', value: formatShearReinforcement(input, result) },
+    { label: 'h₀', value: formatMm(result.effectiveDepthMm ?? input.slab.effectiveDepthMm) },
+    { label: 'Колонна', value: formatSupportSize(input) },
+    { label: 'Бетон', value: input.concrete.className },
+    { label: 'Rbt', value: formatMpa(result.draftConcreteResistanceMpa, 3) },
+    ...(input.shearReinforcement.enabled
+      ? [
+          { label: 'Поперечная арматура', value: formatReinforcementInputSentence(result) },
+          { label: 'Rsw', value: formatMpa(getSteelStrength(result), 3) },
+          { label: 'Asw', value: formatMm2(result.reinforcementAreaMm2, 3) },
+          { label: 'sw', value: formatMm(result.shearReinforcement.swMm) },
+        ]
+      : []),
   ]
 }
 
@@ -104,300 +158,161 @@ function buildQuickRows(result: PunchingShearResult): EngineeringReportTableRow[
   return [
     { label: 'N', value: formatN(result.designShearForceN) },
     { label: 'u', value: formatMm(result.controlPerimeterMm) },
-    { label: 'h0', value: formatMm(result.effectiveDepthMm) },
-    { label: 'v', value: formatMpa(result.shearStressMpa, 4) },
-    { label: 'R', value: formatMpa(result.draftConcreteResistanceMpa, 3) },
+    { label: 'h₀', value: formatMm(result.effectiveDepthMm) },
+    { label: 'Fb,ult', value: formatN(result.concreteCapacityN) },
+    { label: 'Fult', value: formatN(result.totalCapacityN) },
+    { label: etaSymbol, value: formatRatio(result.governingUtilization) },
   ]
 }
 
 function buildCalculationSections(
   input: PunchingShearInput,
   result: PunchingShearResult,
-  report: PunchingShearReportModel,
 ): EngineeringReportSection[] {
-  const verifiedCenterSections = buildVerifiedCenterForceOnlySections(input, result, report)
-
-  if (verifiedCenterSections) {
-    return verifiedCenterSections
-  }
-
   const sections: EngineeringReportSection[] = [
     {
       id: 'geometry',
-      title: 'Геометрические характеристики',
-      lines: compactLines([
-        line('u', `u = ${formatMm(result.controlPerimeterMm)}`),
-        line('ab-formula', 'Ab = u × h0'),
-        line(
-          'ab-substitution',
+      title: 'Геометрия расчетного контура',
+      lines: [
+        formula(
+          'u',
+          input.rectColumn && result.effectiveDepthMm !== null
+            ? `u = 2(h₀ + h₀ + a_c + b_c) = 2(${formatPlain(result.effectiveDepthMm)} + ${formatPlain(result.effectiveDepthMm)} + ${formatPlain(input.rectColumn.widthXMm)} + ${formatPlain(input.rectColumn.widthYMm)}) = ${formatMm(result.controlPerimeterMm)}`
+            : `u = ${formatMm(result.controlPerimeterMm)}`,
+        ),
+        formula(
+          'ab',
           hasFinite(result.controlPerimeterMm) && hasFinite(result.effectiveDepthMm)
-            ? `Ab = ${formatPlain(result.controlPerimeterMm)} × ${formatPlain(result.effectiveDepthMm)}`
-            : `Ab = ${unavailable}`,
+            ? `A_b = u · h₀ = ${formatPlain(result.controlPerimeterMm)} · ${formatPlain(result.effectiveDepthMm)} = ${formatMm2(result.controlPerimeterMm * result.effectiveDepthMm, 0)}`
+            : `A_b = ${unavailable}`,
         ),
-        line('ab-result', formatAreaLine(result)),
-        ...buildOptionalSp63GeometryLines(result),
-      ]),
+      ],
     },
     {
-      id: 'stress',
-      title: 'Напряжение продавливания',
-      lines: compactLines([
-        line('v-formula', 'v = N / (u × h0)'),
-        line(
-          'v-substitution',
-          hasFinite(result.designShearForceN) && hasFinite(result.controlPerimeterMm) && hasFinite(result.effectiveDepthMm)
-            ? `v = ${formatPlain(result.designShearForceN)} / (${formatPlain(result.controlPerimeterMm)} × ${formatPlain(result.effectiveDepthMm)})`
-            : `v = ${unavailable}`,
+      id: 'concrete',
+      title: 'Несущая способность бетона',
+      lines: [
+        formula(
+          'fb',
+          hasFinite(result.draftConcreteResistanceMpa) && hasFinite(result.concreteCapacityN)
+            ? `F_b,ult = Rbt · A_b = ${formatPlain(result.draftConcreteResistanceMpa, 3)} · ${formatPlain((result.controlPerimeterMm ?? 0) * (result.effectiveDepthMm ?? 0), 0)} = ${formatN(result.concreteCapacityN)}`
+            : `F_b,ult = ${unavailable}`,
         ),
-        line('v-result', `v = ${formatMpa(result.shearStressMpa, 4)}`),
-      ]),
-    },
-    {
-      id: 'capacity',
-      title: 'Несущая способность',
-      lines: compactLines([
-        line('r', `R = ${formatMpa(result.draftConcreteResistanceMpa, 3)}`),
-        ...buildLimitForceLines(result),
-      ]),
-    },
-    {
-      id: 'utilization',
-      title: 'Коэффициент использования',
-      lines: compactLines([
-        line('eta-formula', 'η = v / R'),
-        line(
-          'eta-substitution',
-          hasFinite(result.maxShearStressMpa ?? result.shearStressMpa) && hasFinite(result.draftConcreteResistanceMpa)
-            ? `η = ${formatPlain(result.maxShearStressMpa ?? result.shearStressMpa, 4)} / ${formatPlain(result.draftConcreteResistanceMpa, 3)}`
-            : `η = ${unavailable}`,
+        formula(
+          'eta-concrete',
+          hasFinite(result.designShearForceN) && hasFinite(result.concreteCapacityN)
+            ? `${etaSymbol}_b = F / F_b,ult = ${formatKnFromN(result.designShearForceN)} / ${formatKnFromN(result.concreteCapacityN)} = ${formatRatio(result.utilizationConcrete)}`
+            : `${etaSymbol}_b = ${unavailable}`,
         ),
-        line('eta-result', `η = ${formatRatio(result.utilizationRatio)}`),
-      ]),
+      ],
     },
   ]
 
-  if (input.forces.momentXKnM !== 0 || input.forces.momentYKnM !== 0) {
-    sections.splice(2, 0, {
-      id: 'moments',
-      title: 'Передача моментов',
-      lines: compactLines([
-        line('mx', `Mx = ${formatKnM(input.forces.momentXKnM)}`),
-        line('my', `My = ${formatKnM(input.forces.momentYKnM)}`),
-        line('ex', `ex = ${formatMm(result.eccentricityX, 3)}`),
-        line('ey', `ey = ${formatMm(result.eccentricityY, 3)}`),
-        line('vmax', `vmax = ${formatMpa(result.maxShearStressMpa, 4)}`),
-        line('vmin', `vmin = ${formatMpa(result.minShearStressMpa, 4)}`),
-      ]),
-    })
-  }
-
-  if (result.shearReinforcement.enabled) {
+  if (input.shearReinforcement.enabled) {
     sections.push({
       id: 'shear-reinforcement',
       title: 'Поперечная арматура',
-      lines: compactLines([
-        line('asw', `Asw = ${formatMm2(result.reinforcementAreaMm2, 3)}`),
-        line('vsw', `Vsw = ${formatN(result.reinforcementContributionN)}`),
-        line('capacity-reinf', `Fult = ${formatN(result.draftCapacityWithReinforcementN)}`),
-        line('eta-reinf', `ηsw = ${formatRatio(result.utilizationWithReinforcement)}`),
-      ]),
+      lines: buildReinforcementLines(result),
     })
   }
+
+  sections.push({
+    id: 'total',
+    title: 'Итоговая проверка',
+    lines: [
+      formula(
+        'fult',
+        hasFinite(result.concreteCapacityN) && hasFinite(result.shearReinforcementEffectiveCapacityN) && result.shearReinforcement.contributionAccepted
+          ? `Fult = F_b,ult + F_sw,used = ${formatKnFromN(result.concreteCapacityN)} + ${formatKnFromN(result.shearReinforcementEffectiveCapacityN)} = ${formatKnFromN(result.totalCapacityN)}`
+          : `Fult = F_b,ult = ${formatKnFromN(result.totalCapacityN)}`,
+      ),
+      formula(
+        'eta-total',
+        hasFinite(result.designShearForceN) && hasFinite(result.totalCapacityN)
+          ? `${etaSymbol} = F / Fult = ${formatKnFromN(result.designShearForceN)} / ${formatKnFromN(result.totalCapacityN)} = ${formatRatio(result.governingUtilization)}`
+          : `${etaSymbol} = ${unavailable}`,
+      ),
+    ],
+  })
 
   return sections
 }
 
-function buildVerifiedCenterForceOnlySections(
-  input: PunchingShearInput,
-  result: PunchingShearResult,
-  report: PunchingShearReportModel,
-): EngineeringReportSection[] | null {
-  if (!isVerifiedCenterForceOnlyListing(input, result)) {
-    return null
-  }
+function buildReinforcementLines(result: PunchingShearResult): EngineeringReportLine[] {
+  const summary = result.shearReinforcement
 
-  const steps = report.calculationTrace.flatMap((section) => section.steps)
-  const offset = findTraceStep(steps, 'control-perimeter-offset')
-  const contourX = findTraceStep(steps, 'contour-x')
-  const contourY = findTraceStep(steps, 'contour-y')
-  const perimeter = findTraceStep(steps, 'control-perimeter')
-  const area = findTraceStep(steps, 'control-area')
-  const stress = findTraceStep(steps, 'stress')
-  const utilization = findTraceStep(steps, 'utilization')
-
-  if (!offset || !contourX || !contourY || !perimeter || !area || !stress || !utilization) {
-    return null
-  }
-
-  return [
-    {
-      id: 'geometry',
-      title: 'Геометрические характеристики',
-      lines: [
-        ...traceFormulaBlock(offset, formatMm(result.perimeter.draftOffsetMm)),
-        ...traceFormulaBlock(contourX, formatMm(readTraceNumber(contourX))),
-        ...traceFormulaBlock(contourY, formatMm(readTraceNumber(contourY))),
-        ...traceFormulaBlock(perimeter, formatMm(result.controlPerimeterMm)),
-        ...traceFormulaBlock(area, formatMm2(readTraceNumber(area), 0)),
-      ],
-    },
-    {
-      id: 'stress',
-      title: 'Напряжение продавливания',
-      lines: traceFormulaBlock(stress, formatMpa(result.shearStressMpa, 4)),
-    },
-    {
-      id: 'capacity',
-      title: 'Несущая способность',
-      lines: [
-        line('r', `R = ${formatMpa(result.draftConcreteResistanceMpa, 3)}`),
-      ],
-    },
-    {
-      id: 'utilization',
-      title: 'Коэффициент использования',
-      lines: [
-        line('utilization-formula', formatFormulaText(utilization.formula)),
-        line(
-          'utilization-substitution',
-          hasFinite(result.maxShearStressMpa ?? result.shearStressMpa) && hasFinite(result.draftConcreteResistanceMpa)
-            ? `${etaSymbol} = ${formatPlain(result.maxShearStressMpa ?? result.shearStressMpa, 4)} / ${formatPlain(result.draftConcreteResistanceMpa, 3)}`
-            : `${etaSymbol} = ${unavailable}`,
-        ),
-        line('utilization-result', `${etaSymbol} = ${formatRatio(result.utilizationRatio)}`),
-      ],
-    },
-  ]
-}
-
-function traceFormulaBlock(step: TraceStep, resultText: string): EngineeringReportLine[] {
-  return [
-    line(`${step.id}-formula`, formatFormulaText(step.formula)),
-    line(`${step.id}-substitution`, formatFormulaText(step.substitutedFormula)),
-    line(`${step.id}-result`, `${getTraceFormulaSymbol(step)} = ${resultText}`),
-  ]
-}
-
-function findTraceStep(steps: TraceStep[], id: string) {
-  return steps.find((step) => step.id === id)
-}
-
-function getTraceFormulaSymbol(step: TraceStep) {
-  const formula = formatFormulaText(step.formula)
-  const [left] = formula.split('=')
-
-  return left.trim()
-}
-
-function formatFormulaText(value: string) {
-  return value
-    .replace(/\*/g, multiplySymbol)
-    .replace(/^eta_reinf\b/i, `${etaSymbol}sw`)
-    .replace(/^eta\b/i, etaSymbol)
-    .replace(/(\d+)\.000\b/g, '$1')
-}
-
-function readTraceNumber(step: TraceStep) {
-  const value = Number(step.result)
-
-  return Number.isFinite(value) ? value : null
-}
-
-function isVerifiedCenterForceOnlyListing(
-  input: PunchingShearInput,
-  result: PunchingShearResult,
-) {
-  return (
-    input.caseType === 'center' &&
-    Boolean(input.rectColumn) &&
-    input.openings.length === 0 &&
-    input.forces.momentXKnM === 0 &&
-    input.forces.momentYKnM === 0 &&
-    !input.shearReinforcement.enabled &&
-    !input.multipleContours?.enabled &&
-    result.verificationLevel === 'verified' &&
-    result.verifiedFeatures.includes('center-force-only')
-  )
-}
-
-function buildOptionalSp63GeometryLines(result: PunchingShearResult): EngineeringReportLine[] {
-  const sp63 = result.sp63Interaction
-
-  if (!sp63) {
+  if (summary.inputMode === 'legacy-layout') {
     return [
-      line('ix-unavailable', `Ix = ${unavailable}`, 'muted'),
-      line('iy-unavailable', `Iy = ${unavailable}`, 'muted'),
-      line('wx-unavailable', `Wx = ${unavailable}`, 'muted'),
-      line('wy-unavailable', `Wy = ${unavailable}`, 'muted'),
+      formula(
+        'legacy-asw',
+        `Asw не принят: старая схема содержит ${summary.totalLegs} условных стержней, но не содержит ручного Asw/sw и реальных координат.`,
+        'strong',
+      ),
+      formula('legacy-reason', summary.ignoredReason ?? 'Вклад арматуры не учтен.', 'strong'),
     ]
   }
 
   return [
-    line('ab-sp63', `Ab(СП63) = ${formatM2(sp63.Ab, 6)}`),
-    line('ix-unavailable', `Ix = ${unavailable}`, 'muted'),
-    line('iy-unavailable', `Iy = ${unavailable}`, 'muted'),
-    line('wx', `Wx = ${formatM2(sp63.Wx, 6)}`),
-    line('wy', `Wy = ${formatM2(sp63.Wy, 6)}`),
-  ]
-}
-
-function buildLimitForceLines(result: PunchingShearResult): EngineeringReportLine[] {
-  const sp63 = result.sp63Interaction
-
-  if (!sp63) {
-    return [
-      line('fb-unavailable', `Fb.ult = ${unavailable}`, 'muted'),
-      line('mxult-unavailable', `Mx.ult = ${unavailable}`, 'muted'),
-      line('myult-unavailable', `My.ult = ${unavailable}`, 'muted'),
-      line('fult-unavailable', `Fult = ${unavailable}`, 'muted'),
-    ]
-  }
-
-  return [
-    line('fb', `Fb.ult = ${formatKnValue(sp63.FbUlt, 3)}`),
-    line('mxult', `Mx.ult = ${formatKnMValue(sp63.MxBUlt, 3)}`),
-    line('myult', `My.ult = ${formatKnMValue(sp63.MyBUlt, 3)}`),
-    line('fult', `Fult = ${formatKnValue(sp63.Fult, 3)}`),
+    formula('asw-manual', `Asw = ${formatMm2(summary.reinforcementAreaMm2, 3)} (ручной ввод для формулы q_sw)`),
+    formula('sw-manual', `sw = ${formatMm(summary.swMm)}`),
+    formula(
+      'qsw',
+      hasFinite(summary.qswNPerMm)
+        ? `q_sw = Rsw · Asw / sw = ${formatPlain(getSteelStrengthFromSummary(summary), 3)} · ${formatPlain(summary.reinforcementAreaMm2, 3)} / ${formatPlain(summary.swMm)} = ${formatNPerMm(summary.qswNPerMm)}`
+        : `q_sw = ${unavailable}`,
+    ),
+    formula(
+      'fsw-raw',
+      hasFinite(summary.rawContributionN)
+        ? `F_sw,raw = 0.8 · q_sw · u = 0.8 · ${formatPlain(summary.qswNPerMm, 3)} · ${formatPlain(result.controlPerimeterMm)} = ${formatN(summary.rawContributionN)}`
+        : `F_sw,raw = ${unavailable}`,
+    ),
+    formula(
+      'lower-limit',
+      hasFinite(summary.rawContributionN) && hasFinite(summary.lowerLimitN)
+        ? `F_sw,raw ≥ 0.25 · F_b,ult: ${formatKnFromN(summary.rawContributionN)} ≥ ${formatKnFromN(summary.lowerLimitN)}`
+        : `F_sw,raw ≥ 0.25 · F_b,ult: ${unavailable}`,
+      summary.contributionAccepted ? 'normal' : 'strong',
+    ),
+    formula(
+      'upper-limit',
+      hasFinite(summary.rawContributionN) && hasFinite(summary.upperLimitN)
+        ? `F_sw,raw ≤ F_b,ult: ${formatKnFromN(summary.rawContributionN)} ≤ ${formatKnFromN(summary.upperLimitN)}`
+        : `F_sw,raw ≤ F_b,ult: ${unavailable}`,
+    ),
+    formula('fsw-used', `F_sw,used = ${formatN(summary.effectiveContributionN)}`),
+    ...(summary.ignoredReason ? [formula('reinforcement-ignored', summary.ignoredReason, 'strong')] : []),
   ]
 }
 
 function buildConditionLines(result: PunchingShearResult): EngineeringReportLine[] {
-  const condition = result.passed === null
-    ? 'Условие не оценено.'
-    : result.passed
-      ? 'Условие выполняется.'
-      : 'Условие не выполняется.'
-
-  return compactLines([
-    line('condition-formula', 'η ≤ 1.0'),
-    line(
-      'condition-substitution',
-      hasFinite(result.utilizationRatio) ? `${formatPlain(result.utilizationRatio, 3)} ≤ 1.0` : unavailable,
-    ),
-    line('condition-result', condition, 'strong'),
-  ])
+  return [
+    formula('condition', `${etaSymbol} = ${formatRatio(result.governingUtilization)} ≤ 1.0`, result.passed ? 'normal' : 'strong'),
+    formula('condition-result', result.passed ? 'Условие выполняется.' : 'Условие не выполняется.', 'strong'),
+  ]
 }
 
 function buildConclusionLines(result: PunchingShearResult): EngineeringReportLine[] {
-  const utilizationPercent = hasFinite(result.utilizationRatio)
-    ? `${formatNumber(result.utilizationRatio * 100, 1)}%`
-    : unavailable
-  const reserve = calculateReserve(result.utilizationRatio)
-  const reserveText = reserve === null ? unavailable : `${formatNumber(reserve, 1)}%`
-  const strengthText = result.passed === null
-    ? 'Прочность на продавливание не оценена.'
-    : result.passed
-      ? 'Прочность на продавливание обеспечена.'
-      : 'Прочность на продавливание не обеспечена.'
+  if (!hasFinite(result.designShearForceN) || !hasFinite(result.totalCapacityN)) {
+    return [formula('conclusion-empty', 'Прочность на продавливание не оценена.', 'strong')]
+  }
+
+  const expression = `(F/Fult = ${formatKnFromN(result.designShearForceN)}/${formatKnFromN(result.totalCapacityN)} = ${formatRatio(result.governingUtilization)})`
 
   return [
-    line('conclusion-strength', strengthText),
-    line('conclusion-utilization', `Коэффициент использования составляет ${utilizationPercent}.`),
-    line('conclusion-reserve', `Запас несущей способности составляет ${reserveText}.`),
+    formula(
+      'conclusion',
+      result.passed
+        ? `Прочность на продавливание обеспечена ${expression}.`
+        : `Прочность на продавливание не обеспечена ${expression}.`,
+      'strong',
+    ),
+    formula('verification-note', `Статус методики: ${localizeVerificationLevel(result.verificationStatus)}.`),
   ]
 }
 
 function buildServiceBlocks(
+  input: PunchingShearInput,
   result: PunchingShearResult,
   report: PunchingShearReportModel,
 ): EngineeringReportServiceBlock[] {
@@ -406,43 +321,80 @@ function buildServiceBlocks(
       id: 'verification',
       title: 'Статус проверки',
       rows: [
-        { label: 'Статус', value: localizeStatus(result.status) },
-        { label: 'Уровень проверки', value: localizeVerificationLevel(result.verificationLevel) },
+        { label: 'Статус расчета', value: localizeStatus(result.status) },
+        { label: 'Уровень проверки', value: localizeVerificationLevel(result.verificationStatus) },
         { label: 'Проверенные возможности', value: formatList(result.verifiedFeatures) },
         { label: 'Черновые возможности', value: formatList(result.draftFeatures) },
       ],
     },
     {
-      id: 'evidence',
-      title: 'Доказательства проверки',
-      items: result.verificationEvidence.length > 0
-        ? result.verificationEvidence.map((evidence) => `${evidence.id}: ${localizeTraceText(evidence.status)}`)
-        : ['Доказательства проверки не привязаны.'],
-    },
-    {
       id: 'warnings',
-      title: 'Технические предупреждения',
-      items: uniqueStrings([...report.warnings, ...result.reinforcementWarnings].map((item) => cleanServiceText(localizeTraceText(item)))),
+      title: 'Диагностические сообщения',
+      items: relevantWarnings(input, result, report),
     },
     {
-      id: 'engine-notes',
-      title: 'Исходные заметки движка',
-      items: report.calculationSteps.map((item) => cleanServiceText(localizeTraceText(item))),
+      id: 'evidence',
+      title: 'Evidence',
+      items:
+        result.verificationEvidence.length > 0
+          ? result.verificationEvidence.map((evidence) => `${evidence.id}: ${localizeTraceText(evidence.status)}`)
+          : ['Evidence не привязан.'],
     },
   ]
 }
 
-function formatAreaLine(result: PunchingShearResult) {
-  if (!hasFinite(result.controlPerimeterMm) || !hasFinite(result.effectiveDepthMm)) {
-    return `Ab = ${unavailable}`
+function relevantWarnings(input: PunchingShearInput, result: PunchingShearResult, report: PunchingShearReportModel) {
+  const hasMoments = input.forces.momentXKnM !== 0 || input.forces.momentYKnM !== 0
+  const values = uniqueStrings([...report.warnings, ...result.reinforcementWarnings].map((item) => localizeTraceText(item)))
+
+  return values.filter((warning) => {
+    const lower = warning.toLowerCase()
+
+    if (!hasMoments && (lower.includes('moment') || lower.includes('момент'))) {
+      return false
+    }
+
+    if (input.openings.length === 0 && (lower.includes('opening') || lower.includes('отверст'))) {
+      return false
+    }
+
+    if (!input.shearReinforcement.enabled && (lower.includes('reinforcement') || lower.includes('арматур'))) {
+      return false
+    }
+
+    if (input.caseType !== 'wall-end' && (lower.includes('wall-end') || lower.includes('конца стены'))) {
+      return false
+    }
+
+    if (input.caseType !== 'wall-corner' && (lower.includes('wall-corner') || lower.includes('углу стены'))) {
+      return false
+    }
+
+    if (input.caseType !== 'round' && (lower.includes('round') || lower.includes('круглая колонна'))) {
+      return false
+    }
+
+    return true
+  })
+}
+
+function formatSupportKind(input: PunchingShearInput) {
+  const labels: Record<PunchingShearInput['caseType'], string> = {
+    center: 'центральная прямоугольная колонна',
+    edge: 'крайняя прямоугольная колонна',
+    corner: 'угловая прямоугольная колонна',
+    opening: 'прямоугольная колонна с отверстием',
+    round: 'круглая колонна',
+    'wall-end': 'конец стены',
+    'wall-corner': 'угол стены',
   }
 
-  return `Ab = ${formatPlain(result.controlPerimeterMm * result.effectiveDepthMm)} мм²`
+  return labels[input.caseType]
 }
 
 function formatSupportSize(input: PunchingShearInput) {
   if (input.rectColumn) {
-    return `${formatPlain(input.rectColumn.widthXMm)} × ${formatPlain(input.rectColumn.widthYMm)} мм`
+    return `${formatPlain(input.rectColumn.widthXMm)} x ${formatPlain(input.rectColumn.widthYMm)} мм`
   }
 
   if (input.roundColumn) {
@@ -450,38 +402,47 @@ function formatSupportSize(input: PunchingShearInput) {
   }
 
   if (input.wall) {
-    return `${formatPlain(input.wall.wallLength)} × ${formatPlain(input.wall.wallThickness)} мм`
+    return `${formatPlain(input.wall.wallLength)} x ${formatPlain(input.wall.wallThickness)} мм`
   }
 
   if (input.wallCorner) {
-    return `${formatPlain(input.wallCorner.wallLengthX)} × ${formatPlain(input.wallCorner.wallLengthY)} мм`
+    return `${formatPlain(input.wallCorner.wallLengthX)} x ${formatPlain(input.wallCorner.wallLengthY)} мм`
   }
 
   return unavailable
 }
 
-function formatShearReinforcement(input: PunchingShearInput, result: PunchingShearResult) {
-  if (!input.shearReinforcement.enabled) {
+function formatReinforcementInputSentence(result: PunchingShearResult) {
+  const summary = result.shearReinforcement
+
+  if (!summary.enabled) {
     return 'не задана'
   }
 
-  return result.shearReinforcement.steelClass
-    ? `${result.shearReinforcement.steelClass}, ${result.shearReinforcement.totalLegs} стерж.`
-    : 'задана'
+  if (summary.inputMode === 'legacy-layout') {
+    return `${summary.steelClass ?? 'сталь не задана'}, старая схема ${summary.totalLegs} условных стерж.; требуется ручной Asw/sw`
+  }
+
+  return `${summary.steelClass ?? 'сталь не задана'}, Asw = ${formatMm2(summary.reinforcementAreaMm2, 3)}, sw = ${formatMm(summary.swMm)}`
 }
 
-function line(id: string, text: string, tone: EngineeringReportLine['tone'] = 'normal'): EngineeringReportLine {
+function getSteelStrength(result: PunchingShearResult) {
+  return getSteelStrengthFromSummary(result.shearReinforcement)
+}
+
+function getSteelStrengthFromSummary(summary: PunchingShearResult['shearReinforcement']) {
+  const strengths: Record<string, number> = {
+    A240: 170,
+    A400: 280,
+    A500: 355,
+    B500: 355,
+  }
+
+  return summary.steelClass ? strengths[summary.steelClass] : null
+}
+
+function formula(id: string, text: string, tone: EngineeringReportLine['tone'] = 'normal'): EngineeringReportLine {
   return { id, text, tone }
-}
-
-function compactLines(lines: EngineeringReportLine[]) {
-  return lines.filter((item) => !isPseudoFormula(item.text))
-}
-
-function isPseudoFormula(value: string) {
-  const normalized = value.replace(/\s+/g, '').toLowerCase()
-
-  return ['u=u', 'h0=h0', 'r=r', 'η=η', 'eta=eta'].includes(normalized)
 }
 
 function calculateReserve(utilization: number | null | undefined) {
@@ -516,16 +477,16 @@ function formatKnM(value: number | null | undefined) {
   return hasFinite(value) ? `${formatPlain(value)} кН·м` : unavailable
 }
 
-function formatKnValue(value: number | null | undefined, decimals = 3) {
-  return hasFinite(value) ? `${formatPlain(value, decimals)} кН` : unavailable
-}
-
-function formatKnMValue(value: number | null | undefined, decimals = 3) {
-  return hasFinite(value) ? `${formatPlain(value, decimals)} кН·м` : unavailable
+function formatKnFromN(value: number | null | undefined) {
+  return hasFinite(value) ? `${formatPlain(value / 1000, 1)} кН` : unavailable
 }
 
 function formatN(value: number | null | undefined) {
-  return hasFinite(value) ? `${formatPlain(value)} Н` : unavailable
+  return hasFinite(value) ? `${formatPlain(value, 0)} Н` : unavailable
+}
+
+function formatNPerMm(value: number | null | undefined) {
+  return hasFinite(value) ? `${formatPlain(value, 3)} Н/мм` : unavailable
 }
 
 function formatMm(value: number | null | undefined, decimals = 0) {
@@ -538,10 +499,6 @@ function formatMm2(value: number | null | undefined, decimals = 3) {
 
 function formatMpa(value: number | null | undefined, decimals = 3) {
   return hasFinite(value) ? `${formatPlain(value, decimals)} МПа` : unavailable
-}
-
-function formatM2(value: number | null | undefined, decimals = 6) {
-  return hasFinite(value) ? `${formatPlain(value, decimals)} м²` : unavailable
 }
 
 function hasFinite(value: number | null | undefined): value is number {
@@ -561,9 +518,9 @@ function localizeStatus(value: string) {
 
 function localizeVerificationLevel(value: string) {
   const labels: Record<string, string> = {
-    verified: 'проверено',
-    partial: 'частично проверено',
-    draft: 'черновой режим',
+    verified: 'верифицирован',
+    partial: 'частично верифицирован',
+    draft: 'черновой расчет - не для проектного применения',
   }
 
   return labels[value] ?? value
@@ -571,31 +528,6 @@ function localizeVerificationLevel(value: string) {
 
 function formatList(values: string[]) {
   return values.length > 0 ? values.join(', ') : 'нет'
-}
-
-function cleanServiceText(value: string) {
-  const mixedControlGeometry = new RegExp(
-    ['Control', 'геометрия', 'периметра is черновик-only; инженерные формулы', 'are intentionally отключено'].join(' '),
-    'g',
-  )
-  const mixedVerifiedScope = new RegExp(['Verified', 'scope is limited'].join(' '), 'g')
-  const mixedEngineeringFormulas = new RegExp(['engineering', 'formulas'].join(' '), 'g')
-
-  return value
-    .replace(mixedControlGeometry, 'Геометрия расчетного контура является черновой; инженерные формулы отключены для этого режима.')
-    .replace(
-      /Черновой смещение uses geometry placeholder values pending SP63 verification/g,
-      'Черновое смещение использует геометрические значения до проверки по СП63.',
-    )
-    .replace(
-      /Проверенная область ограничена to the listed features; global SP63 support remains черновик\./g,
-      'Проверенная область ограничена перечисленными возможностями; полная поддержка СП63 остается черновой.',
-    )
-    .replace(/Draft/g, 'Черновой')
-    .replace(/draft/g, 'черновой')
-    .replace(mixedVerifiedScope, 'Проверенная область ограничена')
-    .replace(mixedEngineeringFormulas, 'инженерные формулы')
-    .replace(/Control geometry/g, 'Геометрия контура')
 }
 
 function uniqueStrings(values: string[]) {

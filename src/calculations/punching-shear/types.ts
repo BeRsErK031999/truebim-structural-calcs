@@ -103,6 +103,7 @@ export type ShearReinforcementLayoutType =
 
 export type ShearReinforcementInput = {
   enabled: boolean
+  inputMode?: 'manual' | 'legacy-layout'
   barDiameterMm?: number
   barSpacingMm?: number
   rowCount?: number
@@ -112,10 +113,13 @@ export type ShearReinforcementInput = {
   rowSpacingMm?: number
   layoutType?: ShearReinforcementLayoutType
   rows?: number
+  manualAswMm2?: number
+  manualSwMm?: number
 }
 
 export type ShearReinforcementSummary = {
   enabled: boolean
+  inputMode: 'manual' | 'legacy-layout' | null
   steelClass: ShearReinforcementSteelClass | null
   layoutType: ShearReinforcementLayoutType | null
   barDiameterMm: number | null
@@ -123,9 +127,22 @@ export type ShearReinforcementSummary = {
   rowCount: number
   legsPerRow: number
   totalLegs: number
+  totalBarCount: number | null
+  effectiveBarCount: number | null
+  barAreaMm2: number | null
   firstRowDistanceMm: number | null
   rowSpacingMm: number | null
+  manualAswMm2: number | null
+  manualSwMm: number | null
+  swMm: number | null
   reinforcementAreaMm2: number | null
+  qswNPerMm: number | null
+  rawContributionN: number | null
+  effectiveContributionN: number | null
+  lowerLimitN: number | null
+  upperLimitN: number | null
+  contributionAccepted: boolean
+  ignoredReason: string | null
   reinforcementContributionN: number | null
   draftCapacityWithReinforcementN: number | null
   utilizationWithReinforcement: number | null
@@ -274,6 +291,15 @@ export type PunchingShearResult = {
   contourComparison: ContourComparisonRow[]
   contourWarnings: string[]
   shearReinforcement: ShearReinforcementSummary
+  concreteCapacityN: number | null
+  shearReinforcementRawCapacityN: number | null
+  shearReinforcementEffectiveCapacityN: number | null
+  totalCapacityN: number | null
+  utilizationConcrete: number | null
+  utilizationTotal: number | null
+  governingUtilization: number | null
+  resultStatus: PunchingShearCheckStatus
+  verificationStatus: VerificationLevel
   reinforcementAreaMm2: number | null
   reinforcementContributionN: number | null
   draftCapacityWithReinforcementN: number | null

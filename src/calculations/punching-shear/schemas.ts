@@ -103,6 +103,7 @@ export const shearReinforcementLayoutTypeSchema = z.enum([
 
 export const shearReinforcementInputSchema = z.object({
   enabled: z.boolean(),
+  inputMode: z.enum(['manual', 'legacy-layout']).optional(),
   barDiameterMm: positiveNumber.optional(),
   barSpacingMm: positiveNumber.optional(),
   rowCount: z.number().int().positive().optional(),
@@ -112,6 +113,8 @@ export const shearReinforcementInputSchema = z.object({
   rowSpacingMm: positiveNumber.optional(),
   layoutType: shearReinforcementLayoutTypeSchema.optional(),
   rows: z.number().int().positive().optional(),
+  manualAswMm2: positiveNumber.optional(),
+  manualSwMm: positiveNumber.optional(),
 })
 
 export const multipleControlContoursInputSchema = z.object({

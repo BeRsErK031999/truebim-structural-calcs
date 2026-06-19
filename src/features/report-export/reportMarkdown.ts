@@ -11,11 +11,7 @@ import {
 } from '@/calculations/punching-shear/trace/engineeringReportLines'
 import { getAppMetadata } from '@/shared/config/appMetadata'
 
-import {
-  createReportMetadata,
-  reportApplicabilityItems,
-  type ReportMetadata,
-} from './reportMetadata'
+import { createReportMetadata, type ReportMetadata } from './reportMetadata'
 
 export function buildPunchingShearMarkdownReport(
   input: PunchingShearInput,
@@ -39,37 +35,22 @@ export function buildPunchingShearMarkdownReport(
         { label: 'источник проверки', value: formatVerificationSource(reportMetadata.verificationSource) },
       ],
     },
-    {
-      id: 'applicability',
-      title: 'Применимость',
-      items: [
-        'Подходит для пилотной проверки, сравнения и сбора доказательств.',
-        'Это не финальный проектный документ.',
-        ...reportApplicabilityItems.map(cleanServiceText),
-      ],
-    },
   ]
 
   return [
-    '# TrueBIM: отчет по продавливанию',
+    '# Расчет на продавливание',
     '',
-    '> ЧЕРНОВОЙ РАСЧЕТ - НЕ ДЛЯ ПРОЕКТНОГО ПРИМЕНЕНИЯ',
+    `${listing.resultSummary.verificationText}. ${listing.resultSummary.statusText}. η = ${listing.resultSummary.utilizationText}.`,
     '',
-    '## 1. Итог проверки',
+    '## 1. Допущения и предпосылки',
     '',
-    listing.resultSummary.statusText,
-    '',
-    `η = ${listing.resultSummary.utilizationText}`,
-    '',
-    `Запас = ${listing.resultSummary.reservePercentText}`,
-    '',
-    listing.resultSummary.conditionText,
+    listing.assumptionsText,
     '',
     '## 2. Исходные данные',
     '',
-    table(listing.inputRows.map((row) => [row.label, row.value])),
+    listing.inputText,
     '',
-    '## 3. Ход расчета',
+    '## 3. Расчет',
     '',
     ...listing.calculationSections.flatMap((section) => [
       `### ${section.title}`,
@@ -81,11 +62,13 @@ export function buildPunchingShearMarkdownReport(
     '',
     renderCalculationLines(listing.conditionLines),
     '',
-    '## 5. Заключение',
+    '## 5. Вывод',
     '',
     renderCalculationLines(listing.conclusionLines),
     '',
-    '## 6. Служебная информация',
+    `calculationId: ${reportMetadata.calculationId}; версия расчетного движка: ${metadata.version}; дата формирования: ${reportMetadata.generatedAt}; commit: ${metadata.commit}; verificationStatus: ${result.verificationStatus}.`,
+    '',
+    '## Техническое приложение',
     '',
     ...serviceBlocks.flatMap(renderServiceBlock),
     '',
@@ -128,7 +111,7 @@ function cleanServiceText(value: string) {
 
 function formatVerificationSource(value: string) {
   const labels: Record<string, string> = {
-    'NOT VERIFIED': 'НЕ ПРОВЕРЕНО',
+    'NOT VERIFIED': 'не проверено',
     'WebCAD checked': 'проверено в WebCAD',
     'Manual engineer calculation': 'ручной инженерный расчет',
     'Verified Excel': 'проверенный Excel',

@@ -32,7 +32,7 @@ export function buildReportSummary(result: PunchingShearResult) {
     `u=${formatCompactMm(result.controlPerimeterMm)}`,
     `h0=${formatCompactMm(result.effectiveDepthMm)}`,
     `v=${formatCompactMpa(result.shearStressMpa)}`,
-    `util=${formatCompactRatio(result.utilizationRatio)}`,
+    `util=${formatCompactRatio(result.governingUtilization)}`,
   ].join(' | ')
 }
 

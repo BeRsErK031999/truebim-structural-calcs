@@ -412,17 +412,17 @@ describe('punching shear draft center check', () => {
         expect.objectContaining({
           role: 'label',
           type: 'text',
-          text: 'Черновая геометрия продавливания в углу стены',
+          text: 'Контрольный контур у угла стены',
         }),
         expect.objectContaining({
           role: 'dimension',
           type: 'line',
-          label: '1200 mm длина стены X',
+          label: '1200 мм длина стены X',
         }),
         expect.objectContaining({
           role: 'dimension',
           type: 'line',
-          label: '1000 mm длина стены Y',
+          label: '1000 мм длина стены Y',
         }),
         expect.objectContaining({
           role: 'label',
@@ -451,17 +451,17 @@ describe('punching shear draft center check', () => {
         expect.objectContaining({
           role: 'label',
           type: 'text',
-          text: 'Черновая геометрия продавливания у стены',
+          text: 'Контрольный контур у стены',
         }),
         expect.objectContaining({
           role: 'dimension',
           type: 'line',
-          label: '1200 mm длина стены',
+          label: '1200 мм длина стены',
         }),
         expect.objectContaining({
           role: 'dimension',
           type: 'line',
-          label: '200 mm толщина стены',
+          label: '200 мм толщина стены',
         }),
       ]),
     )
@@ -533,22 +533,17 @@ describe('punching shear draft center check', () => {
         expect.objectContaining({
           role: 'label',
           type: 'text',
-          text: 'Черновой контрольный периметр круглой колонны',
+          text: 'Контрольный контур круглой колонны',
         }),
         expect.objectContaining({
           role: 'dimension',
           type: 'line',
-          label: '400 mm диаметр',
-        }),
-        expect.objectContaining({
-          role: 'dimension',
-          type: 'line',
-          label: '95 mm черновое смещение',
+          label: '400 мм диаметр',
         }),
         expect.objectContaining({
           role: 'label',
           type: 'text',
-          text: 'черновой контрольный контур круглой колонны',
+          text: 'контрольный контур круглой колонны',
         }),
       ]),
     )
@@ -654,7 +649,7 @@ describe('punching shear draft center check', () => {
         expect.objectContaining({
           role: 'label',
           type: 'text',
-          text: 'контур 1 - выбранный черновой критический контур',
+          text: 'контур 1 - выбранный',
         }),
       ]),
     )
@@ -682,6 +677,7 @@ describe('punching shear draft center check', () => {
         ...defaultPunchingShearInput,
         shearReinforcement: {
           enabled: true,
+          inputMode: 'manual',
           barDiameterMm: 12,
           barSpacingMm: 100,
           rowCount: 3,
@@ -690,6 +686,8 @@ describe('punching shear draft center check', () => {
           firstRowDistanceMm: 70,
           rowSpacingMm: 90,
           layoutType: 'studs',
+          manualAswMm2: 678.584,
+          manualSwMm: 100,
         },
       }).success,
     ).toBe(true)
@@ -700,6 +698,7 @@ describe('punching shear draft center check', () => {
       ...defaultPunchingShearInput,
       shearReinforcement: {
         enabled: true,
+        inputMode: 'manual',
         barDiameterMm: 10,
         barSpacingMm: 100,
         rowCount: 2,
@@ -708,12 +707,17 @@ describe('punching shear draft center check', () => {
         firstRowDistanceMm: 80,
         rowSpacingMm: 100,
         layoutType: 'closed-stirrups',
+        manualAswMm2: 628.3185307,
+        manualSwMm: 100,
       },
     })
 
     expect(result.reinforcementAreaMm2).toBeCloseTo(628.3185307)
-    expect(result.reinforcementContributionN).toBeCloseTo(175929.1886)
+    expect(result.shearReinforcement.qswNPerMm).toBeCloseTo(1759.291886)
+    expect(result.shearReinforcement.rawContributionN).toBeCloseTo(3321543.0807)
+    expect(result.reinforcementContributionN).toBeCloseTo(result.concreteCapacityN ?? 0)
     expect(result.draftCapacityWithReinforcementN).toBeGreaterThan(result.designShearForceN ?? 0)
+    expect(result.governingUtilization).toBe(result.utilizationWithReinforcement)
     expect(result.utilizationWithReinforcement).toBeLessThan(result.utilizationRatio ?? 1)
     expect(result.reinforcementWarnings).toContain(
       'Shear reinforcement contribution is DRAFT-only.',
@@ -769,7 +773,7 @@ describe('punching shear draft center check', () => {
         expect.objectContaining({
           role: 'label',
           type: 'text',
-          text: 'Черновая схема армирования: замкнутые хомуты',
+          text: 'Поперечная арматура: 8 условных стержней; Asw задается вручную',
         }),
       ]),
     )

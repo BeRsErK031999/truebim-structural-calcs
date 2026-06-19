@@ -45,6 +45,11 @@ const reinforcementLayoutOptions: Array<{
   { value: 'custom', label: 'своя схема' },
 ]
 
+const reinforcementInputModeOptions = [
+  { value: 'manual', label: 'Ручной ввод Asw и sw' },
+  { value: 'legacy-layout', label: 'Старая схема без учета вклада' },
+]
+
 export function CalculationForm() {
   const draft = useCalculationStore((state) => state.draft)
   const result = useCalculationStore((state) => state.punchingShearResult)
@@ -88,6 +93,10 @@ export function CalculationForm() {
   const shearReinforcementLayoutType = useWatch({
     control,
     name: 'shearReinforcement.layoutType',
+  })
+  const shearReinforcementInputMode = useWatch({
+    control,
+    name: 'shearReinforcement.inputMode',
   })
 
   useEffect(() => {
@@ -236,6 +245,19 @@ export function CalculationForm() {
         {shearReinforcementEnabled ? (
           <>
             <SelectField
+              label="Режим задания Asw"
+              placeholder="Выберите режим"
+              value={shearReinforcementInputMode ?? 'manual'}
+              options={reinforcementInputModeOptions}
+              error={errors.shearReinforcement?.inputMode?.message}
+              onValueChange={(value) =>
+                setValue('shearReinforcement.inputMode', value as NonNullable<PunchingShearInput['shearReinforcement']['inputMode']>, {
+                  shouldDirty: true,
+                  shouldValidate: true,
+                })
+              }
+            />
+            <SelectField
               label="Класс стали"
               placeholder="Выберите класс стали"
               value={shearReinforcementSteelClass ?? 'A400'}
@@ -260,6 +282,22 @@ export function CalculationForm() {
                   shouldValidate: true,
                 })
               }
+            />
+            <NumberField
+              label="Asw - принятая площадь поперечной арматуры"
+              min={1}
+              step={0.001}
+              unit="мм²"
+              registration={register('shearReinforcement.manualAswMm2', { valueAsNumber: true })}
+              error={errors.shearReinforcement?.manualAswMm2?.message}
+            />
+            <NumberField
+              label="sw - шаг для формулы qsw"
+              min={1}
+              step={1}
+              unit="мм"
+              registration={register('shearReinforcement.manualSwMm', { valueAsNumber: true })}
+              error={errors.shearReinforcement?.manualSwMm?.message}
             />
             <NumberField
               label="Диаметр стержня"

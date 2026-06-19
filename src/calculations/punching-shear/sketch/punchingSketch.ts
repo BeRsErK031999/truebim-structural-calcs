@@ -57,12 +57,12 @@ export function buildPunchingSketchModel(
       position: { x: perimeter.boundingBox.minX, y: perimeter.boundingBox.minY - 24 },
       text:
         input.caseType === 'wall-corner'
-          ? 'Черновая геометрия продавливания в углу стены'
+          ? 'Контрольный контур у угла стены'
           : input.caseType === 'wall-end'
-            ? 'Черновая геометрия продавливания у стены'
+            ? 'Контрольный контур у стены'
             : input.caseType === 'round'
-              ? 'Черновой контрольный периметр круглой колонны'
-              : 'Черновая геометрия контрольного периметра',
+              ? 'Контрольный контур круглой колонны'
+              : 'Контрольный контур',
     },
   ]
 
@@ -154,7 +154,7 @@ function createReinforcementElements(
     role: 'label',
     type: 'text',
     position: { x: perimeter.boundingBox.minX, y: perimeter.boundingBox.maxY + 96 },
-    text: `Черновая схема армирования: ${formatReinforcementLayout(input.shearReinforcement.layoutType ?? 'closed-stirrups')}`,
+    text: `Поперечная арматура: ${rowCount * legsPerRow} условных стержней; Asw задается вручную`,
   })
 
   return elements
@@ -202,7 +202,7 @@ function createMultiContourElements(
       type: 'line',
       start: segment.start,
       end: segment.end,
-      label: contour.id === selectedContourId ? 'выбранный черновой критический контур' : undefined,
+      label: contour.id === selectedContourId ? 'выбранный контрольный контур' : undefined,
     })),
   )
 }
@@ -221,7 +221,7 @@ function createMultiContourLabels(
     },
     text:
       contour.id === selectedContourId
-        ? `контур ${contour.index} - выбранный черновой критический контур`
+        ? `контур ${contour.index} - выбранный`
         : `контур ${contour.index}`,
   }))
 }
@@ -325,7 +325,7 @@ function createBoundaryLabels(perimeter: ControlPerimeterResult): SvgSketchEleme
       role: 'label',
       type: 'text',
       position: { x: perimeter.boundingBox.minX, y: perimeter.boundingBox.maxY + 36 },
-      text: perimeter.cornerAffected ? 'Черновая обрезка угла' : 'Черновая обрезка края',
+      text: perimeter.cornerAffected ? 'Обрезка угла' : 'Обрезка края',
     })
   }
 
@@ -335,7 +335,7 @@ function createBoundaryLabels(perimeter: ControlPerimeterResult): SvgSketchEleme
       role: 'label',
       type: 'text',
       position: { x: perimeter.boundingBox.minX, y: perimeter.boundingBox.maxY + 64 },
-      text: 'Черновое вычитание отверстия',
+      text: 'Вычитание отверстия',
     })
   }
 
@@ -483,14 +483,6 @@ function createDimensionElements(
       label: `${formatMm(columnBox.maxY - columnBox.minY)} колонна Y`,
     },
     {
-      id: 'dimension-contour-offset',
-      role: 'dimension',
-      type: 'line',
-      start: { x: columnBox.maxX, y: 0 },
-      end: { x: perimeter.boundingBox.maxX, y: 0 },
-      label: `${formatMm(perimeter.draftOffsetMm)} черновое смещение`,
-    },
-    {
       id: 'dimension-control-perimeter-width',
       role: 'dimension',
       type: 'line',
@@ -522,13 +514,6 @@ function createDimensionElements(
       end: { x: axisStart.x, y: axisStart.y + 90 },
       label: 'Y',
     },
-    {
-      id: 'label-scale',
-      role: 'label',
-      type: 'text',
-      position: { x: viewBox.minX + 36, y: viewBox.maxY - 36 },
-      text: 'Масштаб: 1 единица = 1 мм, вписано в область',
-    },
   ]
 }
 
@@ -559,14 +544,6 @@ function createRoundDimensionElements(
       label: `${formatMm(roundColumn.diameterMm)} диаметр`,
     },
     {
-      id: 'dimension-round-contour-offset',
-      role: 'dimension',
-      type: 'line',
-      start: { x: columnRadius, y: 0 },
-      end: { x: perimeter.boundingBox.maxX, y: 0 },
-      label: `${formatMm(perimeter.draftOffsetMm)} черновое смещение`,
-    },
-    {
       id: 'dimension-round-control-perimeter-diameter',
       role: 'dimension',
       type: 'line',
@@ -579,7 +556,7 @@ function createRoundDimensionElements(
       role: 'label',
       type: 'text',
       position: { x: perimeter.boundingBox.minX, y: perimeter.boundingBox.maxY + 36 },
-      text: 'черновой контрольный контур круглой колонны',
+      text: 'контрольный контур круглой колонны',
     },
     {
       id: 'label-round-position',
@@ -603,13 +580,6 @@ function createRoundDimensionElements(
       start: axisStart,
       end: { x: axisStart.x, y: axisStart.y + 90 },
       label: 'Y',
-    },
-    {
-      id: 'label-scale',
-      role: 'label',
-      type: 'text',
-      position: { x: viewBox.minX + 36, y: viewBox.maxY - 36 },
-      text: 'Масштаб: 1 единица = 1 мм, вписано в область',
     },
   ]
 }
@@ -676,14 +646,6 @@ function createWallCornerDimensionElements(
       label: `${formatMm(wallCorner.wallThicknessY)} толщина Y`,
     },
     {
-      id: 'dimension-wall-corner-contour-offset',
-      role: 'dimension',
-      type: 'line',
-      start: geometry.innerCorner,
-      end: { x: signX * -perimeter.draftOffsetMm, y: signY * -perimeter.draftOffsetMm },
-      label: `${formatMm(perimeter.draftOffsetMm)} черновое смещение`,
-    },
-    {
       id: 'label-wall-corner-orientation',
       role: 'label',
       type: 'text',
@@ -734,13 +696,6 @@ function createWallCornerDimensionElements(
       end: { x: axisStart.x, y: axisStart.y + 90 },
       label: 'Y',
     },
-    {
-      id: 'label-scale',
-      role: 'label',
-      type: 'text',
-      position: { x: viewBox.minX + 36, y: viewBox.maxY - 36 },
-      text: 'Масштаб: 1 единица = 1 мм, вписано в область',
-    },
   ]
 }
 
@@ -783,14 +738,6 @@ function createWallDimensionElements(
       label: `${formatMm(input.wall?.wallThickness ?? wallBox.maxY - wallBox.minY)} толщина стены`,
     },
     {
-      id: 'dimension-wall-contour-offset',
-      role: 'dimension',
-      type: 'line',
-      start: { x: wallBox.minX, y: 0 },
-      end: { x: perimeter.boundingBox.minX, y: 0 },
-      label: `${formatMm(perimeter.draftOffsetMm)} черновое смещение`,
-    },
-    {
       id: 'dimension-wall-control-perimeter-width',
       role: 'dimension',
       type: 'line',
@@ -821,13 +768,6 @@ function createWallDimensionElements(
       start: axisStart,
       end: { x: axisStart.x, y: axisStart.y + 90 },
       label: 'Y',
-    },
-    {
-      id: 'label-scale',
-      role: 'label',
-      type: 'text',
-      position: { x: viewBox.minX + 36, y: viewBox.maxY - 36 },
-      text: 'Масштаб: 1 единица = 1 мм, вписано в область',
     },
   ]
 }
@@ -959,20 +899,11 @@ function createEccentricityElements(momentTransfer: MomentTransferResult): SvgSk
 }
 
 function formatMm(value: number) {
-  return `${Number.isInteger(value) ? value : value.toFixed(1)} mm`
+  return `${Number.isInteger(value) ? value : value.toFixed(1)} мм`
 }
 
 function formatMpa(value: number) {
   return `${value.toFixed(3)} MPa`
-}
-
-function formatReinforcementLayout(value: string) {
-  const labels: Record<string, string> = {
-    'closed-stirrups': 'замкнутые хомуты',
-    custom: 'пользовательская',
-  }
-
-  return labels[value] ?? value
 }
 
 function formatPositionLabel(value: string) {

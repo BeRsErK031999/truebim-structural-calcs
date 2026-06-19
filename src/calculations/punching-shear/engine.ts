@@ -117,17 +117,26 @@ export function calculatePunchingShear(input: PunchingShearInput): PunchingShear
     normalizedInput.shearReinforcement,
     concreteCapacityN,
     designDemandN,
+    selectedPerimeter.perimeterMm,
   )
   const sp63Interaction = calculateSp63MathcadBenchmark(normalizedInput)
-  const effectiveUtilization =
-    shearReinforcement.utilizationWithReinforcement ?? utilizationRatio
-  const passed = effectiveUtilization <= 1
+  const utilizationTotal =
+    shearReinforcement.contributionAccepted && shearReinforcement.utilizationWithReinforcement !== null
+      ? shearReinforcement.utilizationWithReinforcement
+      : null
+  const governingUtilization = utilizationTotal ?? utilizationRatio
+  const totalCapacityN =
+    shearReinforcement.contributionAccepted && shearReinforcement.draftCapacityWithReinforcementN !== null
+      ? shearReinforcement.draftCapacityWithReinforcementN
+      : concreteCapacityN
+  const passed = governingUtilization <= 1
+  const resultStatus = passed ? 'draft_ok' : 'draft_failed'
 
   return withVerifiedStatus(normalizedInput, {
     ...createBaseResult(normalizedInput, selectedPerimeter, svgModel, momentTransfer, shearReinforcement),
     ...contourBundle,
-    status: passed ? 'draft_ok' : 'draft_failed',
-    utilization: utilizationRatio,
+    status: resultStatus,
+    utilization: governingUtilization,
     designShearForceN,
     controlPerimeterMm: selectedPerimeter.perimeterMm,
     effectiveDepthMm: selectedPerimeter.effectiveDepthMm,
@@ -143,6 +152,15 @@ export function calculatePunchingShear(input: PunchingShearInput): PunchingShear
     utilizationRatio,
     passed,
     shearReinforcement,
+    concreteCapacityN,
+    shearReinforcementRawCapacityN: shearReinforcement.rawContributionN,
+    shearReinforcementEffectiveCapacityN: shearReinforcement.effectiveContributionN,
+    totalCapacityN,
+    utilizationConcrete: utilizationRatio,
+    utilizationTotal,
+    governingUtilization,
+    resultStatus,
+    verificationStatus: 'draft',
     reinforcementAreaMm2: shearReinforcement.reinforcementAreaMm2,
     reinforcementContributionN: shearReinforcement.reinforcementContributionN,
     draftCapacityWithReinforcementN: shearReinforcement.draftCapacityWithReinforcementN,
@@ -267,6 +285,15 @@ function createBaseResult(
     contourComparison: [],
     contourWarnings: [],
     shearReinforcement,
+    concreteCapacityN: null,
+    shearReinforcementRawCapacityN: shearReinforcement.rawContributionN,
+    shearReinforcementEffectiveCapacityN: shearReinforcement.effectiveContributionN,
+    totalCapacityN: null,
+    utilizationConcrete: null,
+    utilizationTotal: null,
+    governingUtilization: null,
+    resultStatus: 'not_implemented',
+    verificationStatus: 'draft',
     reinforcementAreaMm2: shearReinforcement.reinforcementAreaMm2,
     reinforcementContributionN: shearReinforcement.reinforcementContributionN,
     draftCapacityWithReinforcementN: shearReinforcement.draftCapacityWithReinforcementN,
@@ -291,7 +318,12 @@ function createBaseResult(
 }
 
 function withVerifiedStatus(input: PunchingShearInput, result: PunchingShearResult) {
-  return sanitizePunchingShearResult(applyVerifiedStatus(result, buildVerifiedStatus(input, result)))
+  const verifiedResult = applyVerifiedStatus(result, buildVerifiedStatus(input, result))
+
+  return sanitizePunchingShearResult({
+    ...verifiedResult,
+    verificationStatus: verifiedResult.verificationLevel,
+  })
 }
 
 function sanitizePunchingShearResult(result: PunchingShearResult): PunchingShearResult {

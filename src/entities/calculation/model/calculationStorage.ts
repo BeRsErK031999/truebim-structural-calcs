@@ -33,9 +33,31 @@ function readSavedCalculations(): SavedCalculation[] {
     const parsedValue = JSON.parse(rawValue)
     const validation = savedCalculationArraySchema.safeParse(parsedValue)
 
-    return validation.success ? validation.data : []
+    return validation.success ? validation.data.map(migrateSavedCalculation) : []
   } catch {
     return []
+  }
+}
+
+function migrateSavedCalculation(calculation: SavedCalculation): SavedCalculation {
+  const reinforcement = calculation.input.shearReinforcement
+  const hasManualValues =
+    typeof reinforcement.manualAswMm2 === 'number' &&
+    typeof reinforcement.manualSwMm === 'number'
+
+  if (!reinforcement.enabled || reinforcement.inputMode || hasManualValues) {
+    return calculation
+  }
+
+  return {
+    ...calculation,
+    input: {
+      ...calculation.input,
+      shearReinforcement: {
+        ...reinforcement,
+        inputMode: 'legacy-layout',
+      },
+    },
   }
 }
 
