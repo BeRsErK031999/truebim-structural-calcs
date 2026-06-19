@@ -171,9 +171,7 @@ function renderSvgElement(element: SvgSketchElement): string {
   if (element.type === 'line') {
     const stressColor =
       element.role === 'stress-segment' ? getStressColor(element.stressRatio ?? 0) : stroke
-    const label = element.label
-      ? `<text x="${(element.start.x + element.end.x) / 2}" y="${(element.start.y + element.end.y) / 2 - 8}" fill="#333" font-size="18" text-anchor="middle">${escapeHtml(cleanReportText(element.label))}</text>`
-      : ''
+    const label = element.label ? renderLineLabel(element) : ''
     const marker =
       element.role === 'dimension' ||
       element.role === 'moment-arrow' ||
@@ -192,6 +190,19 @@ function renderSvgElement(element: SvgSketchElement): string {
   }
 
   return `<text x="${element.position.x}" y="${element.position.y}" fill="#333" font-size="18">${escapeHtml(cleanReportText(element.text))}</text>`
+}
+
+function renderLineLabel(element: Extract<SvgSketchElement, { type: 'line' }>) {
+  const midX = (element.start.x + element.end.x) / 2
+  const midY = (element.start.y + element.end.y) / 2
+  const dx = element.end.x - element.start.x
+  const dy = element.end.y - element.start.y
+  const isVerticalDimension = element.role === 'dimension' && Math.abs(dy) > Math.abs(dx)
+  const x = isVerticalDimension ? midX + 14 : midX
+  const y = isVerticalDimension ? midY : midY - 10
+  const transform = isVerticalDimension ? ` transform="rotate(-90 ${x} ${y})"` : ''
+
+  return `<text x="${x}" y="${y}" fill="#333" font-size="18" text-anchor="middle" dominant-baseline="middle" paint-order="stroke" stroke="#fff" stroke-width="5" stroke-linejoin="round"${transform}>${escapeHtml(cleanReportText(element.label ?? ''))}</text>`
 }
 
 function cleanReportText(value: string) {

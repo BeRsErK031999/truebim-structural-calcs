@@ -593,16 +593,7 @@ function SketchElement({ element, markerId }: { element: SvgSketchElement; marke
           markerStart={hasArrowMarker(element.role) ? `url(#${markerId})` : undefined}
           markerEnd={hasArrowMarker(element.role) ? `url(#${markerId})` : undefined}
         />
-        {element.label ? (
-          <text
-            x={(element.start.x + element.end.x) / 2}
-            y={(element.start.y + element.end.y) / 2 - 8}
-            className="fill-slate-500 text-[18px]"
-            textAnchor="middle"
-          >
-            {element.label}
-          </text>
-        ) : null}
+        {element.label ? <DimensionLabel element={element} /> : null}
       </g>
     )
   }
@@ -630,6 +621,34 @@ function SketchElement({ element, markerId }: { element: SvgSketchElement; marke
       className="fill-slate-600 text-[18px] font-medium"
     >
       {element.text}
+    </text>
+  )
+}
+
+function DimensionLabel({ element }: { element: Extract<SvgSketchElement, { type: 'line' }> }) {
+  const midX = (element.start.x + element.end.x) / 2
+  const midY = (element.start.y + element.end.y) / 2
+  const dx = element.end.x - element.start.x
+  const dy = element.end.y - element.start.y
+  const isVerticalDimension = element.role === 'dimension' && Math.abs(dy) > Math.abs(dx)
+  const x = isVerticalDimension ? midX + 14 : midX
+  const y = isVerticalDimension ? midY : midY - 10
+  const transform = isVerticalDimension ? `rotate(-90 ${x} ${y})` : undefined
+
+  return (
+    <text
+      x={x}
+      y={y}
+      className="fill-slate-500 text-[18px]"
+      dominantBaseline="middle"
+      paintOrder="stroke"
+      stroke="white"
+      strokeWidth="5"
+      strokeLinejoin="round"
+      textAnchor="middle"
+      transform={transform}
+    >
+      {element.label}
     </text>
   )
 }
