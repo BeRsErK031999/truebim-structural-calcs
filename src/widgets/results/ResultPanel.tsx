@@ -631,25 +631,33 @@ function DimensionLabel({ element }: { element: Extract<SvgSketchElement, { type
   const dx = element.end.x - element.start.x
   const dy = element.end.y - element.start.y
   const isVerticalDimension = element.role === 'dimension' && Math.abs(dy) > Math.abs(dx)
-  const x = isVerticalDimension ? midX + 14 : midX
-  const y = isVerticalDimension ? midY : midY - 10
-  const transform = isVerticalDimension ? `rotate(-90 ${x} ${y})` : undefined
+  const x = isVerticalDimension ? midX + 18 : midX
+  const y = isVerticalDimension ? midY : midY - 14
+  const labelWidth = Math.max(30, (element.label?.length ?? 0) * 9.5 + 18)
+  const labelHeight = 26
+  const transform = isVerticalDimension ? `translate(${x} ${y}) rotate(-90)` : `translate(${x} ${y})`
 
   return (
-    <text
-      x={x}
-      y={y}
-      className="fill-slate-500 text-[18px]"
-      dominantBaseline="middle"
-      paintOrder="stroke"
-      stroke="white"
-      strokeWidth="5"
-      strokeLinejoin="round"
-      textAnchor="middle"
-      transform={transform}
-    >
-      {element.label}
-    </text>
+    <g transform={transform}>
+      <rect
+        x={-labelWidth / 2}
+        y={-labelHeight / 2}
+        width={labelWidth}
+        height={labelHeight}
+        className="fill-white/90 stroke-white"
+        rx="3"
+        vectorEffect="non-scaling-stroke"
+      />
+      <text
+        x="0"
+        y="0"
+        className="fill-slate-500 text-[18px]"
+        dominantBaseline="middle"
+        textAnchor="middle"
+      >
+        {element.label}
+      </text>
+    </g>
   )
 }
 

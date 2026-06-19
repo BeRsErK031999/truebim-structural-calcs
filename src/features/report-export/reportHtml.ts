@@ -198,11 +198,14 @@ function renderLineLabel(element: Extract<SvgSketchElement, { type: 'line' }>) {
   const dx = element.end.x - element.start.x
   const dy = element.end.y - element.start.y
   const isVerticalDimension = element.role === 'dimension' && Math.abs(dy) > Math.abs(dx)
-  const x = isVerticalDimension ? midX + 14 : midX
-  const y = isVerticalDimension ? midY : midY - 10
-  const transform = isVerticalDimension ? ` transform="rotate(-90 ${x} ${y})"` : ''
+  const x = isVerticalDimension ? midX + 18 : midX
+  const y = isVerticalDimension ? midY : midY - 14
+  const label = escapeHtml(cleanReportText(element.label ?? ''))
+  const labelWidth = Math.max(30, (element.label?.length ?? 0) * 9.5 + 18)
+  const labelHeight = 26
+  const transform = isVerticalDimension ? `translate(${x} ${y}) rotate(-90)` : `translate(${x} ${y})`
 
-  return `<text x="${x}" y="${y}" fill="#333" font-size="18" text-anchor="middle" dominant-baseline="middle" paint-order="stroke" stroke="#fff" stroke-width="5" stroke-linejoin="round"${transform}>${escapeHtml(cleanReportText(element.label ?? ''))}</text>`
+  return `<g transform="${transform}"><rect x="${-labelWidth / 2}" y="${-labelHeight / 2}" width="${labelWidth}" height="${labelHeight}" rx="3" fill="#fff" fill-opacity="0.9" stroke="#fff" vector-effect="non-scaling-stroke" /><text x="0" y="0" fill="#333" font-size="18" text-anchor="middle" dominant-baseline="middle">${label}</text></g>`
 }
 
 function cleanReportText(value: string) {
