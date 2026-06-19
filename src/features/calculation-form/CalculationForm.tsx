@@ -22,6 +22,7 @@ import { NumberField } from './components/NumberField'
 import { SelectField } from './components/SelectField'
 import { ToggleField } from './components/ToggleField'
 import { engineeringHelp } from './engineeringUx'
+import { ResultPanel } from '@/widgets/results/ResultPanel'
 
 const caseOptions: Array<{ value: PunchingShearCaseType; label: string; disabled?: boolean }> = [
   { value: 'center', label: 'Центральная прямоугольная колонна' },
@@ -194,10 +195,11 @@ export function CalculationForm() {
   }, [getValues, setValue, shearReinforcementEnabled, shearReinforcementInputMode])
 
   return (
-    <form className="grid gap-5" onSubmit={handleSubmit(runCalculation)}>
+    <form className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_360px]" onSubmit={handleSubmit(runCalculation)}>
+      <div className="grid gap-4">
       <FormSection
-        title="Расчетный случай"
-        helperText="Выберите расчетную схему. VERIFIED автоматически не присваивается: неподтвержденные сценарии остаются draft/pilot и требуют инженерной проверки."
+        title="1. Расчетный случай"
+        helperText="Выберите схему проверки. Draft-сценарии остаются draft."
       >
         <SelectField
           label="Тип случая"
@@ -220,8 +222,53 @@ export function CalculationForm() {
       </FormSection>
 
       <FormSection
-        title="Материал плиты"
-        helperText="Класс бетона задает справочные сопротивления для расчета. Значения Rbt/Rsw раскрываются в отчете без изменения расчетных формул."
+        title="2. Геометрия"
+        helperText="Плита и колонна."
+        contentClassName="lg:grid-cols-4"
+      >
+        <div className="md:col-span-2">
+          <p className="mb-3 text-xs font-semibold uppercase text-slate-500">Плита</p>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <NumberField
+              label="h"
+              unit="мм"
+              helperText={engineeringHelp.h}
+              registration={register('slab.thicknessMm', { valueAsNumber: true })}
+              error={errors.slab?.thicknessMm?.message}
+            />
+            <NumberField
+              label="h0"
+              unit="мм"
+              helperText={engineeringHelp.h0}
+              registration={register('slab.effectiveDepthMm', { valueAsNumber: true })}
+              error={errors.slab?.effectiveDepthMm?.message}
+            />
+          </div>
+        </div>
+        <div className="md:col-span-2">
+          <p className="mb-3 text-xs font-semibold uppercase text-slate-500">Колонна</p>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <NumberField
+              label="X"
+              unit="мм"
+              helperText="Размер колонны по оси X."
+              registration={register('rectColumn.widthXMm', { valueAsNumber: true })}
+              error={errors.rectColumn?.widthXMm?.message}
+            />
+            <NumberField
+              label="Y"
+              unit="мм"
+              helperText="Размер колонны по оси Y."
+              registration={register('rectColumn.widthYMm', { valueAsNumber: true })}
+              error={errors.rectColumn?.widthYMm?.message}
+            />
+          </div>
+        </div>
+      </FormSection>
+
+      <FormSection
+        title="3. Материалы"
+        helperText="Бетон и сталь поперечной арматуры."
       >
         <SelectField
           label="Класс бетона"
@@ -236,36 +283,52 @@ export function CalculationForm() {
             })
           }
         />
-      </FormSection>
-
-      <FormSection
-        title="Плита"
-        helperText="Геометрия плиты задается в миллиметрах. h0 вводится напрямую, поэтому защитный слой скрыт из интерфейса и остается только внутренним параметром модели."
-      >
-        <NumberField
-          label="h - толщина плиты"
-          unit="мм"
-          helperText={engineeringHelp.h}
-          registration={register('slab.thicknessMm', { valueAsNumber: true })}
-          error={errors.slab?.thicknessMm?.message}
-        />
-        <NumberField
-          label="h0 - рабочая высота"
-          unit="мм"
-          helperText={engineeringHelp.h0}
-          registration={register('slab.effectiveDepthMm', { valueAsNumber: true })}
-          error={errors.slab?.effectiveDepthMm?.message}
+        <SelectField
+          label="Класс стали"
+          placeholder="Выберите класс стали"
+          value={shearReinforcementSteelClass ?? 'A400'}
+          options={steelClassOptions.map((value) => ({ value, label: value }))}
+          error={errors.shearReinforcement?.steelClass?.message}
+          onValueChange={(value) =>
+            setValue('shearReinforcement.steelClass', value as ShearReinforcementSteelClass, {
+              shouldDirty: true,
+              shouldValidate: true,
+            })
+          }
         />
       </FormSection>
 
+      <FormSection title="4. Нагрузки" helperText="Расчетная сила и моменты." contentClassName="lg:grid-cols-3">
+        <NumberField
+          label="N"
+          unit="кН"
+          helperText="Расчетная продавливающая сила."
+          registration={register('forces.axialForceKn', { valueAsNumber: true })}
+          error={errors.forces?.axialForceKn?.message}
+        />
+        <NumberField
+          label="Mx"
+          unit="кН·м"
+          helperText="Момент в плоскости оси X."
+          registration={register('forces.momentXKnM', { valueAsNumber: true })}
+          error={errors.forces?.momentXKnM?.message}
+        />
+        <NumberField
+          label="My"
+          unit="кН·м"
+          helperText="Момент в плоскости оси Y."
+          registration={register('forces.momentYKnM', { valueAsNumber: true })}
+          error={errors.forces?.momentYKnM?.message}
+        />
+      </FormSection>
+
       <FormSection
-        title="Поперечная арматура"
-        helperText="Черновой ввод усиления продавливания. Отключенное усиление сохраняет текущую проверенную область center force-only."
+        title="5. Поперечная арматура"
+        helperText="Включайте только когда задано усиление продавливания."
       >
         <ToggleField
           checked={shearReinforcementEnabled}
           label="Учитывать поперечную арматуру"
-          helperText="Включает расчет Asw, qsw, Fsw.ult и Fult для инженерного просмотра."
           onCheckedChange={(checked) =>
             setValue('shearReinforcement.enabled', checked, {
               shouldDirty: true,
@@ -275,46 +338,32 @@ export function CalculationForm() {
         />
         {shearReinforcementEnabled ? (
           <>
-            <SelectField
-              label="Класс стали"
-              placeholder="Выберите класс стали"
-              value={shearReinforcementSteelClass ?? 'A400'}
-              options={steelClassOptions.map((value) => ({ value, label: value }))}
-              error={errors.shearReinforcement?.steelClass?.message}
-              onValueChange={(value) =>
-                setValue('shearReinforcement.steelClass', value as ShearReinforcementSteelClass, {
-                  shouldDirty: true,
-                  shouldValidate: true,
-                })
-              }
-            />
             <NumberField
-              label="Asw - принятая расчетная площадь поперечной арматуры"
+              label="Asw"
               min={1}
               step={0.001}
               unit="мм²"
+              helperText="Принятая расчетная площадь поперечной арматуры."
               registration={register('shearReinforcement.manualAswMm2', { valueAsNumber: true })}
               error={errors.shearReinforcement?.manualAswMm2?.message}
             />
             <NumberField
-              label="sw - расчетный шаг поперечной арматуры для qsw"
+              label="sw"
               min={1}
               step={1}
               unit="мм"
+              helperText="Расчетный шаг поперечной арматуры."
               registration={register('shearReinforcement.manualSwMm', { valueAsNumber: true })}
               error={errors.shearReinforcement?.manualSwMm?.message}
             />
-            <p className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm leading-6 text-amber-900">
-              В текущей версии калькулятор не определяет рабочие стержни автоматически. Пользователь задает расчетные Asw и sw вручную.
+            <p className="rounded-lg border border-sky-200 bg-sky-50 px-3 py-2 text-xs leading-5 text-sky-900 md:col-span-2">
+              Asw и sw задаются вручную: автоматический подбор рабочих стержней пока не выполняется.
             </p>
-            <details className="rounded-lg border border-slate-200 bg-slate-50 p-3">
+            <details className="rounded-lg border border-slate-200 bg-slate-50 p-3 md:col-span-2">
               <summary className="cursor-pointer text-sm font-semibold text-slate-900">
                 Схема для визуальной проверки
               </summary>
-              <div className="mt-4 grid gap-4">
-                <p className="rounded-lg border border-slate-200 bg-white p-3 text-sm leading-6 text-slate-700">
-                  Эти параметры не участвуют в расчете несущей способности. Они используются только для отображения условной схемы.
-                </p>
+              <div className="mt-4 grid gap-4 md:grid-cols-2">
                 <SelectField
                   label="Схема армирования"
                   placeholder="Выберите схему"
@@ -329,7 +378,7 @@ export function CalculationForm() {
                   }
                 />
                 <NumberField
-                  label="Диаметр стержня для отображения"
+                  label="Диаметр"
                   min={1}
                   step={1}
                   unit="мм"
@@ -337,7 +386,7 @@ export function CalculationForm() {
                   error={errors.shearReinforcement?.barDiameterMm?.message}
                 />
                 <NumberField
-                  label="Количество стержней/маркеров на схеме"
+                  label="Маркеры"
                   min={1}
                   step={1}
                   unit="шт."
@@ -345,7 +394,7 @@ export function CalculationForm() {
                   error={errors.shearReinforcement?.simpleBarCount?.message}
                 />
                 <NumberField
-                  label="Шаг стержней на схеме"
+                  label="Шаг маркеров"
                   min={1}
                   step={1}
                   unit="мм"
@@ -353,7 +402,7 @@ export function CalculationForm() {
                   error={errors.shearReinforcement?.barSpacingMm?.message}
                 />
                 <NumberField
-                  label="Количество рядов"
+                  label="Ряды"
                   min={1}
                   step={1}
                   unit="шт."
@@ -361,7 +410,7 @@ export function CalculationForm() {
                   error={errors.shearReinforcement?.rowCount?.message}
                 />
                 <NumberField
-                  label="Ветвей в ряду"
+                  label="Ветвей"
                   min={1}
                   step={1}
                   unit="шт."
@@ -369,7 +418,7 @@ export function CalculationForm() {
                   error={errors.shearReinforcement?.legsPerRow?.message}
                 />
                 <NumberField
-                  label="Расстояние до первого ряда"
+                  label="Первый ряд"
                   min={1}
                   step={1}
                   unit="мм"
@@ -388,26 +437,6 @@ export function CalculationForm() {
             </details>
           </>
         ) : null}
-      </FormSection>
-
-      <FormSection
-        title="Колонна"
-        helperText="Размеры прямоугольной колонны задают контрольный периметр. X принят меньшим размером, Y - большим размером колонны."
-      >
-        <NumberField
-          label="Ширина по X"
-          unit="мм"
-          helperText="Меньший размер колонны."
-          registration={register('rectColumn.widthXMm', { valueAsNumber: true })}
-          error={errors.rectColumn?.widthXMm?.message}
-        />
-        <NumberField
-          label="Высота по Y"
-          unit="мм"
-          helperText="Больший размер колонны."
-          registration={register('rectColumn.widthYMm', { valueAsNumber: true })}
-          error={errors.rectColumn?.widthYMm?.message}
-        />
       </FormSection>
 
       {caseType === 'round' ? (
@@ -545,40 +574,15 @@ export function CalculationForm() {
         </FormSection>
       ) : null}
 
-      <FormSection
-        title="Нагрузки"
-        helperText="Введите расчетную силу продавливания и моменты. Моменты сохраняются для pilot/draft проверки и требуют отдельной инженерной валидации."
-      >
-        <NumberField
-          label="N"
-          unit="кН"
-          registration={register('forces.axialForceKn', { valueAsNumber: true })}
-          error={errors.forces?.axialForceKn?.message}
-        />
-        <NumberField
-          label="Mx - момент в плоскости оси X"
-          unit="кН·м"
-          helperText="В направлении меньшего размера колонны."
-          registration={register('forces.momentXKnM', { valueAsNumber: true })}
-          error={errors.forces?.momentXKnM?.message}
-        />
-        <NumberField
-          label="My - момент в плоскости оси Y"
-          unit="кН·м"
-          helperText="В направлении большего размера колонны."
-          registration={register('forces.momentYKnM', { valueAsNumber: true })}
-          error={errors.forces?.momentYKnM?.message}
-        />
-      </FormSection>
-
-      <FormSection
-        title="Несколько контрольных контуров"
-        helperText="Черновая трассировка геометрии для нескольких контрольных контуров. По умолчанию выключена, чтобы сохранить текущее проверенное поведение для центральной колонны."
-      >
+      <details className="rounded-lg border border-slate-200 bg-white shadow-sm">
+        <summary className="cursor-pointer p-4 text-base font-semibold text-slate-950">
+          6. Дополнительные настройки
+        </summary>
+        <div className="grid gap-4 px-4 pb-4 md:grid-cols-2">
         <ToggleField
           checked={multipleContoursEnabled ?? false}
           label="Включить несколько контуров"
-          helperText="Создает черновые смещения контуров и выбирает критический черновой контур по максимальному коэффициенту использования."
+          helperText="Draft-трассировка нескольких контрольных контуров."
           onCheckedChange={(checked) =>
             setValue('multipleContours.enabled', checked, {
               shouldDirty: true,
@@ -621,11 +625,14 @@ export function CalculationForm() {
             error={errors.multipleContours?.customOffsetStepMm?.message}
           />
         ) : null}
-      </FormSection>
+        </div>
+      </details>
 
+      </div>
+      <aside className="grid content-start gap-4 xl:sticky xl:top-6">
       <div className="flex flex-wrap gap-3">
         <Button
-          className="h-11 rounded-lg"
+          className="h-12 rounded-lg px-6"
           disabled={!isValid || isSubmitting}
           size="lg"
           type="submit"
@@ -635,18 +642,16 @@ export function CalculationForm() {
         </Button>
         <Button
           className="h-11 rounded-lg"
-          size="lg"
           type="button"
           variant="outline"
           onClick={handleReset}
         >
           <RotateCcw className="size-4" />
-          Вернуть значения по умолчанию
+          Сброс
         </Button>
         <Button
           className="h-11 rounded-lg"
           disabled={!result}
-          size="lg"
           type="button"
           variant="outline"
           onClick={handleSaveCurrentCalculation}
@@ -656,7 +661,6 @@ export function CalculationForm() {
         </Button>
         <Button
           className="h-11 rounded-lg"
-          size="lg"
           type="button"
           variant="outline"
           onClick={() => {
@@ -669,6 +673,8 @@ export function CalculationForm() {
           Импорт JSON
         </Button>
       </div>
+
+      <ResultPanel variant="inline" showPreview={false} showCopy={false} />
 
       {isImportOpen ? (
         <Card className="rounded-lg border border-slate-200 bg-white shadow-sm">
@@ -711,6 +717,7 @@ export function CalculationForm() {
           {formMessage}
         </p>
       ) : null}
+      </aside>
     </form>
   )
 }

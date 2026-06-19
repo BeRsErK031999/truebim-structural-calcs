@@ -30,7 +30,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card'
 const draftWarning =
   'Черновой расчет. Проверьте формулы и коэффициенты по СП 63.13330 перед проектным применением.'
 
-export function ResultPanel() {
+type ResultPanelProps = {
+  variant?: 'sticky' | 'inline'
+  showPreview?: boolean
+  showCopy?: boolean
+}
+
+export function ResultPanel({ variant = 'sticky', showPreview = true, showCopy = true }: ResultPanelProps) {
   const draft = useCalculationStore((state) => state.draft)
   const result = useCalculationStore((state) => state.punchingShearResult)
   const report = useCalculationStore((state) => state.punchingShearReport)
@@ -70,27 +76,27 @@ export function ResultPanel() {
 
   return (
     <>
-      <Card className="sticky top-6 rounded-lg border border-slate-200 bg-white shadow-sm">
-        <CardHeader>
+      <Card className={`${variant === 'sticky' ? 'sticky top-6' : ''} rounded-lg border border-slate-200 bg-white shadow-sm`}>
+        <CardHeader className="p-4">
           <CardTitle className="flex items-center justify-between gap-3">
             <span>Результаты</span>
             <StatusBadge status={result?.status} />
           </CardTitle>
         </CardHeader>
-        <CardContent className="grid gap-4">
-          <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm font-medium leading-6 text-amber-900">
+        <CardContent className="grid gap-3 p-4 pt-0">
+          <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-medium leading-5 text-amber-900">
             {draftWarning}
           </div>
 
           {result && report && listing ? (
-            <ResultSummary result={result} listing={listing} onOpenReport={() => setReportOpen(true)} />
+            <ResultSummary result={result} listing={listing} />
           ) : (
             <div className="rounded-lg border border-slate-200 bg-slate-50 p-4 text-sm text-slate-600">
               Заполните исходные данные и запустите расчет, чтобы увидеть краткую сводку.
             </div>
           )}
 
-          <EngineeringPreview svgModel={result?.svgModel} compact />
+          {showPreview ? <EngineeringPreview svgModel={result?.svgModel} compact /> : null}
 
           <div className="grid gap-2">
             <Button
@@ -124,16 +130,18 @@ export function ResultPanel() {
                 Markdown
               </Button>
             </div>
-            <Button
-              type="button"
-              variant="outline"
-              className="justify-center"
-              disabled={!result}
-              onClick={handleCopySummary}
-            >
-              <Copy />
-              Скопировать сводку
-            </Button>
+            {showCopy ? (
+              <Button
+                type="button"
+                variant="outline"
+                className="justify-center"
+                disabled={!result}
+                onClick={handleCopySummary}
+              >
+                <Copy />
+                Скопировать сводку
+              </Button>
+            ) : null}
           </div>
 
           {exportMessage ? <p className="text-sm font-medium text-slate-700">{exportMessage}</p> : null}
@@ -159,15 +167,13 @@ export function ResultPanel() {
 function ResultSummary({
   result,
   listing,
-  onOpenReport,
 }: {
   result: PunchingShearResult
   listing: EngineeringReportListing
-  onOpenReport: () => void
 }) {
   return (
     <div className="grid gap-4">
-      <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
+      <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
         <p className="text-sm font-semibold text-slate-700">{listing.resultSummary.statusText}</p>
         <p className="mt-2 text-2xl font-semibold text-slate-950">
           η = {listing.resultSummary.utilizationText}
@@ -181,11 +187,6 @@ function ResultSummary({
       </div>
 
       <ValueRows rows={listing.quickRows.map((row) => [row.label, row.value])} />
-
-      <Button type="button" variant="outline" className="justify-center" onClick={onOpenReport}>
-        <FileText />
-        Открыть полный расчет
-      </Button>
     </div>
   )
 }

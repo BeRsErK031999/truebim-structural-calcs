@@ -19,9 +19,6 @@ import type { CalculationSection } from '@/types/navigation'
 
 const sections: CalculationSection[] = [
   { title: 'Продавливание', path: '/', icon: DraftingCompass, status: 'active' },
-  { title: 'Поперечная сила', path: '/shear', icon: Layers3, status: 'planned' },
-  { title: 'Балки', path: '/beams', icon: Building2, status: 'planned' },
-  { title: 'Колонны', path: '/columns', icon: Columns3, status: 'planned' },
   { title: 'Портал инженера', path: '/engineer', icon: ClipboardCheck, status: 'active' },
   { title: 'Пилот', path: '/pilot', icon: ListChecks, status: 'active' },
   { title: 'Инженерная проверка', path: '/review', icon: ClipboardCheck, status: 'active' },
@@ -29,6 +26,12 @@ const sections: CalculationSection[] = [
   { title: 'База знаний', path: '/knowledge', icon: BookOpen, status: 'active' },
   { title: 'Диагностика', path: '/diagnostics', icon: Activity, status: 'active' },
   { title: 'Релизные материалы', path: '/release-evidence', icon: FileArchive, status: 'active' },
+]
+
+const plannedSections: CalculationSection[] = [
+  { title: 'Поперечная сила', path: '/shear', icon: Layers3, status: 'planned' },
+  { title: 'Балки', path: '/beams', icon: Building2, status: 'planned' },
+  { title: 'Колонны', path: '/columns', icon: Columns3, status: 'planned' },
 ]
 
 export function Sidebar() {
@@ -76,6 +79,29 @@ export function Sidebar() {
           </NavLink>
         ))}
       </nav>
+
+      <details className="mt-3 rounded-lg border border-slate-200 bg-slate-50">
+        <summary className="cursor-pointer px-3 py-2 text-sm font-semibold text-slate-600">
+          В разработке
+        </summary>
+        <div className="grid gap-1 px-2 pb-2">
+          {plannedSections.map((section) => (
+            <NavLink
+              key={section.title}
+              to={section.path}
+              className="flex min-h-10 items-center justify-between rounded-md px-2 text-sm font-medium text-slate-500 transition hover:bg-white hover:text-slate-900"
+            >
+              <span className="flex items-center gap-2">
+                <section.icon className="size-4" />
+                {section.title}
+              </span>
+              <Badge variant="secondary" className="rounded-md text-[11px]">
+                скоро
+              </Badge>
+            </NavLink>
+          ))}
+        </div>
+      </details>
 
       <Separator className="my-5" />
 

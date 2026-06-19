@@ -29,10 +29,11 @@ describe('CalculationForm engineering UX', () => {
 
     expect(html).toContain('Mx')
     expect(html).toContain('My')
-    expect(html).toContain('Ширина по X')
-    expect(html).toContain('Высота по Y')
-    expect(html).toContain('меньшего размера колонны')
-    expect(html).toContain('большего размера колонны')
+    expect(html).toContain('Колонна')
+    expect(html).toContain('Размер колонны по оси X')
+    expect(html).toContain('Размер колонны по оси Y')
+    expect(html).toContain('Момент в плоскости оси X')
+    expect(html).toContain('Момент в плоскости оси Y')
   })
 
   it('renders engineering help text', () => {

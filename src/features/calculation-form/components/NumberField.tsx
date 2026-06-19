@@ -1,4 +1,5 @@
 import type { UseFormRegisterReturn } from 'react-hook-form'
+import { HelpCircle } from 'lucide-react'
 
 import { Input } from '@/shared/ui/input'
 import { Label } from '@/shared/ui/label'
@@ -25,7 +26,18 @@ export function NumberField({
   return (
     <div className="grid gap-2">
       <div className="flex items-center justify-between gap-3">
-        <Label className="text-sm font-semibold text-slate-700">{label}</Label>
+        <div className="flex min-w-0 items-center gap-1.5">
+          <Label className="truncate text-sm font-semibold text-slate-700">{label}</Label>
+          {helperText ? (
+            <span
+              className="inline-flex text-slate-400"
+              title={helperText}
+              aria-label={helperText}
+            >
+              <HelpCircle className="size-3.5" />
+            </span>
+          ) : null}
+        </div>
         <span className="text-xs font-medium text-slate-500">{unit}</span>
       </div>
       <Input
@@ -37,7 +49,6 @@ export function NumberField({
         type="number"
         {...registration}
       />
-      {helperText ? <p className="text-xs leading-5 text-slate-500">{helperText}</p> : null}
       {error ? <p className="text-sm leading-5 text-red-600">{error}</p> : null}
     </div>
   )

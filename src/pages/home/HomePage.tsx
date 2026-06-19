@@ -2,26 +2,17 @@ import { motion } from 'framer-motion'
 
 import { CalculationForm } from '@/features/calculation-form/CalculationForm'
 import { Badge } from '@/shared/ui/badge'
-import { Card, CardContent } from '@/shared/ui/card'
-import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs'
 import { CalculationHistoryPanel } from '@/widgets/calculation-history/CalculationHistoryPanel'
-import { ResultPanel } from '@/widgets/results/ResultPanel'
-
-const workflowCards = [
-  { title: 'Геометрия', value: 'Плита, колонна, контрольный контур', tone: 'bg-sky-50 text-sky-700' },
-  { title: 'Материалы', value: 'Бетон и арматура', tone: 'bg-amber-50 text-amber-700' },
-  { title: 'Проверки', value: 'Нагрузки и коэффициенты', tone: 'bg-emerald-50 text-emerald-700' },
-]
 
 export function HomePage() {
   return (
     <motion.div
-      className="grid gap-6"
+      className="grid gap-4"
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.35, ease: 'easeOut' }}
     >
-      <header className="grid gap-4 rounded-lg border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+      <header className="grid gap-3 rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
         <div className="flex flex-wrap items-center gap-3">
           <Badge className="rounded-md bg-teal-50 text-teal-700 hover:bg-teal-50">
             Рабочий экран
@@ -31,44 +22,18 @@ export function HomePage() {
           </Badge>
         </div>
         <div className="max-w-4xl">
-          <h1 className="text-3xl font-semibold tracking-normal text-slate-950 sm:text-4xl">
+          <h1 className="text-2xl font-semibold tracking-normal text-slate-950 sm:text-3xl">
             TrueBIM: расчеты конструкций
           </h1>
-          <p className="mt-3 max-w-2xl text-base leading-7 text-slate-600">
-            Рабочая оболочка для инженерных проверок: ввод исходных данных, расчет продавливания,
-            экспорт отчета и подготовка материалов для независимой проверки.
+          <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">
+            Рабочий экран расчета продавливания: исходные данные, проверка, результат и отчет.
           </p>
         </div>
       </header>
 
-      <Tabs defaultValue="punching" className="w-full">
-        <TabsList className="grid h-auto w-full grid-cols-2 rounded-lg bg-white p-1 shadow-sm md:w-[520px] md:grid-cols-4">
-          <TabsTrigger value="punching">Продавливание</TabsTrigger>
-          <TabsTrigger value="shear">Срез</TabsTrigger>
-          <TabsTrigger value="beams">Балки</TabsTrigger>
-          <TabsTrigger value="columns">Колонны</TabsTrigger>
-        </TabsList>
-      </Tabs>
-
-      <section className="grid gap-4 md:grid-cols-3">
-        {workflowCards.map((card) => (
-          <Card key={card.title} className="rounded-lg border border-slate-200 bg-white shadow-sm">
-            <CardContent className="p-4">
-              <div className={`inline-flex rounded-md px-2.5 py-1 text-sm font-semibold ${card.tone}`}>
-                {card.title}
-              </div>
-              <p className="mt-4 text-lg font-semibold text-slate-950">{card.value}</p>
-            </CardContent>
-          </Card>
-        ))}
-      </section>
-
-      <section className="grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_420px]">
+      <section className="grid items-start gap-6">
         <CalculationForm />
-        <div className="grid gap-6">
-          <ResultPanel />
-          <CalculationHistoryPanel />
-        </div>
+        <CalculationHistoryPanel />
       </section>
     </motion.div>
   )

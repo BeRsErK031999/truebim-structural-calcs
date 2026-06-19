@@ -2,7 +2,7 @@ import { Label } from '@/shared/ui/label'
 
 type ToggleFieldProps = {
   label: string
-  helperText: string
+  helperText?: string
   checked: boolean
   onCheckedChange: (checked: boolean) => void
 }
@@ -23,7 +23,7 @@ export function ToggleField({
       />
       <span className="grid gap-1">
         <Label className="cursor-pointer text-sm font-semibold text-slate-800">{label}</Label>
-        <span className="text-sm leading-5 text-slate-600">{helperText}</span>
+        {helperText ? <span className="text-sm leading-5 text-slate-600">{helperText}</span> : null}
       </span>
     </label>
   )
