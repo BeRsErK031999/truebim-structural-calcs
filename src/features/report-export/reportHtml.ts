@@ -64,15 +64,16 @@ export function buildPunchingShearHtmlReport(
     .formula { break-inside: avoid; padding: 1.5mm 0; line-height: 1.45; }
     .muted { color: #555; }
     .strong { font-weight: 700; }
-    .svg-wrap { break-inside: avoid; margin: 4mm 0 5mm; overflow: visible; }
-    svg { max-width: 100%; height: auto; background: #fff; }
+    .svg-wrap { break-inside: avoid; margin: 4mm 0 7mm; overflow: hidden; border: 1px solid #cbd5e1; padding: 3mm; background: #fff; }
+    .svg-wrap svg { display: block; width: 100%; max-width: 100%; height: auto; max-height: 155mm; background: #fff; }
+    .svg-legend { margin-top: 2mm; padding-top: 2mm; border-top: 1px solid #ddd; font-size: 9pt; line-height: 1.35; color: #333; }
     footer { margin-top: 9mm; padding-top: 3mm; border-top: 1px solid #777; font-size: 9pt; color: #333; }
     .toolbar { position: sticky; top: 0; display: flex; justify-content: flex-end; padding: 8px 0; background: #fff; }
     .toolbar button { border: 1px solid #555; background: #fff; padding: 7px 12px; font: inherit; cursor: pointer; }
     @media print {
       main { padding: 0; max-width: none; }
       .toolbar, details { display: none; }
-      h2, h3, .formula, .svg-wrap { break-inside: avoid; }
+      h2, h3, .formula, .svg-wrap, .svg-legend { break-inside: avoid; }
     }
   </style>
 </head>
@@ -152,8 +153,7 @@ function renderSvg(result: PunchingShearResult) {
     </defs>
     <rect x="${svgModel.viewBox.minX}" y="${svgModel.viewBox.minY}" width="${svgModel.viewBox.width}" height="${svgModel.viewBox.height}" fill="#fff" />
     ${svgModel.elements.map(renderSvgElement).join('\n')}
-    <text x="${svgModel.viewBox.minX + 16}" y="${svgModel.viewBox.maxY - 16}" fill="#111" font-size="16">Легенда: темный прямоугольник - колонна; зеленая линия - контрольный контур; зеленые точки - поперечная арматура.</text>
-  </svg></div>`
+  </svg><div class="svg-legend">Легенда: темный прямоугольник - колонна; зеленая линия - контрольный контур; зеленые точки - поперечная арматура.</div></div>`
 }
 
 function renderSvgElement(element: SvgSketchElement): string {

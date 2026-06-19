@@ -148,10 +148,13 @@ describe('report export', () => {
 
     expect(html).toContain('<title>Расчетная схема продавливания</title>')
     expect(html).toContain('Колонна')
+    expect(html).toContain('class="svg-legend"')
+    expect(html).toContain('.svg-wrap { break-inside: avoid; margin: 4mm 0 7mm; overflow: hidden;')
     expect(html).toContain('колонна X')
     expect(html).toContain('колонна Y')
     expect(html).toContain('контур X')
     expect(html).toContain('контур Y')
+    expect(html).not.toContain('maxY - 16')
     expect(html).not.toContain('1 единица = 1 мм')
     expect(html).not.toContain(' mm ')
     expect(html).not.toContain('offset')

@@ -1,6 +1,6 @@
 import { useState } from 'react'
-import type { ReactNode } from 'react'
-import { Copy, Download, FileText, Printer, X } from 'lucide-react'
+import type { CSSProperties, ReactNode } from 'react'
+import { Copy, Download, FileText, Maximize2, Printer, X, ZoomIn, ZoomOut } from 'lucide-react'
 
 import {
   pointsToSvg,
@@ -425,6 +425,9 @@ function StatusBadge({ status }: { status?: PunchingShearCheckStatus }) {
 }
 
 function EngineeringPreview({ svgModel, compact = false }: { svgModel?: PunchingSketchModel; compact?: boolean }) {
+  const [isOpen, setIsOpen] = useState(false)
+  const [zoom, setZoom] = useState(1)
+
   if (!svgModel) {
     return (
       <div className="flex aspect-[4/3] items-center justify-center rounded-lg border border-dashed border-slate-300 bg-slate-50 px-4 text-center text-sm text-slate-500">
@@ -435,44 +438,120 @@ function EngineeringPreview({ svgModel, compact = false }: { svgModel?: Punching
 
   return (
     <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
-      <svg
-        className={`${compact ? 'max-h-56' : ''} aspect-[4/3] h-auto w-full rounded-md bg-white`}
-        role="img"
-        viewBox={viewBoxToString(svgModel.viewBox)}
+      <button
+        type="button"
+        className="block w-full cursor-zoom-in rounded-md bg-white text-left ring-offset-2 transition hover:ring-2 hover:ring-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        onClick={() => setIsOpen(true)}
+        aria-label="Open geometry sketch preview"
       >
-        <defs>
-          <marker
-            id="dimension-arrow"
-            viewBox="0 0 10 10"
-            refX="5"
-            refY="5"
-            markerWidth="7"
-            markerHeight="7"
-            orient="auto-start-reverse"
-          >
-            <path d="M 0 0 L 10 5 L 0 10 z" className="fill-slate-500" />
-          </marker>
-          <pattern id="engineering-grid" width="50" height="50" patternUnits="userSpaceOnUse">
-            <path d="M 50 0 L 0 0 0 50" fill="none" stroke="#e2e8f0" strokeWidth="1" />
-          </pattern>
-        </defs>
-        <rect
-          x={svgModel.viewBox.minX}
-          y={svgModel.viewBox.minY}
-          width={svgModel.viewBox.width}
-          height={svgModel.viewBox.height}
-          fill="url(#engineering-grid)"
+        <SketchSvg
+          className={`${compact ? 'max-h-56' : ''} aspect-[4/3] h-auto w-full rounded-md bg-white`}
+          idPrefix={compact ? 'engineering-preview-compact' : 'engineering-preview'}
+          svgModel={svgModel}
         />
-        {svgModel.elements.map((element) => (
-          <SketchElement key={element.id} element={element} />
-        ))}
-      </svg>
+      </button>
       <div className="mt-3 text-xs text-slate-500">Схема геометрии: мм, вписано в область</div>
+      <div className="mt-3 flex justify-end">
+        <Button type="button" variant="outline" size="sm" onClick={() => setIsOpen(true)}>
+          <Maximize2 className="h-4 w-4" />
+          Открыть крупно
+        </Button>
+      </div>
+      {isOpen ? (
+        <div className="fixed inset-0 z-50 bg-slate-950/70 p-3 sm:p-6" role="dialog" aria-modal="true">
+          <div className="mx-auto flex h-full max-w-7xl flex-col overflow-hidden rounded-lg bg-white shadow-2xl">
+            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 px-4 py-3">
+              <div>
+                <div className="text-sm font-semibold text-slate-950">Схема геометрии</div>
+                <div className="text-xs text-slate-500">Единицы: мм. Масштабируйте и проверяйте подписи на схеме.</div>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setZoom((value) => Math.max(0.75, Number((value - 0.25).toFixed(2))))}
+                  aria-label="Zoom out"
+                >
+                  <ZoomOut className="h-4 w-4" />
+                </Button>
+                <span className="min-w-14 text-center text-sm font-semibold text-slate-700">{Math.round(zoom * 100)}%</span>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setZoom((value) => Math.min(3, Number((value + 0.25).toFixed(2))))}
+                  aria-label="Zoom in"
+                >
+                  <ZoomIn className="h-4 w-4" />
+                </Button>
+                <Button type="button" variant="outline" size="sm" onClick={() => setIsOpen(false)} aria-label="Close sketch preview">
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+            <div className="min-h-0 flex-1 overflow-auto bg-slate-100 p-4">
+              <SketchSvg
+                className="h-auto rounded-md bg-white shadow-sm"
+                idPrefix="engineering-preview-modal"
+                svgModel={svgModel}
+                style={{ width: `${zoom * 100}%`, minWidth: zoom > 1 ? `${zoom * 900}px` : '100%' }}
+              />
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   )
 }
 
-function SketchElement({ element }: { element: SvgSketchElement }) {
+function SketchSvg({
+  svgModel,
+  idPrefix,
+  className,
+  style,
+}: {
+  svgModel: PunchingSketchModel
+  idPrefix: string
+  className?: string
+  style?: CSSProperties
+}) {
+  const markerId = `${idPrefix}-dimension-arrow`
+  const gridId = `${idPrefix}-grid`
+
+  return (
+    <svg className={className} role="img" style={style} viewBox={viewBoxToString(svgModel.viewBox)}>
+      <defs>
+        <marker
+          id={markerId}
+          viewBox="0 0 10 10"
+          refX="5"
+          refY="5"
+          markerWidth="7"
+          markerHeight="7"
+          orient="auto-start-reverse"
+        >
+          <path d="M 0 0 L 10 5 L 0 10 z" className="fill-slate-500" />
+        </marker>
+        <pattern id={gridId} width="50" height="50" patternUnits="userSpaceOnUse">
+          <path d="M 50 0 L 0 0 0 50" fill="none" stroke="#e2e8f0" strokeWidth="1" />
+        </pattern>
+      </defs>
+      <rect
+        x={svgModel.viewBox.minX}
+        y={svgModel.viewBox.minY}
+        width={svgModel.viewBox.width}
+        height={svgModel.viewBox.height}
+        fill={`url(#${gridId})`}
+      />
+      {svgModel.elements.map((element) => (
+        <SketchElement key={element.id} element={element} markerId={markerId} />
+      ))}
+    </svg>
+  )
+}
+
+function SketchElement({ element, markerId }: { element: SvgSketchElement; markerId: string }) {
   if (element.type === 'polygon') {
     return (
       <polygon
@@ -511,8 +590,8 @@ function SketchElement({ element }: { element: SvgSketchElement }) {
           stroke={stressColor}
           strokeWidth={element.role === 'stress-segment' ? 7 : undefined}
           vectorEffect="non-scaling-stroke"
-          markerStart={hasArrowMarker(element.role) ? 'url(#dimension-arrow)' : undefined}
-          markerEnd={hasArrowMarker(element.role) ? 'url(#dimension-arrow)' : undefined}
+          markerStart={hasArrowMarker(element.role) ? `url(#${markerId})` : undefined}
+          markerEnd={hasArrowMarker(element.role) ? `url(#${markerId})` : undefined}
         />
         {element.label ? (
           <text
