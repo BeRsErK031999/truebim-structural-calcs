@@ -104,7 +104,9 @@ function buildAssumptionsText(input: PunchingShearInput, result: PunchingShearRe
       : 'моменты отсутствуют'
   const reinforcement = input.shearReinforcement.enabled
     ? result.shearReinforcement.contributionAccepted
-      ? 'поперечная арматура учитывается по ручным Asw и sw'
+      ? result.shearReinforcement.inputMode === 'bar-count'
+        ? 'поперечная арматура учитывается по количеству и диаметру стержней'
+        : 'поперечная арматура учитывается по ручным Asw и sw'
       : 'поперечная арматура задана, но ее вклад не включен в итоговую проверку'
     : 'поперечная арматура не задана'
   const openings =
@@ -144,12 +146,7 @@ function buildInputRows(input: PunchingShearInput, result: PunchingShearResult):
     { label: 'Бетон', value: input.concrete.className },
     { label: 'Rbt', value: formatMpa(result.draftConcreteResistanceMpa, 3) },
     ...(input.shearReinforcement.enabled
-      ? [
-          { label: 'Поперечная арматура', value: formatReinforcementInputSentence(result) },
-          { label: 'Rsw', value: formatMpa(getSteelStrength(result), 3) },
-          { label: 'Asw', value: formatMm2(result.reinforcementAreaMm2, 3) },
-          { label: 'sw', value: formatMm(result.shearReinforcement.swMm) },
-        ]
+      ? buildReinforcementInputRows(result)
       : []),
   ]
 }
@@ -252,9 +249,31 @@ function buildReinforcementLines(result: PunchingShearResult): EngineeringReport
     ]
   }
 
+  if (summary.inputMode === 'bar-count') {
+    return [
+      formula(
+        'asw-bar-area',
+        `A_φ = πd²/4 = π · ${formatPlain(summary.barDiameterMm)}² / 4 = ${formatMm2(summary.barAreaMm2, 3)}`,
+      ),
+      formula(
+        'asw-bar-count',
+        `Asw = n · A_φ = ${formatPlain(summary.simpleBarCount)} · ${formatPlain(summary.barAreaMm2, 3)} = ${formatMm2(summary.reinforcementAreaMm2, 3)}`,
+      ),
+      ...buildReinforcementCapacityLines(result),
+    ]
+  }
+
   return [
     formula('asw-manual', `Asw = ${formatMm2(summary.reinforcementAreaMm2, 3)} (ручной ввод для формулы q_sw)`),
     formula('sw-manual', `sw = ${formatMm(summary.swMm)}`),
+    ...buildReinforcementCapacityLines(result),
+  ]
+}
+
+function buildReinforcementCapacityLines(result: PunchingShearResult): EngineeringReportLine[] {
+  const summary = result.shearReinforcement
+
+  return [
     formula(
       'qsw',
       hasFinite(summary.qswNPerMm)
@@ -316,7 +335,7 @@ function buildServiceBlocks(
   result: PunchingShearResult,
   report: PunchingShearReportModel,
 ): EngineeringReportServiceBlock[] {
-  return [
+  const blocks: EngineeringReportServiceBlock[] = [
     {
       id: 'verification',
       title: 'Статус проверки',
@@ -341,6 +360,23 @@ function buildServiceBlocks(
           : ['Evidence не привязан.'],
     },
   ]
+
+  if (input.shearReinforcement.enabled && result.shearReinforcement.inputMode === 'manual') {
+    blocks.push({
+      id: 'reinforcement-layout',
+      title: 'Параметры раскладки арматуры',
+      rows: [
+        { label: 'Схема армирования', value: formatLayoutType(result.shearReinforcement.layoutType) },
+        { label: 'Количество рядов', value: formatPlain(result.shearReinforcement.rowCount) },
+        { label: 'Ветвей в ряду', value: formatPlain(result.shearReinforcement.legsPerRow) },
+        { label: 'Шаг стержней', value: formatMm(result.shearReinforcement.barSpacingMm) },
+        { label: 'Расстояние до первого ряда', value: formatMm(result.shearReinforcement.firstRowDistanceMm) },
+        { label: 'Шаг рядов', value: formatMm(result.shearReinforcement.rowSpacingMm) },
+      ],
+    })
+  }
+
+  return blocks
 }
 
 function relevantWarnings(input: PunchingShearInput, result: PunchingShearResult, report: PunchingShearReportModel) {
@@ -423,7 +459,39 @@ function formatReinforcementInputSentence(result: PunchingShearResult) {
     return `${summary.steelClass ?? 'сталь не задана'}, старая схема ${summary.totalLegs} условных стерж.; требуется ручной Asw/sw`
   }
 
+  if (summary.inputMode === 'bar-count') {
+    return `Арматура ${summary.steelClass ?? 'сталь не задана'}, Ø${formatPlain(summary.barDiameterMm)}; количество стержней = ${formatPlain(summary.simpleBarCount)}; Asw = ${formatMm2(summary.reinforcementAreaMm2, 3)}`
+  }
+
   return `${summary.steelClass ?? 'сталь не задана'}, Asw = ${formatMm2(summary.reinforcementAreaMm2, 3)}, sw = ${formatMm(summary.swMm)}`
+}
+
+function buildReinforcementInputRows(result: PunchingShearResult): EngineeringReportTableRow[] {
+  const summary = result.shearReinforcement
+  const commonRows = [
+    { label: 'Поперечная арматура', value: formatReinforcementInputSentence(result) },
+    { label: 'Rsw', value: formatMpa(getSteelStrength(result), 3) },
+    { label: 'Asw', value: formatMm2(result.reinforcementAreaMm2, 3) },
+  ]
+
+  return summary.inputMode === 'bar-count'
+    ? [
+        ...commonRows,
+        { label: 'Диаметр стержня', value: `Ø${formatPlain(summary.barDiameterMm)} мм` },
+        { label: 'Количество стержней', value: formatPlain(summary.simpleBarCount) },
+      ]
+    : [...commonRows, { label: 'sw', value: formatMm(summary.swMm) }]
+}
+
+function formatLayoutType(value: PunchingShearResult['shearReinforcement']['layoutType']) {
+  const labels: Record<string, string> = {
+    'closed-stirrups': 'замкнутые хомуты',
+    studs: 'шпильки',
+    links: 'связи',
+    custom: 'своя схема',
+  }
+
+  return value ? labels[value] ?? value : unavailable
 }
 
 function getSteelStrength(result: PunchingShearResult) {

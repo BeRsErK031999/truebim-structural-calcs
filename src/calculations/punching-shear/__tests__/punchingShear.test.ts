@@ -677,8 +677,9 @@ describe('punching shear draft center check', () => {
         ...defaultPunchingShearInput,
         shearReinforcement: {
           enabled: true,
-          inputMode: 'manual',
+          inputMode: 'bar-count',
           barDiameterMm: 12,
+          simpleBarCount: 8,
           barSpacingMm: 100,
           rowCount: 3,
           legsPerRow: 4,
@@ -691,6 +692,28 @@ describe('punching shear draft center check', () => {
         },
       }).success,
     ).toBe(true)
+  })
+
+  it('calculates simplified shear reinforcement area from bar count and diameter', () => {
+    const result = calculatePunchingShear({
+      ...defaultPunchingShearInput,
+      shearReinforcement: {
+        ...defaultPunchingShearInput.shearReinforcement,
+        enabled: true,
+        inputMode: 'bar-count',
+        steelClass: 'A240',
+        barDiameterMm: 8,
+        simpleBarCount: 8,
+      },
+    })
+
+    expect(result.reinforcementAreaMm2).toBeCloseTo(8 * Math.PI * 8 ** 2 / 4)
+    expect(result.shearReinforcement.inputMode).toBe('bar-count')
+    expect(result.shearReinforcement.simpleBarCount).toBe(8)
+    expect(result.shearReinforcement.totalBarCount).toBe(8)
+    expect(result.shearReinforcement.effectiveBarCount).toBe(8)
+    expect(result.shearReinforcement.qswNPerMm).toBeGreaterThan(0)
+    expect(result.governingUtilization).toBe(result.utilizationWithReinforcement)
   })
 
   it('calculates deterministic draft shear reinforcement area and contribution', () => {
@@ -755,12 +778,13 @@ describe('punching shear draft center check', () => {
     expect(result.draftFeatures).toContain('shear-reinforcement')
   })
 
-  it('adds shear reinforcement markers to the SVG model', () => {
+  it('adds detailed shear reinforcement rows to the SVG model in advanced mode', () => {
     const result = calculatePunchingShear({
       ...defaultPunchingShearInput,
       shearReinforcement: {
         ...defaultPunchingShearInput.shearReinforcement,
         enabled: true,
+        inputMode: 'manual',
         rowCount: 2,
         legsPerRow: 4,
       },
@@ -777,6 +801,23 @@ describe('punching shear draft center check', () => {
         }),
       ]),
     )
+  })
+
+  it('adds simplified shear reinforcement markers to the SVG model without rows', () => {
+    const result = calculatePunchingShear({
+      ...defaultPunchingShearInput,
+      shearReinforcement: {
+        ...defaultPunchingShearInput.shearReinforcement,
+        enabled: true,
+        inputMode: 'bar-count',
+        barDiameterMm: 8,
+        simpleBarCount: 8,
+      },
+    })
+
+    expect(result.svgModel.elements.some((element) => element.role === 'reinforcement-row')).toBe(false)
+    expect(result.svgModel.elements.filter((element) => element.role === 'reinforcement-marker')).toHaveLength(8)
+    expect(result.svgModel.elements.some((element) => element.role === 'dimension' && 'label' in element && String(element.label).includes('шаг рядов'))).toBe(false)
   })
 })
 

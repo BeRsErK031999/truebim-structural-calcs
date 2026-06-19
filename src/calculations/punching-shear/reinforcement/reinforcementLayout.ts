@@ -7,11 +7,18 @@ export function normalizeShearReinforcement(
 ): NormalizedShearReinforcement {
   const hasManualValues =
     typeof input.manualAswMm2 === 'number' && typeof input.manualSwMm === 'number'
+  const hasSimpleValues =
+    typeof input.simpleBarCount === 'number' && typeof input.barDiameterMm === 'number'
 
   return {
     enabled: input.enabled,
-    inputMode: input.inputMode ?? (input.enabled && !hasManualValues ? 'legacy-layout' : defaultShearReinforcementInput.inputMode),
+    inputMode:
+      input.inputMode ??
+      (input.enabled && !hasManualValues && !hasSimpleValues
+        ? 'legacy-layout'
+        : defaultShearReinforcementInput.inputMode),
     barDiameterMm: input.barDiameterMm ?? defaultShearReinforcementInput.barDiameterMm,
+    simpleBarCount: input.simpleBarCount ?? defaultShearReinforcementInput.simpleBarCount,
     barSpacingMm: input.barSpacingMm ?? defaultShearReinforcementInput.barSpacingMm,
     rowCount: input.rowCount ?? input.rows ?? defaultShearReinforcementInput.rowCount,
     legsPerRow: input.legsPerRow ?? defaultShearReinforcementInput.legsPerRow,

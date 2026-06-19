@@ -12,10 +12,11 @@ export type DraftSteelClassData = {
 
 export type NormalizedShearReinforcement = {
   enabled: boolean
-  inputMode: 'manual' | 'legacy-layout'
+  inputMode: 'bar-count' | 'manual' | 'legacy-layout'
   steelClass: ShearReinforcementSteelClass
   layoutType: ShearReinforcementLayoutType
   barDiameterMm: number
+  simpleBarCount: number
   barSpacingMm: number
   rowCount: number
   legsPerRow: number
@@ -36,8 +37,9 @@ export const defaultShearReinforcementInput: Required<
   Omit<ShearReinforcementInput, 'rows'>
 > = {
   enabled: false,
-  inputMode: 'manual',
+  inputMode: 'bar-count',
   barDiameterMm: 10,
+  simpleBarCount: 8,
   barSpacingMm: 100,
   rowCount: 2,
   legsPerRow: 4,

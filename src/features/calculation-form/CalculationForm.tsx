@@ -45,11 +45,6 @@ const reinforcementLayoutOptions: Array<{
   { value: 'custom', label: 'своя схема' },
 ]
 
-const reinforcementInputModeOptions = [
-  { value: 'manual', label: 'Ручной ввод Asw и sw' },
-  { value: 'legacy-layout', label: 'Старая схема без учета вклада' },
-]
-
 export function CalculationForm() {
   const draft = useCalculationStore((state) => state.draft)
   const result = useCalculationStore((state) => state.punchingShearResult)
@@ -161,6 +156,13 @@ export function CalculationForm() {
       setFormError(error instanceof Error ? error.message : 'Не удалось импортировать JSON')
     }
   }
+  const isShearReinforcementAdvanced = shearReinforcementInputMode === 'manual'
+  const toggleShearReinforcementAdvanced = () => {
+    setValue('shearReinforcement.inputMode', isShearReinforcementAdvanced ? 'bar-count' : 'manual', {
+      shouldDirty: true,
+      shouldValidate: true,
+    })
+  }
 
   return (
     <form className="grid gap-5" onSubmit={handleSubmit(runCalculation)}>
@@ -245,19 +247,6 @@ export function CalculationForm() {
         {shearReinforcementEnabled ? (
           <>
             <SelectField
-              label="Режим задания Asw"
-              placeholder="Выберите режим"
-              value={shearReinforcementInputMode ?? 'manual'}
-              options={reinforcementInputModeOptions}
-              error={errors.shearReinforcement?.inputMode?.message}
-              onValueChange={(value) =>
-                setValue('shearReinforcement.inputMode', value as NonNullable<PunchingShearInput['shearReinforcement']['inputMode']>, {
-                  shouldDirty: true,
-                  shouldValidate: true,
-                })
-              }
-            />
-            <SelectField
               label="Класс стали"
               placeholder="Выберите класс стали"
               value={shearReinforcementSteelClass ?? 'A400'}
@@ -270,35 +259,6 @@ export function CalculationForm() {
                 })
               }
             />
-            <SelectField
-              label="Схема армирования"
-              placeholder="Выберите схему"
-              value={shearReinforcementLayoutType ?? 'closed-stirrups'}
-              options={reinforcementLayoutOptions}
-              error={errors.shearReinforcement?.layoutType?.message}
-              onValueChange={(value) =>
-                setValue('shearReinforcement.layoutType', value as ShearReinforcementLayoutType, {
-                  shouldDirty: true,
-                  shouldValidate: true,
-                })
-              }
-            />
-            <NumberField
-              label="Asw - принятая площадь поперечной арматуры"
-              min={1}
-              step={0.001}
-              unit="мм²"
-              registration={register('shearReinforcement.manualAswMm2', { valueAsNumber: true })}
-              error={errors.shearReinforcement?.manualAswMm2?.message}
-            />
-            <NumberField
-              label="sw - шаг для формулы qsw"
-              min={1}
-              step={1}
-              unit="мм"
-              registration={register('shearReinforcement.manualSwMm', { valueAsNumber: true })}
-              error={errors.shearReinforcement?.manualSwMm?.message}
-            />
             <NumberField
               label="Диаметр стержня"
               min={1}
@@ -308,45 +268,94 @@ export function CalculationForm() {
               error={errors.shearReinforcement?.barDiameterMm?.message}
             />
             <NumberField
-              label="Шаг стержней"
-              min={1}
-              step={1}
-              unit="мм"
-              registration={register('shearReinforcement.barSpacingMm', { valueAsNumber: true })}
-              error={errors.shearReinforcement?.barSpacingMm?.message}
-            />
-            <NumberField
-              label="Количество рядов"
+              label="Количество стержней"
               min={1}
               step={1}
               unit="шт."
-              registration={register('shearReinforcement.rowCount', { valueAsNumber: true })}
-              error={errors.shearReinforcement?.rowCount?.message}
+              registration={register('shearReinforcement.simpleBarCount', { valueAsNumber: true })}
+              error={errors.shearReinforcement?.simpleBarCount?.message}
             />
-            <NumberField
-              label="Ветвей в ряду"
-              min={1}
-              step={1}
-              unit="шт."
-              registration={register('shearReinforcement.legsPerRow', { valueAsNumber: true })}
-              error={errors.shearReinforcement?.legsPerRow?.message}
-            />
-            <NumberField
-              label="Расстояние до первого ряда"
-              min={1}
-              step={1}
-              unit="мм"
-              registration={register('shearReinforcement.firstRowDistanceMm', { valueAsNumber: true })}
-              error={errors.shearReinforcement?.firstRowDistanceMm?.message}
-            />
-            <NumberField
-              label="Шаг рядов"
-              min={1}
-              step={1}
-              unit="мм"
-              registration={register('shearReinforcement.rowSpacingMm', { valueAsNumber: true })}
-              error={errors.shearReinforcement?.rowSpacingMm?.message}
-            />
+            <Button
+              className="h-10 w-fit rounded-lg"
+              type="button"
+              variant="outline"
+              onClick={toggleShearReinforcementAdvanced}
+            >
+              {isShearReinforcementAdvanced ? 'Скрыть расширенные параметры' : 'Показать расширенные параметры'}
+            </Button>
+            {isShearReinforcementAdvanced ? (
+              <>
+                <SelectField
+                  label="Схема армирования"
+                  placeholder="Выберите схему"
+                  value={shearReinforcementLayoutType ?? 'closed-stirrups'}
+                  options={reinforcementLayoutOptions}
+                  error={errors.shearReinforcement?.layoutType?.message}
+                  onValueChange={(value) =>
+                    setValue('shearReinforcement.layoutType', value as ShearReinforcementLayoutType, {
+                      shouldDirty: true,
+                      shouldValidate: true,
+                    })
+                  }
+                />
+                <NumberField
+                  label="Asw - принятая площадь поперечной арматуры"
+                  min={1}
+                  step={0.001}
+                  unit="мм²"
+                  registration={register('shearReinforcement.manualAswMm2', { valueAsNumber: true })}
+                  error={errors.shearReinforcement?.manualAswMm2?.message}
+                />
+                <NumberField
+                  label="sw - шаг для формулы qsw"
+                  min={1}
+                  step={1}
+                  unit="мм"
+                  registration={register('shearReinforcement.manualSwMm', { valueAsNumber: true })}
+                  error={errors.shearReinforcement?.manualSwMm?.message}
+                />
+                <NumberField
+                  label="Шаг стержней"
+                  min={1}
+                  step={1}
+                  unit="мм"
+                  registration={register('shearReinforcement.barSpacingMm', { valueAsNumber: true })}
+                  error={errors.shearReinforcement?.barSpacingMm?.message}
+                />
+                <NumberField
+                  label="Количество рядов"
+                  min={1}
+                  step={1}
+                  unit="шт."
+                  registration={register('shearReinforcement.rowCount', { valueAsNumber: true })}
+                  error={errors.shearReinforcement?.rowCount?.message}
+                />
+                <NumberField
+                  label="Ветвей в ряду"
+                  min={1}
+                  step={1}
+                  unit="шт."
+                  registration={register('shearReinforcement.legsPerRow', { valueAsNumber: true })}
+                  error={errors.shearReinforcement?.legsPerRow?.message}
+                />
+                <NumberField
+                  label="Расстояние до первого ряда"
+                  min={1}
+                  step={1}
+                  unit="мм"
+                  registration={register('shearReinforcement.firstRowDistanceMm', { valueAsNumber: true })}
+                  error={errors.shearReinforcement?.firstRowDistanceMm?.message}
+                />
+                <NumberField
+                  label="Шаг рядов"
+                  min={1}
+                  step={1}
+                  unit="мм"
+                  registration={register('shearReinforcement.rowSpacingMm', { valueAsNumber: true })}
+                  error={errors.shearReinforcement?.rowSpacingMm?.message}
+                />
+              </>
+            ) : null}
           </>
         ) : null}
       </FormSection>

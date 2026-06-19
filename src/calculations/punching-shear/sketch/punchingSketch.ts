@@ -89,6 +89,10 @@ function createReinforcementElements(
     return []
   }
 
+  if ((input.shearReinforcement.inputMode ?? 'bar-count') === 'bar-count') {
+    return createSimpleReinforcementElements(input, perimeter)
+  }
+
   const rowCount = input.shearReinforcement.rowCount ?? input.shearReinforcement.rows ?? 2
   const legsPerRow = input.shearReinforcement.legsPerRow ?? 4
   const firstRowDistanceMm = input.shearReinforcement.firstRowDistanceMm ?? 80
@@ -158,6 +162,64 @@ function createReinforcementElements(
   })
 
   return elements
+}
+
+function createSimpleReinforcementElements(
+  input: PunchingShearInput,
+  perimeter: ControlPerimeterResult,
+): SvgSketchElement[] {
+  const barCount = input.shearReinforcement.simpleBarCount ?? 8
+  const markerRadius = Math.max(6, Math.min(14, (input.shearReinforcement.barDiameterMm ?? 10) * 0.9))
+  const { minX, maxX, minY, maxY, width, height } = perimeter.boundingBox
+  const perimeterLength = 2 * (width + height)
+  const markers = Array.from({ length: barCount }, (_, index) => {
+    const distance = ((index + 0.5) * perimeterLength) / barCount
+    const point = pointOnRectanglePerimeter(distance, minX, maxX, minY, maxY, width, height)
+
+    return {
+      id: `reinforcement-marker-${index + 1}`,
+      role: 'reinforcement-marker',
+      type: 'circle',
+      center: point,
+      radius: markerRadius,
+      label: `стержень ${index + 1}`,
+    } satisfies SvgSketchElement
+  })
+
+  return [
+    ...markers,
+    {
+      id: 'label-reinforcement-simple',
+      role: 'label',
+      type: 'text',
+      position: { x: minX, y: maxY + 96 },
+      text: `Поперечная арматура: учтено ${barCount} стерж.`,
+    },
+  ]
+}
+
+function pointOnRectanglePerimeter(
+  distance: number,
+  minX: number,
+  maxX: number,
+  minY: number,
+  maxY: number,
+  width: number,
+  height: number,
+): Point2D {
+  if (distance <= width) {
+    return { x: minX + distance, y: minY }
+  }
+
+  if (distance <= width + height) {
+    return { x: maxX, y: minY + distance - width }
+  }
+
+  if (distance <= width * 2 + height) {
+    return { x: maxX - (distance - width - height), y: maxY }
+  }
+
+  return { x: minX, y: maxY - (distance - width * 2 - height) }
 }
 
 function createRowMarkers(

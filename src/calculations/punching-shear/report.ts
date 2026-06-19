@@ -110,6 +110,7 @@ export function buildPunchingShearReport(
       steelClass: result.shearReinforcement.steelClass ?? 'н/д',
       layoutType: result.shearReinforcement.layoutType ?? 'н/д',
       barDiameterMm: result.shearReinforcement.barDiameterMm,
+      simpleBarCount: result.shearReinforcement.simpleBarCount,
       barSpacingMm: result.shearReinforcement.barSpacingMm,
       rowCount: result.shearReinforcement.rowCount,
       legsPerRow: result.shearReinforcement.legsPerRow,

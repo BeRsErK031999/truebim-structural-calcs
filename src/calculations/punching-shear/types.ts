@@ -103,8 +103,9 @@ export type ShearReinforcementLayoutType =
 
 export type ShearReinforcementInput = {
   enabled: boolean
-  inputMode?: 'manual' | 'legacy-layout'
+  inputMode?: 'bar-count' | 'manual' | 'legacy-layout'
   barDiameterMm?: number
+  simpleBarCount?: number
   barSpacingMm?: number
   rowCount?: number
   legsPerRow?: number
@@ -119,7 +120,7 @@ export type ShearReinforcementInput = {
 
 export type ShearReinforcementSummary = {
   enabled: boolean
-  inputMode: 'manual' | 'legacy-layout' | null
+  inputMode: 'bar-count' | 'manual' | 'legacy-layout' | null
   steelClass: ShearReinforcementSteelClass | null
   layoutType: ShearReinforcementLayoutType | null
   barDiameterMm: number | null
@@ -129,6 +130,7 @@ export type ShearReinforcementSummary = {
   totalLegs: number
   totalBarCount: number | null
   effectiveBarCount: number | null
+  simpleBarCount: number | null
   barAreaMm2: number | null
   firstRowDistanceMm: number | null
   rowSpacingMm: number | null
