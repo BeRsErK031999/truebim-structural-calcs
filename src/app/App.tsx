@@ -18,10 +18,12 @@ export function App() {
         <Route element={<AppLayout />}>
           <Route index element={<HomePage />} />
           <Route path="engineer" element={<EngineerPortalPage />} />
+          <Route path="engineer-portal" element={<EngineerPortalPage />} />
           <Route path={pilotRoute.slice(1)} element={<PilotPage />} />
           <Route path="review" element={<EngineeringReviewPage />} />
           <Route path="validation-session" element={<ValidationSessionPage />} />
           <Route path="knowledge" element={<KnowledgePage />} />
+          <Route path="knowledge-base" element={<KnowledgePage />} />
           <Route path="diagnostics" element={<DiagnosticsPage />} />
           <Route path="release-evidence" element={<ReleaseEvidencePage />} />
           <Route path="*" element={<HomePage />} />
