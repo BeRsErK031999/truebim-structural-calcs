@@ -7,7 +7,7 @@ import {
   engineerReturnChecklist,
   engineerWorkflowSteps,
   getEngineerPortalCapabilitySummary,
-  officeAppLinks,
+  officeAppLinkActions,
 } from '../engineerPortalContent'
 
 describe('engineer portal content', () => {
@@ -15,36 +15,64 @@ describe('engineer portal content', () => {
     expect(engineerPortalRoute).toBe('/engineer')
   })
 
-  it('contains the required portal links', () => {
+  it('shows the engineer workflow as four ordered steps', () => {
+    expect(engineerWorkflowSteps.map((step) => step.title)).toEqual([
+      'Выполнить расчет',
+      'Сравнить с эталоном',
+      'Подтвердить проверку',
+      'Скачать материалы проверки',
+    ])
+
     expect(engineerWorkflowSteps.map((step) => step.href)).toEqual([
       '/',
-      '/validation-session',
       '/review',
+      '/validation-session',
       '/release-evidence',
     ])
   })
 
-  it('contains the return checklist text', () => {
+  it('contains human-readable verification materials', () => {
     const checklistText = buildReturnChecklistCopyText()
 
-    expect(engineerReturnChecklist).toContain('HTML/Markdown отчет')
-    expect(engineerReturnChecklist).toContain('снимок проверки')
-    expect(engineerReturnChecklist).toContain('JSON кандидата проверки')
-    expect(engineerReturnChecklist).toContain('пакет сессии проверки')
-    expect(engineerReturnChecklist).toContain('приложения с доверенными расчетами')
-    expect(engineerReturnChecklist).toContain('заполненный чеклист')
-    expect(checklistText).toContain('Что вернуть разработчику:')
+    expect(engineerReturnChecklist).toContain('Отчет расчета')
+    expect(engineerReturnChecklist).toContain('Сохраненная версия проверки')
+    expect(engineerReturnChecklist).toContain('Черновик результатов проверки')
+    expect(engineerReturnChecklist).toContain('Архив проверки с чеклистом')
+    expect(engineerReturnChecklist).toContain('Эталонные расчеты')
+    expect(checklistText).toContain('Материалы проверки:')
   })
 
-  it('copies current app links with office URLs', () => {
+  it('hides office URLs behind action labels in copied app sections', () => {
     const linksText = buildCurrentAppLinksCopyText()
 
-    for (const link of officeAppLinks) {
-      expect(linksText).toContain(link)
+    for (const link of officeAppLinkActions) {
+      expect(linksText).toContain(link.label)
+      expect(linksText).toContain(link.href)
     }
+
+    expect(linksText).not.toContain('http://192.168.22.37')
   })
 
-  it('does not claim VERIFIED for draft features', () => {
+  it('does not expose developer terms in start-page copy', () => {
+    const pageCopy = [
+      ...engineerWorkflowSteps.flatMap((step) => [
+        step.title,
+        step.description,
+        step.action,
+        step.preparedMaterials,
+        step.buttonLabel,
+      ]),
+      ...engineerReturnChecklist,
+      buildReturnChecklistCopyText(),
+      buildCurrentAppLinksCopyText(),
+    ].join(' ')
+
+    expect(pageCopy.toLowerCase()).not.toMatch(
+      /manifest|snapshot|validation package|release evidence|trusted evidence|json|markdown/,
+    )
+  })
+
+  it('does not claim verified status for unchecked calculation areas', () => {
     const summary = getEngineerPortalCapabilitySummary()
 
     expect(summary.draft.length).toBeGreaterThan(0)

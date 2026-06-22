@@ -22,10 +22,10 @@ const sections: CalculationSection[] = [
   { title: 'Портал инженера', path: '/engineer', icon: ClipboardCheck, status: 'active' },
   { title: 'Пилот', path: '/pilot', icon: ListChecks, status: 'active' },
   { title: 'Инженерная проверка', path: '/review', icon: ClipboardCheck, status: 'active' },
-  { title: 'Сессия валидации', path: '/validation-session', icon: PackageCheck, status: 'active' },
+  { title: 'Пакет проверки', path: '/validation-session', icon: PackageCheck, status: 'active' },
   { title: 'База знаний', path: '/knowledge', icon: BookOpen, status: 'active' },
   { title: 'Диагностика', path: '/diagnostics', icon: Activity, status: 'active' },
-  { title: 'Релизные материалы', path: '/release-evidence', icon: FileArchive, status: 'active' },
+  { title: 'Материалы проверки', path: '/release-evidence', icon: FileArchive, status: 'active' },
 ]
 
 const plannedSections: CalculationSection[] = [
@@ -40,13 +40,9 @@ export function Sidebar() {
   return (
     <aside className="border-slate-200 bg-white/90 px-4 py-4 shadow-sm lg:sticky lg:top-0 lg:h-screen lg:border-r lg:px-5 lg:py-6">
       <div className="flex items-center gap-3">
-        <div className="flex size-11 items-center justify-center rounded-lg bg-slate-950 text-white">
-          TB
-        </div>
+        <div className="flex size-11 items-center justify-center rounded-lg bg-slate-950 text-white">TB</div>
         <div>
-          <p className="text-sm font-semibold uppercase tracking-[0.14em] text-slate-500">
-            TrueBIM
-          </p>
+          <p className="text-sm font-semibold uppercase tracking-[0.14em] text-slate-500">TrueBIM</p>
           <p className="text-base font-semibold text-slate-950">Расчеты конструкций</p>
         </div>
       </div>
@@ -81,9 +77,7 @@ export function Sidebar() {
       </nav>
 
       <details className="mt-3 rounded-lg border border-slate-200 bg-slate-50">
-        <summary className="cursor-pointer px-3 py-2 text-sm font-semibold text-slate-600">
-          В разработке
-        </summary>
+        <summary className="cursor-pointer px-3 py-2 text-sm font-semibold text-slate-600">В разработке</summary>
         <div className="grid gap-1 px-2 pb-2">
           {plannedSections.map((section) => (
             <NavLink

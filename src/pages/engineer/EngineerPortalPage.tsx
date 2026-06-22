@@ -5,7 +5,6 @@ import {
   ExternalLink,
   FileArchive,
   FileText,
-  Link as LinkIcon,
   ListChecks,
   PackageCheck,
 } from 'lucide-react'
@@ -26,7 +25,7 @@ import {
   engineerReturnChecklist,
   engineerWorkflowSteps,
   getEngineerPortalCapabilitySummary,
-  officeAppLinks,
+  officeAppLinkActions,
 } from './engineerPortalContent'
 
 type CopyTarget = 'instructions' | 'checklist' | 'links'
@@ -56,8 +55,8 @@ export function EngineerPortalPage() {
           <div className="grid gap-2">
             <h1 className="text-3xl font-semibold tracking-normal text-slate-950">Портал инженера</h1>
             <p className="max-w-3xl text-sm leading-6 text-slate-600">
-              Стартовая страница инженерной передачи: расчет, проверка доверенных материалов,
-              упаковка материалов валидации и выгрузка релизных материалов.
+              Стартовая страница проверки расчета: выполните расчет, сравните его с эталоном, подтвердите
+              проверку и скачайте материалы для передачи.
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -68,12 +67,12 @@ export function EngineerPortalPage() {
             />
             <CopyButton
               copied={copied === 'checklist'}
-              label="Скопировать чеклист возврата"
+              label="Скопировать список материалов"
               onClick={() => void copyText('checklist', buildReturnChecklistCopyText())}
             />
             <CopyButton
               copied={copied === 'links'}
-              label="Скопировать ссылки приложения"
+              label="Скопировать разделы приложения"
               onClick={() => void copyText('links', buildCurrentAppLinksCopyText())}
             />
           </div>
@@ -87,19 +86,27 @@ export function EngineerPortalPage() {
           return (
             <Card key={step.href} className="rounded-lg border border-slate-200 bg-white shadow-sm">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Icon className="size-4 text-slate-700" />
-                  {index + 1}. {step.title}
-                </CardTitle>
+                <div className="flex items-start gap-3">
+                  <div className="grid size-10 shrink-0 place-items-center rounded-full bg-slate-900 text-sm font-semibold text-white">
+                    {index + 1}
+                  </div>
+                  <div className="grid gap-1">
+                    <p className="text-xs font-medium uppercase tracking-[0.12em] text-slate-500">Шаг {index + 1}</p>
+                    <CardTitle className="flex items-center gap-2">
+                      <Icon className="size-4 text-slate-700" />
+                      {step.title}
+                    </CardTitle>
+                  </div>
+                </div>
               </CardHeader>
               <CardContent className="grid gap-3 text-sm text-slate-700">
                 <p>{step.description}</p>
                 <InfoBlock label="Что сделать" value={step.action} />
-                <InfoBlock label="Что вернуть разработчику" value={step.returnToDeveloper} />
+                <InfoBlock label="Что будет подготовлено" value={step.preparedMaterials} />
                 <Button asChild variant="outline" className="w-fit">
                   <Link to={step.href}>
                     <ExternalLink className="size-4" />
-                    Открыть раздел
+                    {step.buttonLabel}
                   </Link>
                 </Button>
               </CardContent>
@@ -115,25 +122,25 @@ export function EngineerPortalPage() {
           </CardHeader>
           <CardContent>
             <dl className="grid gap-3 md:grid-cols-2">
-              <StatusCard label="текущий уровень проверки" value={result.verificationLevel} />
-              <StatusCard label="проверенные возможности" value={formatList(result.verifiedFeatures)} />
-              <StatusCard label="черновые возможности" value={formatList(result.draftFeatures)} />
+              <StatusCard label="статус расчета" value={formatVerificationLevel(result.verificationLevel)} />
+              <StatusCard label="проверено" value={formatFeatureList(result.verifiedFeatures)} />
+              <StatusCard label="требует проверки" value={formatFeatureList(result.draftFeatures)} />
               <StatusCard
-                label="статус процесса кандидата"
+                label="результаты проверки"
                 value={formatStatusValue(latestSession?.candidate?.candidateStatus ?? 'not-created')}
               />
               <StatusCard
-                label="готовность пакета валидации"
-                value={checklist ? `${checklist.completePercent}% чеклиста готово` : 'нет сессии валидации'}
+                label="чеклист"
+                value={checklist ? `${checklist.completePercent}% заполнено` : 'проверка еще не начата'}
               />
-              <StatusCard label="статус релизных материалов" value="готово к выгрузке: HTML, Markdown, JSON" />
+              <StatusCard label="материалы проверки" value="готовы к скачиванию" />
             </dl>
           </CardContent>
         </Card>
 
         <Card className="rounded-lg border border-slate-200 bg-white shadow-sm">
           <CardHeader>
-            <CardTitle>Что вернуть разработчику</CardTitle>
+            <CardTitle>Материалы проверки</CardTitle>
           </CardHeader>
           <CardContent className="grid gap-3">
             <ul className="grid gap-2 text-sm text-slate-700">
@@ -151,38 +158,39 @@ export function EngineerPortalPage() {
       <section className="grid gap-4 lg:grid-cols-2">
         <Card className="rounded-lg border border-slate-200 bg-white shadow-sm">
           <CardHeader>
-            <CardTitle>Матрица возможностей проверки</CardTitle>
+            <CardTitle>Области проверки</CardTitle>
           </CardHeader>
           <CardContent className="grid gap-3 text-sm">
             <div className="flex flex-wrap gap-2">
-              <Badge className="rounded-md">проверено: {capabilities.verified.length}</Badge>
+              <Badge className="rounded-md">Проверено: {capabilities.verified.length}</Badge>
               <Badge variant="secondary" className="rounded-md">
-                частично: {capabilities.partial.length}
+                Частично проверено: {capabilities.partial.length}
               </Badge>
               <Badge variant="secondary" className="rounded-md">
-                черновик: {capabilities.draft.length}
+                Не проверено: {capabilities.draft.length}
               </Badge>
             </div>
-            <CapabilityList title="Проверено" items={capabilities.verified.map((item) => item.label)} />
-            <CapabilityList title="Частично" items={capabilities.partial.map((item) => item.label)} />
-            <CapabilityList title="Черновик" items={capabilities.draft.map((item) => item.label)} />
+            <CapabilityList title="Проверено" items={capabilities.verified.map((item) => formatFeatureLabel(item.id))} />
+            <CapabilityList
+              title="Частично проверено"
+              items={capabilities.partial.map((item) => formatFeatureLabel(item.id))}
+            />
+            <CapabilityList title="Требует проверки" items={capabilities.draft.map((item) => formatFeatureLabel(item.id))} />
           </CardContent>
         </Card>
 
         <Card className="rounded-lg border border-slate-200 bg-white shadow-sm">
           <CardHeader>
-            <CardTitle>Текущие ссылки приложения</CardTitle>
+            <CardTitle>Разделы приложения</CardTitle>
           </CardHeader>
-          <CardContent className="grid gap-2">
-            {officeAppLinks.map((link) => (
-              <a
-                key={link}
-                className="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 p-3 text-sm font-medium text-slate-800 hover:bg-slate-100"
-                href={link}
-              >
-                <LinkIcon className="size-4" />
-                {link}
-              </a>
+          <CardContent className="grid gap-2 sm:grid-cols-2">
+            {officeAppLinkActions.map((link) => (
+              <Button key={link.href} asChild variant="outline" className="justify-start">
+                <Link to={link.href}>
+                  <ExternalLink className="size-4" />
+                  {link.label}
+                </Link>
+              </Button>
             ))}
           </CardContent>
         </Card>
@@ -190,12 +198,12 @@ export function EngineerPortalPage() {
 
       <Card className="rounded-lg border border-slate-200 bg-white shadow-sm">
         <CardHeader>
-          <CardTitle>Снимок расчета</CardTitle>
+          <CardTitle>Текущий расчет</CardTitle>
         </CardHeader>
         <CardContent>
           <dl className="grid gap-3 md:grid-cols-3">
-            <StatusCard label="тип случая" value={draft.caseType} />
-            <StatusCard label="статус расчета" value={result.status} />
+            <StatusCard label="тип случая" value={formatCaseType(draft.caseType)} />
+            <StatusCard label="результат расчета" value={formatCalculationStatus(result.status)} />
             <StatusCard label="предупреждения отчета" value={String(report.warnings.length)} />
           </dl>
         </CardContent>
@@ -240,11 +248,13 @@ function StatusCard({ label, value }: { label: string; value: string }) {
 }
 
 function CapabilityList({ title, items }: { title: string; items: string[] }) {
+  const uniqueItems = Array.from(new Set(items))
+
   return (
     <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
       <p className="font-semibold text-slate-900">{title}</p>
       <ul className="mt-2 grid gap-1 text-slate-700">
-        {(items.length > 0 ? items : ['нет']).map((item) => (
+        {(uniqueItems.length > 0 ? uniqueItems : ['нет']).map((item) => (
           <li key={item}>- {item}</li>
         ))}
       </ul>
@@ -252,15 +262,70 @@ function CapabilityList({ title, items }: { title: string; items: string[] }) {
   )
 }
 
-function formatList(values: string[]) {
-  return values.length > 0 ? values.join(', ') : 'нет'
+function formatFeatureList(values: string[]) {
+  const labels = Array.from(new Set(values.map(formatFeatureLabel)))
+
+  return labels.length > 0 ? labels.join(', ') : 'нет'
+}
+
+function formatFeatureLabel(feature: string) {
+  const labels: Record<string, string> = {
+    'center-force-only': 'центральная колонна без моментов',
+    'center-moment-transfer': 'центральная колонна с моментами',
+    edge: 'крайние колонны',
+    corner: 'угловые колонны',
+    openings: 'отверстия',
+    'wall-end': 'стены',
+    'wall-corner': 'стены',
+    'shear-reinforcement': 'поперечная арматура',
+    'round-columns': 'круглые колонны',
+  }
+
+  return labels[feature] ?? feature
+}
+
+function formatVerificationLevel(value: string) {
+  const labels: Record<string, string> = {
+    verified: 'Проверено',
+    partial: 'Частично проверено',
+    draft: 'Не проверено',
+  }
+
+  return labels[value] ?? value
+}
+
+function formatCalculationStatus(value: string) {
+  const labels: Record<string, string> = {
+    draft_ok: 'проходит по расчету',
+    draft_failed: 'не проходит по расчету',
+    invalid_input: 'нужно исправить исходные данные',
+    not_implemented: 'требует отдельной проверки',
+    warning: 'есть предупреждения',
+    draft: 'требует проверки',
+  }
+
+  return labels[value] ?? value
+}
+
+function formatCaseType(value: string) {
+  const labels: Record<string, string> = {
+    center: 'центральная колонна',
+    edge: 'крайняя колонна',
+    corner: 'угловая колонна',
+    opening: 'колонна рядом с отверстием',
+    'wall-end': 'конец стены',
+    'wall-corner': 'угол стены',
+    round: 'круглая колонна',
+  }
+
+  return labels[value] ?? value
 }
 
 function formatStatusValue(value: string) {
   const labels: Record<string, string> = {
-    'not-created': 'не создан',
-    'ready-for-validation': 'готов к валидации',
-    incomplete: 'неполный',
+    'not-created': 'еще не подготовлены',
+    'ready-for-validation': 'готовы к подтверждению',
+    incomplete: 'нужно заполнить данные',
     rejected: 'отклонен',
   }
 
