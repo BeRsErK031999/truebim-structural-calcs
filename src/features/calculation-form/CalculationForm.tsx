@@ -16,13 +16,14 @@ import {
 import { defaultCalculationDraft, useCalculationStore } from '@/entities/calculation/model/store'
 import { Button } from '@/shared/ui/button'
 import { Card, CardContent } from '@/shared/ui/card'
+import { CalculationHistoryPanel } from '@/widgets/calculation-history/CalculationHistoryPanel'
+import { ResultPanel } from '@/widgets/results/ResultPanel'
 
 import { FormSection } from './components/FormSection'
 import { NumberField } from './components/NumberField'
 import { SelectField } from './components/SelectField'
 import { ToggleField } from './components/ToggleField'
 import { engineeringHelp } from './engineeringUx'
-import { ResultPanel } from '@/widgets/results/ResultPanel'
 
 const caseOptions: Array<{ value: PunchingShearCaseType; label: string; disabled?: boolean }> = [
   { value: 'center', label: 'Центральная прямоугольная колонна' },
@@ -195,8 +196,11 @@ export function CalculationForm() {
   }, [getValues, setValue, shearReinforcementEnabled, shearReinforcementInputMode])
 
   return (
-    <form className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_360px]" onSubmit={handleSubmit(runCalculation)}>
-      <div className="grid gap-4">
+    <form
+      className="grid gap-4 lg:h-full lg:min-h-0 lg:grid-cols-[minmax(0,1fr)_320px] lg:overflow-hidden"
+      onSubmit={handleSubmit(runCalculation)}
+    >
+      <div className="grid auto-rows-max gap-4 lg:min-h-0 lg:overflow-y-auto lg:pr-1 lg:[scrollbar-width:thin]">
       <FormSection
         title="1. Расчетный случай"
         helperText="Выберите схему проверки. Draft-сценарии остаются draft."
@@ -628,20 +632,21 @@ export function CalculationForm() {
         </div>
       </details>
 
+      <CalculationHistoryPanel />
+
       </div>
-      <aside className="grid content-start gap-4 xl:sticky xl:top-6">
-      <div className="flex flex-wrap gap-3">
+      <aside className="grid content-start gap-3 lg:min-h-0 lg:overflow-y-auto lg:pr-1 lg:[scrollbar-width:thin]">
+      <div className="grid grid-cols-2 gap-2">
         <Button
-          className="h-12 rounded-lg px-6"
+          className="col-span-2 h-10 rounded-lg"
           disabled={!isValid || isSubmitting}
-          size="lg"
           type="submit"
         >
           <Calculator className="size-4" />
           Рассчитать
         </Button>
         <Button
-          className="h-11 rounded-lg"
+          className="h-9 rounded-lg"
           type="button"
           variant="outline"
           onClick={handleReset}
@@ -650,7 +655,7 @@ export function CalculationForm() {
           Сброс
         </Button>
         <Button
-          className="h-11 rounded-lg"
+          className="h-9 rounded-lg"
           disabled={!result}
           type="button"
           variant="outline"
@@ -660,7 +665,7 @@ export function CalculationForm() {
           Сохранить расчет
         </Button>
         <Button
-          className="h-11 rounded-lg"
+          className="col-span-2 h-9 rounded-lg"
           type="button"
           variant="outline"
           onClick={() => {

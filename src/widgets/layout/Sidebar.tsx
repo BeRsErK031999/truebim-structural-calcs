@@ -38,7 +38,7 @@ export function Sidebar() {
   const metadata = getAppMetadata()
 
   return (
-    <aside className="border-slate-200 bg-white/90 px-4 py-4 shadow-sm lg:sticky lg:top-0 lg:h-screen lg:border-r lg:px-5 lg:py-6">
+    <aside className="border-slate-200 bg-white/90 px-4 py-4 shadow-sm lg:h-screen lg:overflow-y-auto lg:border-r lg:px-5 lg:py-5">
       <div className="flex items-center gap-3">
         <div className="flex size-11 items-center justify-center rounded-lg bg-slate-950 text-white">TB</div>
         <div>
