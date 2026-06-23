@@ -117,4 +117,4 @@ if [[ "$REMOVE_LOCAL_IMAGE" == "1" ]]; then
 fi
 
 echo "==> Done"
-echo "URL: https://truebim-structural-calcs.truebim-6d.ru/"
+echo "URL: https://structural-calcs.truebim-6d.ru/"

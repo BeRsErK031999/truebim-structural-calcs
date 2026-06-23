@@ -153,10 +153,10 @@ Office server defaults:
 - deploy user: `admin_devops`
 - project: `truebim-structural-calcs`
 - office URL: `http://192.168.22.37`
-- office hostname: `truebim-calc.local`
+- public hostname: `structural-calcs.truebim-6d.ru`
 - server project path: `/opt/apps/projects/truebim-structural-calcs`
 - image archive path: `/opt/apps/images/truebim-structural-calcs.tar`
-- container host binding: `127.0.0.1:3000:80`
+- container host binding: `0.0.0.0:8080:80`
 
 Use SSH key deploy for regular workflow. Password deploy through `TRUEBIM_DEPLOY_PASSWORD` is temporary recovery only and must not be stored in repo files.
 
