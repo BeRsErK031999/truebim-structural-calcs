@@ -1,4 +1,5 @@
 import type { UseFormRegisterReturn } from 'react-hook-form'
+import type { ChangeEventHandler } from 'react'
 import { HelpCircle } from 'lucide-react'
 
 import { Input } from '@/shared/ui/input'
@@ -12,6 +13,8 @@ type NumberFieldProps = {
   helperText?: string
   min?: number
   step?: number
+  value?: number | string
+  onValueChange?: ChangeEventHandler<HTMLInputElement>
 }
 
 export function NumberField({
@@ -22,6 +25,8 @@ export function NumberField({
   helperText,
   min = 0,
   step = 1,
+  value,
+  onValueChange,
 }: NumberFieldProps) {
   return (
     <div className="grid gap-2">
@@ -48,6 +53,8 @@ export function NumberField({
         step={step}
         type="number"
         {...registration}
+        value={value}
+        onChange={onValueChange ?? registration.onChange}
       />
       {error ? <p className="text-sm leading-5 text-red-600">{error}</p> : null}
     </div>

@@ -97,8 +97,56 @@ describe('report export', () => {
     expect(markdown).toContain('F_sw,raw ≥ 0.25 · F_b,ult')
     expect(markdown).toContain('F_sw,raw ≤ F_b,ult')
     expect(markdown).toContain('F_sw,used')
-    expect(markdown).toContain('Fult = F_b,ult + F_sw,used')
+    expect(markdown).toContain('Fult = min(2 · F_b,ult, F_b,ult + F_sw,ult)')
+    expect(markdown).toContain('Mx,ult = min(2 · Mx,b,ult, Mx,b,ult + Mx,sw,ult)')
+    expect(markdown).toContain('My,ult = min(2 · My,b,ult, My,b,ult + My,sw,ult)')
+    expect(markdown).toContain('η = min(F/Fult + Mx/Mx,ult + My/My,ult, 1.5 · F/Fult)')
     expect(markdown).toContain(`= ${result.governingUtilization?.toFixed(3)}`)
+  })
+
+  it('uses manual Asw in cm2 display and SP63 interaction for B25 A500 moments', () => {
+    const input = {
+      ...defaultPunchingShearInput,
+      forces: {
+        axialForceKn: 100,
+        momentXKnM: 15,
+        momentYKnM: 15,
+      },
+      slab: {
+        ...defaultPunchingShearInput.slab,
+        thicknessMm: 200,
+        effectiveDepthMm: 160,
+      },
+      concrete: {
+        className: 'B25' as const,
+      },
+      rectColumn: {
+        widthXMm: 400,
+        widthYMm: 400,
+      },
+      shearReinforcement: {
+        ...defaultPunchingShearInput.shearReinforcement,
+        enabled: true,
+        inputMode: 'manual' as const,
+        steelClass: 'A500' as const,
+        manualAswMm2: 100.5,
+        manualSwMm: 50,
+      },
+    }
+    const result = calculatePunchingShear(input)
+    const report = buildPunchingShearReport(input, result)
+    const markdown = buildPunchingShearMarkdownReport(input, result, report)
+
+    expect(result.sp63Interaction).toMatchObject({
+      FbUlt: expect.closeTo(376.32, 2),
+      Fult: expect.closeTo(752.64, 2),
+      MxUlt: expect.closeTo(140.493, 2),
+      MyUlt: expect.closeTo(140.493, 2),
+    })
+    expect(result.governingUtilization).toBeCloseTo(0.199, 3)
+    expect(markdown).toContain('Asw = 1.005 см²')
+    expect(markdown).toContain('Mx,ult = min(2 · Mx,b,ult')
+    expect(markdown).toContain('My,ult = min(2 · My,b,ult')
   })
 
   it('renders migrated bar-count reinforcement as manual Asw without calculation count fields', () => {

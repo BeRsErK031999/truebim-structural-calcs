@@ -120,11 +120,24 @@ export function calculatePunchingShear(input: PunchingShearInput): PunchingShear
     selectedPerimeter.perimeterMm,
   )
   const sp63Interaction = calculateSp63MathcadBenchmark(normalizedInput)
+  const sp63GoverningUtilization =
+    sp63Interaction?.utilizationWithReinforcement ??
+    sp63Interaction?.utilizationConcreteOnly ??
+    null
   const utilizationTotal =
     shearReinforcement.contributionAccepted && shearReinforcement.utilizationWithReinforcement !== null
       ? shearReinforcement.utilizationWithReinforcement
       : null
-  const governingUtilization = utilizationTotal ?? utilizationRatio
+  const governingUtilization = sp63GoverningUtilization ?? utilizationTotal ?? utilizationRatio
+  const reportedUtilizationWithReinforcement =
+    sp63Interaction?.utilizationWithReinforcement ??
+    shearReinforcement.utilizationWithReinforcement
+  const reportedUtilizationTotal =
+    sp63Interaction?.utilizationWithReinforcement ??
+    utilizationTotal
+  const reportedUtilizationConcrete =
+    sp63Interaction?.utilizationConcreteOnly ??
+    utilizationRatio
   const totalCapacityN =
     shearReinforcement.contributionAccepted && shearReinforcement.draftCapacityWithReinforcementN !== null
       ? shearReinforcement.draftCapacityWithReinforcementN
@@ -156,15 +169,15 @@ export function calculatePunchingShear(input: PunchingShearInput): PunchingShear
     shearReinforcementRawCapacityN: shearReinforcement.rawContributionN,
     shearReinforcementEffectiveCapacityN: shearReinforcement.effectiveContributionN,
     totalCapacityN,
-    utilizationConcrete: utilizationRatio,
-    utilizationTotal,
+    utilizationConcrete: reportedUtilizationConcrete,
+    utilizationTotal: reportedUtilizationTotal,
     governingUtilization,
     resultStatus,
     verificationStatus: 'draft',
     reinforcementAreaMm2: shearReinforcement.reinforcementAreaMm2,
     reinforcementContributionN: shearReinforcement.reinforcementContributionN,
     draftCapacityWithReinforcementN: shearReinforcement.draftCapacityWithReinforcementN,
-    utilizationWithReinforcement: shearReinforcement.utilizationWithReinforcement,
+    utilizationWithReinforcement: reportedUtilizationWithReinforcement,
     reinforcementWarnings: shearReinforcement.warnings,
     sp63Interaction,
     warnings: [

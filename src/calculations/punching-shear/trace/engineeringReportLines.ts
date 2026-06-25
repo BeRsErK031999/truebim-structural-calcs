@@ -150,12 +150,16 @@ function buildInputRows(input: PunchingShearInput, result: PunchingShearResult):
 }
 
 function buildQuickRows(result: PunchingShearResult): EngineeringReportTableRow[] {
+  const sp63 = result.sp63Interaction
+
   return [
     { label: 'N', value: formatN(result.designShearForceN) },
     { label: 'u', value: formatMm(result.controlPerimeterMm) },
     { label: 'h₀', value: formatMm(result.effectiveDepthMm) },
-    { label: 'Fb,ult', value: formatN(result.concreteCapacityN) },
-    { label: 'Fult', value: formatN(result.totalCapacityN) },
+    { label: 'Fb,ult', value: sp63 ? formatKn(sp63.FbUlt) : formatN(result.concreteCapacityN) },
+    { label: 'Fult', value: sp63 ? formatKn(sp63.Fult) : formatN(result.totalCapacityN) },
+    { label: 'Mx,ult', value: sp63 ? formatKnM(sp63.MxUlt) : unavailable },
+    { label: 'My,ult', value: sp63 ? formatKnM(sp63.MyUlt) : unavailable },
     { label: etaSymbol, value: formatRatio(result.governingUtilization) },
   ]
 }
@@ -214,23 +218,62 @@ function buildCalculationSections(
   sections.push({
     id: 'total',
     title: 'Итоговая проверка',
-    lines: [
-      formula(
-        'fult',
-        hasFinite(result.concreteCapacityN) && hasFinite(result.shearReinforcementEffectiveCapacityN) && result.shearReinforcement.contributionAccepted
-          ? `Fult = F_b,ult + F_sw,used = ${formatKnFromN(result.concreteCapacityN)} + ${formatKnFromN(result.shearReinforcementEffectiveCapacityN)} = ${formatKnFromN(result.totalCapacityN)}`
-          : `Fult = F_b,ult = ${formatKnFromN(result.totalCapacityN)}`,
-      ),
-      formula(
-        'eta-total',
-        hasFinite(result.designShearForceN) && hasFinite(result.totalCapacityN)
-          ? `${etaSymbol} = F / Fult = ${formatKnFromN(result.designShearForceN)} / ${formatKnFromN(result.totalCapacityN)} = ${formatRatio(result.governingUtilization)}`
-          : `${etaSymbol} = ${unavailable}`,
-      ),
-    ],
+    lines: result.sp63Interaction ? buildSp63InteractionLines(result) : buildForceOnlyTotalLines(result),
   })
 
   return sections
+}
+
+function buildForceOnlyTotalLines(result: PunchingShearResult): EngineeringReportLine[] {
+  return [
+    formula(
+      'fult',
+      hasFinite(result.concreteCapacityN) && hasFinite(result.shearReinforcementEffectiveCapacityN) && result.shearReinforcement.contributionAccepted
+        ? `Fult = F_b,ult + F_sw,used = ${formatKnFromN(result.concreteCapacityN)} + ${formatKnFromN(result.shearReinforcementEffectiveCapacityN)} = ${formatKnFromN(result.totalCapacityN)}`
+        : `Fult = F_b,ult = ${formatKnFromN(result.totalCapacityN)}`,
+    ),
+    formula(
+      'eta-total',
+      hasFinite(result.designShearForceN) && hasFinite(result.totalCapacityN)
+        ? `${etaSymbol} = F / Fult = ${formatKnFromN(result.designShearForceN)} / ${formatKnFromN(result.totalCapacityN)} = ${formatRatio(result.governingUtilization)}`
+        : `${etaSymbol} = ${unavailable}`,
+    ),
+  ]
+}
+
+function buildSp63InteractionLines(result: PunchingShearResult): EngineeringReportLine[] {
+  const sp63 = result.sp63Interaction
+
+  if (!sp63) {
+    return buildForceOnlyTotalLines(result)
+  }
+
+  const usesReinforcement = sp63.utilizationWithReinforcement !== null
+  const fultFormula = usesReinforcement
+    ? `Fult = min(2 · F_b,ult, F_b,ult + F_sw,ult) = min(2 · ${formatKn(sp63.FbUlt)}, ${formatKn(sp63.FbUlt)} + ${formatKn(sp63.FswUltEffective)}) = ${formatKn(sp63.Fult)}`
+    : `Fult = F_b,ult = ${formatKn(sp63.FbUlt)}`
+  const mxFormula = usesReinforcement
+    ? `Mx,ult = min(2 · Mx,b,ult, Mx,b,ult + Mx,sw,ult) = min(2 · ${formatKnM(sp63.MxBUlt)}, ${formatKnM(sp63.MxBUlt)} + ${formatKnM(sp63.MxSwUlt)}) = ${formatKnM(sp63.MxUlt)}`
+    : `Mx,ult = Mx,b,ult = ${formatKnM(sp63.MxBUlt)}`
+  const myFormula = usesReinforcement
+    ? `My,ult = min(2 · My,b,ult, My,b,ult + My,sw,ult) = min(2 · ${formatKnM(sp63.MyBUlt)}, ${formatKnM(sp63.MyBUlt)} + ${formatKnM(sp63.MySwUlt)}) = ${formatKnM(sp63.MyUlt)}`
+    : `My,ult = My,b,ult = ${formatKnM(sp63.MyBUlt)}`
+  const interactionCapacity = usesReinforcement
+    ? `${formatKn(sp63.Fult)}, ${formatKnM(sp63.MxUlt)}, ${formatKnM(sp63.MyUlt)}`
+    : `${formatKn(sp63.FbUlt)}, ${formatKnM(sp63.MxBUlt)}, ${formatKnM(sp63.MyBUlt)}`
+  const interactionValue = usesReinforcement
+    ? sp63.utilizationWithReinforcement
+    : sp63.utilizationConcreteOnly
+
+  return [
+    formula('fult-sp63', fultFormula),
+    formula('mxult-sp63', mxFormula),
+    formula('myult-sp63', myFormula),
+    formula(
+      'eta-sp63',
+      `${etaSymbol} = min(F/Fult + Mx/Mx,ult + My/My,ult, 1.5 · F/Fult); F, Mx, My = ${formatKn(sp63.F)}, ${formatKnM(sp63.Mx)}, ${formatKnM(sp63.My)}; Fult, Mx,ult, My,ult = ${interactionCapacity}; ${etaSymbol} = ${formatRatio(interactionValue)}`,
+    ),
+  ]
 }
 
 function buildReinforcementLines(result: PunchingShearResult): EngineeringReportLine[] {
@@ -259,7 +302,7 @@ function buildReinforcementLines(result: PunchingShearResult): EngineeringReport
   }
 
   return [
-    formula('asw-manual', `Asw принято пользователем = ${formatMm2(summary.reinforcementAreaMm2, 3)}`),
+    formula('asw-manual', `Asw принято пользователем = ${formatCm2FromMm2(summary.reinforcementAreaMm2, 3)} (${formatMm2(summary.reinforcementAreaMm2, 1)})`),
     formula('sw-manual', `sw принято пользователем = ${formatMm(summary.swMm)}`),
     ...buildReinforcementCapacityLines(result),
   ]
@@ -272,7 +315,7 @@ function buildReinforcementCapacityLines(result: PunchingShearResult): Engineeri
     formula(
       'qsw',
       hasFinite(summary.qswNPerMm)
-        ? `q_sw = Rsw · Asw / sw = ${formatPlain(getSteelStrengthFromSummary(summary), 3)} · ${formatPlain(summary.reinforcementAreaMm2, 3)} / ${formatPlain(summary.swMm)} = ${formatNPerMm(summary.qswNPerMm)}`
+        ? `q_sw = Rsw · Asw / sw = ${formatPlain(getSteelStrengthFromSummary(summary), 3)} · ${formatPlain(summary.reinforcementAreaMm2, 3)} мм² / ${formatPlain(summary.swMm)} = ${formatNPerMm(summary.qswNPerMm)}`
         : `q_sw = ${unavailable}`,
     ),
     formula(
@@ -300,18 +343,25 @@ function buildReinforcementCapacityLines(result: PunchingShearResult): Engineeri
 }
 
 function buildConditionLines(result: PunchingShearResult): EngineeringReportLine[] {
+  const sp63 = result.sp63Interaction
+  const condition = sp63
+    ? `${etaSymbol} = min(F/Fult + Mx/Mx,ult + My/My,ult, 1.5 · F/Fult) = ${formatRatio(result.governingUtilization)} ≤ 1.0`
+    : `${etaSymbol} = ${formatRatio(result.governingUtilization)} ≤ 1.0`
+
   return [
-    formula('condition', `${etaSymbol} = ${formatRatio(result.governingUtilization)} ≤ 1.0`, result.passed ? 'normal' : 'strong'),
+    formula('condition', condition, result.passed ? 'normal' : 'strong'),
     formula('condition-result', result.passed ? 'Условие выполняется.' : 'Условие не выполняется.', 'strong'),
   ]
 }
 
 function buildConclusionLines(result: PunchingShearResult): EngineeringReportLine[] {
-  if (!hasFinite(result.designShearForceN) || !hasFinite(result.totalCapacityN)) {
+  if (!hasFinite(result.designShearForceN) || (!hasFinite(result.totalCapacityN) && !result.sp63Interaction)) {
     return [formula('conclusion-empty', 'Прочность на продавливание не оценена.', 'strong')]
   }
 
-  const expression = `(F/Fult = ${formatKnFromN(result.designShearForceN)}/${formatKnFromN(result.totalCapacityN)} = ${formatRatio(result.governingUtilization)})`
+  const expression = result.sp63Interaction
+    ? `(F/Fult + Mx/Mx,ult + My/My,ult с ограничением 1.5 · F/Fult; ${etaSymbol} = ${formatRatio(result.governingUtilization)})`
+    : `(F/Fult = ${formatKnFromN(result.designShearForceN)}/${formatKnFromN(result.totalCapacityN)} = ${formatRatio(result.governingUtilization)})`
 
   return [
     formula(
@@ -359,9 +409,9 @@ function buildServiceBlocks(
   if (input.shearReinforcement.enabled && result.shearReinforcement.inputMode === 'manual') {
     blocks.push({
       id: 'reinforcement-layout',
-      title: 'Условная схема армирования',
+      title: 'Нерасчетная схема армирования',
       rows: [
-        { label: 'Назначение', value: 'Схема приведена только для визуальной проверки и не используется для определения Asw.' },
+        { label: 'Назначение', value: 'Схема показывает только расположение маркеров в эскизе; расчет использует ручные Asw и sw.' },
         { label: 'Схема армирования', value: formatLayoutType(result.shearReinforcement.layoutType) },
         { label: 'Количество рядов', value: formatPlain(result.shearReinforcement.rowCount) },
         { label: 'Ветвей в ряду', value: formatPlain(result.shearReinforcement.legsPerRow) },
@@ -455,7 +505,7 @@ function formatReinforcementInputSentence(result: PunchingShearResult) {
     return `${summary.steelClass ?? 'сталь не задана'}, старая схема ${summary.totalLegs} условных стерж.; требуется ручной Asw/sw`
   }
 
-  return `${summary.steelClass ?? 'сталь не задана'}, Asw = ${formatMm2(summary.reinforcementAreaMm2, 3)}, sw = ${formatMm(summary.swMm)}`
+  return `${summary.steelClass ?? 'сталь не задана'}, Asw = ${formatCm2FromMm2(summary.reinforcementAreaMm2, 3)}, sw = ${formatMm(summary.swMm)}`
 }
 
 function buildReinforcementInputRows(result: PunchingShearResult): EngineeringReportTableRow[] {
@@ -463,7 +513,7 @@ function buildReinforcementInputRows(result: PunchingShearResult): EngineeringRe
   const commonRows = [
     { label: 'Поперечная арматура', value: formatReinforcementInputSentence(result) },
     { label: 'Rsw', value: formatMpa(getSteelStrength(result), 3) },
-    { label: 'Asw', value: formatMm2(result.reinforcementAreaMm2, 3) },
+    { label: 'Asw', value: formatCm2FromMm2(result.reinforcementAreaMm2, 3) },
   ]
 
   return [...commonRows, { label: 'sw', value: formatMm(summary.swMm) }]
@@ -549,6 +599,10 @@ function formatMm(value: number | null | undefined, decimals = 0) {
 
 function formatMm2(value: number | null | undefined, decimals = 3) {
   return hasFinite(value) ? `${formatPlain(value, decimals)} мм²` : unavailable
+}
+
+function formatCm2FromMm2(value: number | null | undefined, decimals = 3) {
+  return hasFinite(value) ? `${formatPlain(value / 100, decimals)} см²` : unavailable
 }
 
 function formatMpa(value: number | null | undefined, decimals = 3) {

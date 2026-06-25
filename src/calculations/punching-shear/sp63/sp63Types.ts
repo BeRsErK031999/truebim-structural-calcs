@@ -6,6 +6,8 @@ export type Sp63InteractionInput = {
   concreteClass: ConcreteClassName
   reinforcementClass: ShearReinforcementSteelClass
   shearBarDiameterMm: number
+  manualAswMm2?: number
+  manualSwMm?: number
   h: number
   h0: number
   a1: number
@@ -89,4 +91,3 @@ export type Sp63InteractionResult = Sp63GeometryResult &
     benchmarkStatus: Sp63BenchmarkStatus
     warnings: string[]
   }
-

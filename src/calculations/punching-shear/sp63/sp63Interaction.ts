@@ -29,6 +29,8 @@ export function calculateSp63Interaction(input: Sp63InteractionInput): Sp63Inter
     materials.Rsw,
     geometry,
     concreteCapacity,
+    input.manualAswMm2,
+    input.manualSwMm,
   )
   const F = input.Finf - input.Fsup
   const Mx = (input.MxSup + input.MxInf) / 2
@@ -168,4 +170,3 @@ function near(actual: number | null | undefined, expected: number, relativeToler
     Number.isFinite(actual) &&
     Math.abs(actual - expected) <= Math.abs(expected) * relativeTolerance
 }
-

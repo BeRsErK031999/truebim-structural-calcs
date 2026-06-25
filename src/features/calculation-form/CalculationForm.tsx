@@ -1,5 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Calculator, FileUp, RotateCcw, Save } from 'lucide-react'
+import type { ChangeEvent } from 'react'
 import { useEffect, useState } from 'react'
 import { useForm, useWatch } from 'react-hook-form'
 
@@ -96,6 +97,10 @@ export function CalculationForm() {
     control,
     name: 'shearReinforcement.inputMode',
   })
+  const manualAswMm2 = useWatch({
+    control,
+    name: 'shearReinforcement.manualAswMm2',
+  })
 
   useEffect(() => {
     void trigger()
@@ -159,6 +164,15 @@ export function CalculationForm() {
       setFormError(error instanceof Error ? error.message : 'Не удалось импортировать JSON')
     }
   }
+  const handleManualAswCm2Change = (event: ChangeEvent<HTMLInputElement>) => {
+    const nextCm2 = event.currentTarget.valueAsNumber
+
+    setValue('shearReinforcement.manualAswMm2', Number.isFinite(nextCm2) ? nextCm2 * 100 : undefined, {
+      shouldDirty: true,
+      shouldValidate: true,
+    })
+  }
+
   useEffect(() => {
     if (shearReinforcementEnabled && shearReinforcementInputMode !== 'manual') {
       const reinforcement = getValues('shearReinforcement')
@@ -344,11 +358,13 @@ export function CalculationForm() {
           <>
             <NumberField
               label="Asw"
-              min={1}
+              min={0.01}
               step={0.001}
-              unit="мм²"
-              helperText="Принятая расчетная площадь поперечной арматуры."
-              registration={register('shearReinforcement.manualAswMm2', { valueAsNumber: true })}
+              unit="см²"
+              helperText="Принятая расчетная площадь поперечной арматуры в см²."
+              registration={register('shearReinforcement.manualAswMm2')}
+              value={typeof manualAswMm2 === 'number' ? Number((manualAswMm2 / 100).toFixed(3)) : ''}
+              onValueChange={handleManualAswCm2Change}
               error={errors.shearReinforcement?.manualAswMm2?.message}
             />
             <NumberField
@@ -361,12 +377,15 @@ export function CalculationForm() {
               error={errors.shearReinforcement?.manualSwMm?.message}
             />
             <p className="rounded-lg border border-sky-200 bg-sky-50 px-3 py-2 text-xs leading-5 text-sky-900 md:col-span-2">
-              Asw и sw задаются вручную: автоматический подбор рабочих стержней пока не выполняется.
+              Asw задается в см², sw - в мм. Автоматический подбор рабочих стержней пока не выполняется.
             </p>
             <details className="rounded-lg border border-slate-200 bg-slate-50 p-3 md:col-span-2">
               <summary className="cursor-pointer text-sm font-semibold text-slate-900">
-                Схема для визуальной проверки
+                Нерасчетная схема армирования
               </summary>
+              <p className="mt-2 text-xs leading-5 text-slate-600">
+                Эти параметры формируют только маркеры на схеме; в расчетную несущую способность попадают только Asw и sw выше.
+              </p>
               <div className="mt-4 grid gap-4 md:grid-cols-2">
                 <SelectField
                   label="Схема армирования"

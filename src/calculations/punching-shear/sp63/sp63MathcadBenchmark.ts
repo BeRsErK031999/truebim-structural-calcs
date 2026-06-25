@@ -14,17 +14,21 @@ export function toSp63InteractionInput(input: PunchingShearInput): Sp63Interacti
     return null
   }
 
-  const reinforcementClass = input.shearReinforcement.steelClass ?? 'A240'
-  const shearBarDiameterMm = input.shearReinforcement.barDiameterMm ?? 6
+  const hasMomentDemand = input.forces.momentXKnM !== 0 || input.forces.momentYKnM !== 0
 
-  if (input.concrete.className !== 'B30' || reinforcementClass !== 'A240') {
+  if (!hasMomentDemand && !input.shearReinforcement.enabled) {
     return null
   }
+
+  const reinforcementClass = input.shearReinforcement.steelClass ?? 'A240'
+  const shearBarDiameterMm = input.shearReinforcement.barDiameterMm ?? 6
 
   return {
     concreteClass: input.concrete.className,
     reinforcementClass,
     shearBarDiameterMm,
+    manualAswMm2: input.shearReinforcement.manualAswMm2,
+    manualSwMm: input.shearReinforcement.manualSwMm,
     h: input.slab.thicknessMm,
     h0: input.slab.effectiveDepthMm,
     a1: input.rectColumn.widthYMm,
@@ -38,4 +42,3 @@ export function toSp63InteractionInput(input: PunchingShearInput): Sp63Interacti
     shearReinforcementEnabled: input.shearReinforcement.enabled,
   }
 }
-
