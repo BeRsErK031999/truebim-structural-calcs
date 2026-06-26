@@ -106,7 +106,7 @@ describe('SP63 Mathcad benchmark interaction layer', () => {
     const result = calculatePunchingShear(punchingInput)
 
     expect(result.sp63Interaction).toMatchObject({
-      benchmarkStatus: 'matched',
+      benchmarkStatus: 'mathcad-benchmark-candidate',
       utilizationConcreteOnly: expect.any(Number),
       utilizationWithReinforcement: expect.any(Number),
     })
@@ -134,7 +134,7 @@ describe('SP63 Mathcad benchmark interaction layer', () => {
     ])
     expect(report.sp63InteractionSummary).toMatchObject({
       available: true,
-      benchmarkStatus: 'matched',
+      benchmarkStatus: 'mathcad-benchmark-candidate',
       utilizationConcreteOnly: expect.any(Number),
       utilizationWithReinforcement: expect.any(Number),
       outerContourUtilization: expect.any(Number),

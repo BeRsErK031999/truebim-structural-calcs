@@ -4,7 +4,6 @@ export const inputSectionOrder = [
   '3. Материалы',
   '4. Нагрузки',
   '5. Поперечная арматура',
-  '6. Дополнительные настройки',
 ] as const
 
 export const engineeringHelp = {

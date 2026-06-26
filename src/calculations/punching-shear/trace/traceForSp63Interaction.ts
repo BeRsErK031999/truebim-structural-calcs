@@ -26,9 +26,9 @@ export function traceForSp63Interaction(
       {
         id: 'sp63-moment-reduction',
         title: 'Moment reduction',
-        description: 'Mathcad benchmark uses half-sum design moments for interaction checks. Mx is in the X-axis plane for the smaller column dimension; My is in the Y-axis plane for the larger column dimension.',
+        description: 'The UI has one design moment per axis, so the SP63 half-sum adapter uses equal top and bottom moments. Mx is in the X-axis plane for the smaller column dimension; My is in the Y-axis plane for the larger column dimension.',
         formula: 'Mx = (Mx.sup + Mx.inf) / 2; My = (My.sup + My.inf) / 2',
-        substitutedFormula: `Mx = (${formatNumber(0)} + ${formatNumber(input.forces.momentXKnM)}) / 2; My = (${formatNumber(0)} + ${formatNumber(input.forces.momentYKnM)}) / 2`,
+        substitutedFormula: `Mx = (${formatNumber(input.forces.momentXKnM)} + ${formatNumber(input.forces.momentXKnM)}) / 2; My = (${formatNumber(input.forces.momentYKnM)} + ${formatNumber(input.forces.momentYKnM)}) / 2`,
         result: `Mx = ${formatNumber(sp63.Mx)}; My = ${formatNumber(sp63.My)}`,
         units: 'kN*m',
         sourceType: 'draft',

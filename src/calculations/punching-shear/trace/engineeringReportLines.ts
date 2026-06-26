@@ -199,9 +199,11 @@ function buildCalculationSections(
         ),
         formula(
           'eta-concrete',
-          hasFinite(result.designShearForceN) && hasFinite(result.concreteCapacityN)
-            ? `${etaSymbol}_b = F / F_b,ult = ${formatKnFromN(result.designShearForceN)} / ${formatKnFromN(result.concreteCapacityN)} = ${formatRatio(result.utilizationConcrete)}`
-            : `${etaSymbol}_b = ${unavailable}`,
+          result.sp63Interaction
+            ? buildSp63ConcreteInteractionFormula(result)
+            : hasFinite(result.designShearForceN) && hasFinite(result.concreteCapacityN)
+              ? `${etaSymbol}_b = F / F_b,ult = ${formatKnFromN(result.designShearForceN)} / ${formatKnFromN(result.concreteCapacityN)} = ${formatRatio(result.utilizationConcrete)}`
+              : `${etaSymbol}_b = ${unavailable}`,
         ),
       ],
     },
@@ -274,6 +276,16 @@ function buildSp63InteractionLines(result: PunchingShearResult): EngineeringRepo
       `${etaSymbol} = min(F/Fult + Mx/Mx,ult + My/My,ult, 1.5 · F/Fult); F, Mx, My = ${formatKn(sp63.F)}, ${formatKnM(sp63.Mx)}, ${formatKnM(sp63.My)}; Fult, Mx,ult, My,ult = ${interactionCapacity}; ${etaSymbol} = ${formatRatio(interactionValue)}`,
     ),
   ]
+}
+
+function buildSp63ConcreteInteractionFormula(result: PunchingShearResult) {
+  const sp63 = result.sp63Interaction
+
+  if (!sp63) {
+    return `${etaSymbol}_b = ${unavailable}`
+  }
+
+  return `${etaSymbol}_b = min(F/F_b,ult + Mx/Mx,b,ult + My/My,b,ult, 1.5 · F/F_b,ult) = min(${formatKn(sp63.F)}/${formatKn(sp63.FbUlt)} + ${formatKnM(sp63.Mx)}/${formatKnM(sp63.MxBUlt)} + ${formatKnM(sp63.My)}/${formatKnM(sp63.MyBUlt)}, 1.5 · ${formatKn(sp63.F)}/${formatKn(sp63.FbUlt)}) = ${formatRatio(sp63.utilizationConcreteOnly)}`
 }
 
 function buildReinforcementLines(result: PunchingShearResult): EngineeringReportLine[] {

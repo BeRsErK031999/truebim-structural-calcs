@@ -77,6 +77,30 @@ describe('report export', () => {
     expect(buildReportSummary(result)).toContain(`util=${expected}`)
   })
 
+  it('explains center moment interaction without a force-only utilization contradiction', () => {
+    const input = {
+      ...defaultPunchingShearInput,
+      forces: {
+        axialForceKn: 420,
+        momentXKnM: 15,
+        momentYKnM: 15,
+      },
+    }
+    const result = calculatePunchingShear(input)
+    const report = buildPunchingShearReport(input, result)
+    const markdown = buildPunchingShearMarkdownReport(input, result, report)
+    const html = buildPunchingShearHtmlReport(input, result, report)
+
+    expect(result.governingUtilization).toBeCloseTo(1.216, 3)
+    expect(result.passed).toBe(false)
+    expect(markdown).toContain('Mx,b,ult')
+    expect(markdown).toContain('My,b,ult')
+    expect(markdown).toContain('F, Mx, My = 420 кН, 15 кН·м, 15 кН·м')
+    expect(markdown).not.toContain('F / F_b,ult = 420.0 кН / 470.8 кН = 1.324')
+    expect(html).toContain('Mx/Mx,b,ult')
+    expect(html).toContain('overflow-wrap: anywhere')
+  })
+
   it('renders reinforcement formula chain without contradicting the conclusion', () => {
     const input = {
       ...defaultPunchingShearInput,

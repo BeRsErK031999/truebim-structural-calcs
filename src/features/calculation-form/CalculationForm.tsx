@@ -79,8 +79,6 @@ export function CalculationForm() {
   const wallCornerOrientation = useWatch({ control, name: 'wallCorner.orientation' })
   const openings = useWatch({ control, name: 'openings' })
   const roundColumnPosition = useWatch({ control, name: 'roundColumn.position' })
-  const multipleContoursEnabled = useWatch({ control, name: 'multipleContours.enabled' })
-  const multipleContoursOffsetStep = useWatch({ control, name: 'multipleContours.offsetStep' })
   const shearReinforcementEnabled = useWatch({
     control,
     name: 'shearReinforcement.enabled',
@@ -596,60 +594,6 @@ export function CalculationForm() {
           />
         </FormSection>
       ) : null}
-
-      <details className="rounded-lg border border-slate-200 bg-white shadow-sm">
-        <summary className="cursor-pointer p-4 text-base font-semibold text-slate-950">
-          6. Дополнительные настройки
-        </summary>
-        <div className="grid gap-4 px-4 pb-4 md:grid-cols-2">
-        <ToggleField
-          checked={multipleContoursEnabled ?? false}
-          label="Включить несколько контуров"
-          helperText="Draft-трассировка нескольких контрольных контуров."
-          onCheckedChange={(checked) =>
-            setValue('multipleContours.enabled', checked, {
-              shouldDirty: true,
-              shouldValidate: true,
-            })
-          }
-        />
-        <NumberField
-          label="Количество контуров"
-          min={1}
-          step={1}
-          unit="шт."
-          registration={register('multipleContours.count', { valueAsNumber: true })}
-          error={errors.multipleContours?.count?.message}
-        />
-        <SelectField
-          label="Шаг смещения"
-          placeholder="Выберите шаг смещения"
-          value={multipleContoursOffsetStep ?? 'h0/2'}
-          options={[
-            { value: 'h0/2', label: 'h0/2' },
-            { value: 'h0', label: 'h0' },
-            { value: 'custom', label: 'свой шаг, мм' },
-          ]}
-          error={errors.multipleContours?.offsetStep?.message}
-          onValueChange={(value) =>
-            setValue('multipleContours.offsetStep', value as NonNullable<PunchingShearInput['multipleContours']>['offsetStep'], {
-              shouldDirty: true,
-              shouldValidate: true,
-            })
-          }
-        />
-        {multipleContoursOffsetStep === 'custom' ? (
-          <NumberField
-            label="Свой шаг смещения"
-            min={1}
-            step={1}
-            unit="мм"
-            registration={register('multipleContours.customOffsetStepMm', { valueAsNumber: true })}
-            error={errors.multipleContours?.customOffsetStepMm?.message}
-          />
-        ) : null}
-        </div>
-      </details>
 
       <CalculationHistoryPanel />
 

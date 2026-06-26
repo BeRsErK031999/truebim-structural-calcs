@@ -57,6 +57,7 @@ export function buildPunchingShearHtmlReport(
     table { width: 100%; border-collapse: collapse; background: #fff; }
     th, td { border: 1px solid #777; padding: 2mm 2.5mm; text-align: left; vertical-align: top; }
     th { width: 34%; font-weight: 700; }
+    td, th, .formula, .svg-legend, footer { overflow-wrap: anywhere; word-break: normal; }
     details { margin: 3mm 0; padding: 0; border: 0; }
     summary { cursor: pointer; font-weight: 700; }
     .status-line { margin: 0 0 5mm; font-weight: 700; }

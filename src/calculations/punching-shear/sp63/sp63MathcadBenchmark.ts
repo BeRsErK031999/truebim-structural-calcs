@@ -36,9 +36,9 @@ export function toSp63InteractionInput(input: PunchingShearInput): Sp63Interacti
     Finf: input.forces.axialForceKn,
     Fsup: 0,
     MxInf: input.forces.momentXKnM,
-    MxSup: 0,
+    MxSup: input.forces.momentXKnM,
     MyInf: input.forces.momentYKnM,
-    MySup: 0,
+    MySup: input.forces.momentYKnM,
     shearReinforcementEnabled: input.shearReinforcement.enabled,
   }
 }
