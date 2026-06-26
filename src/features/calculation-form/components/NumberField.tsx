@@ -15,6 +15,7 @@ type NumberFieldProps = {
   step?: number
   value?: number | string
   onValueChange?: ChangeEventHandler<HTMLInputElement>
+  readOnly?: boolean
 }
 
 export function NumberField({
@@ -27,6 +28,7 @@ export function NumberField({
   step = 1,
   value,
   onValueChange,
+  readOnly = false,
 }: NumberFieldProps) {
   return (
     <div className="grid gap-2">
@@ -53,6 +55,7 @@ export function NumberField({
         step={step}
         type="number"
         {...registration}
+        readOnly={readOnly}
         value={value}
         onChange={onValueChange ?? registration.onChange}
       />

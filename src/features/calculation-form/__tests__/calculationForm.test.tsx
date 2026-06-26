@@ -43,6 +43,22 @@ describe('CalculationForm engineering UX', () => {
     expect(html).toContain(engineeringHelp.h0)
   })
 
+  it('renders the case preview before the calculate button', () => {
+    const html = renderForm()
+
+    expect(html).toContain('aria-label="Схема: Центральная колонна"')
+    expect(html.indexOf('схема')).toBeLessThan(html.indexOf('Рассчитать'))
+    expect(html).toContain('Mx')
+    expect(html).toContain('My')
+  })
+
+  it('removes the old non-calculation reinforcement wording', () => {
+    const html = renderForm()
+
+    expect(html).not.toContain('Нерасчетная схема армирования')
+    expect(html).not.toContain('Маркеры')
+  })
+
   it('keeps inputs editable after a calculation exists', () => {
     const result = calculatePunchingShear(defaultPunchingShearInput)
     const report = buildPunchingShearReport(defaultPunchingShearInput, result)

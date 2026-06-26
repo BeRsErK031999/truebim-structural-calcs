@@ -11,7 +11,6 @@ import {
   type ConcreteClassName,
   type PunchingShearCaseType,
   type PunchingShearInput,
-  type ShearReinforcementLayoutType,
   type ShearReinforcementSteelClass,
 } from '@/calculations/punching-shear'
 import { defaultCalculationDraft, useCalculationStore } from '@/entities/calculation/model/store'
@@ -28,25 +27,16 @@ import { engineeringHelp } from './engineeringUx'
 
 const caseOptions: Array<{ value: PunchingShearCaseType; label: string; disabled?: boolean }> = [
   { value: 'center', label: 'Центральная прямоугольная колонна' },
-  { value: 'edge', label: 'Крайняя колонна - черновая геометрия' },
-  { value: 'corner', label: 'Угловая колонна - черновая геометрия' },
-  { value: 'opening', label: 'Отверстие рядом с колонной - черновая геометрия' },
-  { value: 'round', label: 'Круглая колонна - черновой расчет только для центра' },
-  { value: 'wall-end', label: 'Продавливание у конца стены - черновая геометрия' },
-  { value: 'wall-corner', label: 'Продавливание в углу стены - черновая геометрия' },
+  { value: 'edge', label: 'Крайняя колонна' },
+  { value: 'corner', label: 'Угловая колонна' },
+  { value: 'opening', label: 'Отверстие рядом с колонной' },
+  { value: 'round', label: 'Круглая колонна' },
+  { value: 'wall-end', label: 'Продавливание у конца стены' },
+  { value: 'wall-corner', label: 'Продавливание в углу стены' },
 ]
 
 const concreteClassOptions: ConcreteClassName[] = ['B15', 'B20', 'B25', 'B30', 'B35', 'B40']
 const steelClassOptions: ShearReinforcementSteelClass[] = ['A240', 'A400', 'A500', 'B500']
-const reinforcementLayoutOptions: Array<{
-  value: ShearReinforcementLayoutType
-  label: string
-}> = [
-  { value: 'closed-stirrups', label: 'замкнутые хомуты' },
-  { value: 'studs', label: 'шпильки' },
-  { value: 'links', label: 'связи' },
-  { value: 'custom', label: 'своя схема' },
-]
 
 export function CalculationForm() {
   const draft = useCalculationStore((state) => state.draft)
@@ -68,13 +58,14 @@ export function CalculationForm() {
     formState: { errors, isSubmitting, isValid },
     control,
     handleSubmit,
-    getValues,
     register,
     reset,
     setValue,
     trigger,
   } = form
   const caseType = useWatch({ control, name: 'caseType' })
+  const momentXKnM = useWatch({ control, name: 'forces.momentXKnM' })
+  const momentYKnM = useWatch({ control, name: 'forces.momentYKnM' })
   const concreteClass = useWatch({ control, name: 'concrete.className' })
   const wallCornerOrientation = useWatch({ control, name: 'wallCorner.orientation' })
   const openings = useWatch({ control, name: 'openings' })
@@ -87,18 +78,17 @@ export function CalculationForm() {
     control,
     name: 'shearReinforcement.steelClass',
   })
-  const shearReinforcementLayoutType = useWatch({
+  const reinforcementBarDiameterMm = useWatch({
     control,
-    name: 'shearReinforcement.layoutType',
+    name: 'shearReinforcement.barDiameterMm',
   })
-  const shearReinforcementInputMode = useWatch({
+  const reinforcementBarCount = useWatch({
     control,
-    name: 'shearReinforcement.inputMode',
+    name: 'shearReinforcement.simpleBarCount',
   })
-  const manualAswMm2 = useWatch({
-    control,
-    name: 'shearReinforcement.manualAswMm2',
-  })
+  const calculatedAswMm2 = calculateBarCountAswMm2(reinforcementBarDiameterMm, reinforcementBarCount)
+  const calculatedAswCm2 =
+    typeof calculatedAswMm2 === 'number' ? Number((calculatedAswMm2 / 100).toFixed(3)) : ''
 
   useEffect(() => {
     void trigger()
@@ -162,50 +152,48 @@ export function CalculationForm() {
       setFormError(error instanceof Error ? error.message : 'Не удалось импортировать JSON')
     }
   }
-  const handleManualAswCm2Change = (event: ChangeEvent<HTMLInputElement>) => {
-    const nextCm2 = event.currentTarget.valueAsNumber
+  const handleBarDiameterChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const value = event.currentTarget.valueAsNumber
 
-    setValue('shearReinforcement.manualAswMm2', Number.isFinite(nextCm2) ? nextCm2 * 100 : undefined, {
+    setValue('shearReinforcement.barDiameterMm', Number.isFinite(value) ? value : undefined, {
       shouldDirty: true,
       shouldValidate: true,
     })
+    setValue('shearReinforcement.inputMode', 'bar-count', { shouldDirty: true, shouldValidate: true })
+  }
+
+  const handleBarCountChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const value = event.currentTarget.valueAsNumber
+
+    setValue('shearReinforcement.simpleBarCount', Number.isFinite(value) ? value : undefined, {
+      shouldDirty: true,
+      shouldValidate: true,
+    })
+    setValue('shearReinforcement.inputMode', 'bar-count', { shouldDirty: true, shouldValidate: true })
+  }
+
+  const handleReinforcementStepChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const value = event.currentTarget.valueAsNumber
+    const nextValue = Number.isFinite(value) ? value : undefined
+
+    setValue('shearReinforcement.manualSwMm', nextValue, { shouldDirty: true, shouldValidate: true })
+    setValue('shearReinforcement.barSpacingMm', nextValue, { shouldDirty: true, shouldValidate: true })
+    setValue('shearReinforcement.inputMode', 'bar-count', { shouldDirty: true, shouldValidate: true })
   }
 
   useEffect(() => {
-    if (shearReinforcementEnabled && shearReinforcementInputMode !== 'manual') {
-      const reinforcement = getValues('shearReinforcement')
-      const migratedAsw =
-        typeof reinforcement.manualAswMm2 === 'number'
-          ? reinforcement.manualAswMm2
-          : typeof reinforcement.simpleBarCount === 'number' &&
-              typeof reinforcement.barDiameterMm === 'number'
-            ? reinforcement.simpleBarCount * Math.PI * reinforcement.barDiameterMm ** 2 / 4
-            : undefined
-      const migratedSw =
-        typeof reinforcement.manualSwMm === 'number'
-          ? reinforcement.manualSwMm
-          : reinforcement.barSpacingMm
+    if (!shearReinforcementEnabled) {
+      return
+    }
 
-      if (typeof migratedAsw === 'number') {
-        setValue('shearReinforcement.manualAswMm2', migratedAsw, {
-          shouldDirty: true,
-          shouldValidate: true,
-        })
-      }
-
-      if (typeof migratedSw === 'number') {
-        setValue('shearReinforcement.manualSwMm', migratedSw, {
-          shouldDirty: true,
-          shouldValidate: true,
-        })
-      }
-
-      setValue('shearReinforcement.inputMode', 'manual', {
+    setValue('shearReinforcement.inputMode', 'bar-count', { shouldDirty: true, shouldValidate: true })
+    if (typeof calculatedAswMm2 === 'number') {
+      setValue('shearReinforcement.manualAswMm2', calculatedAswMm2, {
         shouldDirty: true,
         shouldValidate: true,
       })
     }
-  }, [getValues, setValue, shearReinforcementEnabled, shearReinforcementInputMode])
+  }, [calculatedAswMm2, setValue, shearReinforcementEnabled])
 
   return (
     <form
@@ -215,7 +203,7 @@ export function CalculationForm() {
       <div className="grid auto-rows-max gap-4 lg:min-h-0 lg:overflow-y-auto lg:pr-1 lg:[scrollbar-width:thin]">
       <FormSection
         title="1. Расчетный случай"
-        helperText="Выберите схему проверки. Draft-сценарии остаются draft."
+        helperText="Выберите схему продавливания."
       >
         <SelectField
           label="Тип случая"
@@ -232,7 +220,7 @@ export function CalculationForm() {
         />
         {caseType === 'edge' || caseType === 'corner' || caseType === 'opening' ? (
           <p className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm font-semibold text-amber-900">
-            ТОЛЬКО ЧЕРНОВАЯ ГЕОМЕТРИЯ. НЕ ДЛЯ ПРОЕКТНОГО ПРИМЕНЕНИЯ. Требуется инженерная проверка и доверенные доказательства.
+            Для этого случая требуется инженерная проверка исходных данных и результата.
           </p>
         ) : null}
       </FormSection>
@@ -345,117 +333,65 @@ export function CalculationForm() {
         <ToggleField
           checked={shearReinforcementEnabled}
           label="Учитывать поперечную арматуру"
-          onCheckedChange={(checked) =>
+          onCheckedChange={(checked) => {
             setValue('shearReinforcement.enabled', checked, {
               shouldDirty: true,
               shouldValidate: true,
             })
-          }
+            if (checked) {
+              setValue('shearReinforcement.inputMode', 'bar-count', {
+                shouldDirty: true,
+                shouldValidate: true,
+              })
+            }
+          }}
         />
         {shearReinforcementEnabled ? (
           <>
             <NumberField
-              label="Asw"
-              min={0.01}
-              step={0.001}
-              unit="см²"
-              helperText="Принятая расчетная площадь поперечной арматуры в см²."
-              registration={register('shearReinforcement.manualAswMm2')}
-              value={typeof manualAswMm2 === 'number' ? Number((manualAswMm2 / 100).toFixed(3)) : ''}
-              onValueChange={handleManualAswCm2Change}
-              error={errors.shearReinforcement?.manualAswMm2?.message}
+              label="Ø"
+              min={1}
+              step={1}
+              unit="мм"
+              helperText="Диаметр одного стержня поперечной арматуры."
+              registration={register('shearReinforcement.barDiameterMm', { valueAsNumber: true })}
+              onValueChange={handleBarDiameterChange}
+              error={errors.shearReinforcement?.barDiameterMm?.message}
+            />
+            <NumberField
+              label="n"
+              min={1}
+              step={1}
+              unit="шт."
+              helperText="Количество стержней, попадающих в расчетную площадь Asw на одном шаге."
+              registration={register('shearReinforcement.simpleBarCount', { valueAsNumber: true })}
+              onValueChange={handleBarCountChange}
+              error={errors.shearReinforcement?.simpleBarCount?.message}
             />
             <NumberField
               label="sw"
               min={1}
               step={1}
               unit="мм"
-              helperText="Расчетный шаг поперечной арматуры."
+              helperText="Шаг поперечной арматуры."
               registration={register('shearReinforcement.manualSwMm', { valueAsNumber: true })}
+              onValueChange={handleReinforcementStepChange}
               error={errors.shearReinforcement?.manualSwMm?.message}
             />
+            <NumberField
+              label="Asw"
+              min={0}
+              step={0.001}
+              unit="см²"
+              helperText="Расчетная площадь: n · π · Ø² / 4."
+              registration={register('shearReinforcement.manualAswMm2')}
+              value={calculatedAswCm2}
+              readOnly
+              error={errors.shearReinforcement?.manualAswMm2?.message}
+            />
             <p className="rounded-lg border border-sky-200 bg-sky-50 px-3 py-2 text-xs leading-5 text-sky-900 md:col-span-2">
-              Asw задается в см², sw - в мм. Автоматический подбор рабочих стержней пока не выполняется.
+              Asw считается автоматически по диаметру и количеству стержней. Обычно ставят площадь двух ветвей на шаг sw, но при другой схеме укажите фактическое количество стержней в расчетной площади.
             </p>
-            <details className="rounded-lg border border-slate-200 bg-slate-50 p-3 md:col-span-2">
-              <summary className="cursor-pointer text-sm font-semibold text-slate-900">
-                Нерасчетная схема армирования
-              </summary>
-              <p className="mt-2 text-xs leading-5 text-slate-600">
-                Эти параметры формируют только маркеры на схеме; в расчетную несущую способность попадают только Asw и sw выше.
-              </p>
-              <div className="mt-4 grid gap-4 md:grid-cols-2">
-                <SelectField
-                  label="Схема армирования"
-                  placeholder="Выберите схему"
-                  value={shearReinforcementLayoutType ?? 'closed-stirrups'}
-                  options={reinforcementLayoutOptions}
-                  error={errors.shearReinforcement?.layoutType?.message}
-                  onValueChange={(value) =>
-                    setValue('shearReinforcement.layoutType', value as ShearReinforcementLayoutType, {
-                      shouldDirty: true,
-                      shouldValidate: true,
-                    })
-                  }
-                />
-                <NumberField
-                  label="Диаметр"
-                  min={1}
-                  step={1}
-                  unit="мм"
-                  registration={register('shearReinforcement.barDiameterMm', { valueAsNumber: true })}
-                  error={errors.shearReinforcement?.barDiameterMm?.message}
-                />
-                <NumberField
-                  label="Маркеры"
-                  min={1}
-                  step={1}
-                  unit="шт."
-                  registration={register('shearReinforcement.simpleBarCount', { valueAsNumber: true })}
-                  error={errors.shearReinforcement?.simpleBarCount?.message}
-                />
-                <NumberField
-                  label="Шаг маркеров"
-                  min={1}
-                  step={1}
-                  unit="мм"
-                  registration={register('shearReinforcement.barSpacingMm', { valueAsNumber: true })}
-                  error={errors.shearReinforcement?.barSpacingMm?.message}
-                />
-                <NumberField
-                  label="Ряды"
-                  min={1}
-                  step={1}
-                  unit="шт."
-                  registration={register('shearReinforcement.rowCount', { valueAsNumber: true })}
-                  error={errors.shearReinforcement?.rowCount?.message}
-                />
-                <NumberField
-                  label="Ветвей"
-                  min={1}
-                  step={1}
-                  unit="шт."
-                  registration={register('shearReinforcement.legsPerRow', { valueAsNumber: true })}
-                  error={errors.shearReinforcement?.legsPerRow?.message}
-                />
-                <NumberField
-                  label="Первый ряд"
-                  min={1}
-                  step={1}
-                  unit="мм"
-                  registration={register('shearReinforcement.firstRowDistanceMm', { valueAsNumber: true })}
-                  error={errors.shearReinforcement?.firstRowDistanceMm?.message}
-                />
-                <NumberField
-                  label="Шаг рядов"
-                  min={1}
-                  step={1}
-                  unit="мм"
-                  registration={register('shearReinforcement.rowSpacingMm', { valueAsNumber: true })}
-                  error={errors.shearReinforcement?.rowSpacingMm?.message}
-                />
-              </div>
-            </details>
           </>
         ) : null}
       </FormSection>
@@ -463,7 +399,7 @@ export function CalculationForm() {
       {caseType === 'round' ? (
         <FormSection
           title="Геометрия круглой колонны"
-          helperText="Черновая геометрия круглой колонны. Положение по центру поддерживается только для подготовки пилотной геометрии и отчета."
+          helperText="Параметры круглой колонны."
         >
           <NumberField
             label="Диаметр"
@@ -494,7 +430,7 @@ export function CalculationForm() {
       {caseType === 'wall-end' ? (
         <FormSection
           title="Геометрия стены"
-          helperText="Черновой ввод геометрии конца стены. Проверенные формулы продавливания стен по СП 63 не заявляются."
+          helperText="Параметры конца стены."
         >
           <NumberField
             label="Длина стены"
@@ -514,7 +450,7 @@ export function CalculationForm() {
       {caseType === 'opening' ? (
         <FormSection
           title="Геометрия отверстия"
-          helperText="Черновая геометрия отверстия. Отверстие используется для вычитания по касательным и требует проверки/доказательств."
+          helperText="Отверстие учитывается рядом с колонной."
         >
           <NumberField
             label="Ширина отверстия по X"
@@ -548,7 +484,7 @@ export function CalculationForm() {
       {caseType === 'wall-corner' ? (
         <FormSection
           title="Геометрия угла стены"
-          helperText="Черновой ввод геометрии угла стены. Проверенные формулы продавливания стен по СП 63 не заявляются."
+          helperText="Параметры угла стены."
         >
           <NumberField
             label="Длина стены по X"
@@ -599,6 +535,7 @@ export function CalculationForm() {
 
       </div>
       <aside className="grid content-start gap-3 lg:min-h-0 lg:overflow-y-auto lg:pr-1 lg:[scrollbar-width:thin]">
+      <CasePreview caseType={caseType} momentXKnM={momentXKnM} momentYKnM={momentYKnM} />
       <div className="grid grid-cols-2 gap-2">
         <Button
           className="col-span-2 h-10 rounded-lg"
@@ -692,4 +629,90 @@ export function CalculationForm() {
 
 function getDefaultValues(): PunchingShearInput {
   return structuredClone(defaultCalculationDraft)
+}
+
+function calculateBarCountAswMm2(diameterMm?: number, barCount?: number) {
+  if (
+    typeof diameterMm !== 'number' ||
+    typeof barCount !== 'number' ||
+    !Number.isFinite(diameterMm) ||
+    !Number.isFinite(barCount)
+  ) {
+    return undefined
+  }
+
+  return barCount * Math.PI * diameterMm ** 2 / 4
+}
+
+function CasePreview({
+  caseType,
+  momentXKnM,
+  momentYKnM,
+}: {
+  caseType: PunchingShearCaseType
+  momentXKnM?: number
+  momentYKnM?: number
+}) {
+  const titleByCase: Record<PunchingShearCaseType, string> = {
+    center: 'Центральная колонна',
+    edge: 'Колонна у края',
+    corner: 'Колонна в углу',
+    opening: 'Колонна с отверстием',
+    round: 'Круглая колонна',
+    'wall-end': 'Конец стены',
+    'wall-corner': 'Угол стены',
+  }
+  const hasMx = typeof momentXKnM === 'number' && momentXKnM > 0
+  const hasMy = typeof momentYKnM === 'number' && momentYKnM > 0
+
+  return (
+    <Card className="rounded-lg border border-slate-200 bg-white shadow-sm">
+      <CardContent className="grid gap-2 p-3">
+        <div className="flex items-center justify-between gap-2">
+          <p className="text-sm font-semibold text-slate-900">{titleByCase[caseType]}</p>
+          <p className="text-xs font-medium text-slate-500">схема</p>
+        </div>
+        <svg
+          className="h-auto w-full rounded border border-slate-200 bg-slate-50"
+          role="img"
+          viewBox="0 0 260 170"
+          aria-label={`Схема: ${titleByCase[caseType]}`}
+        >
+          <defs>
+            <marker id="preview-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor" />
+            </marker>
+          </defs>
+          <rect x="20" y="18" width="220" height="128" fill="#fff" stroke="#cbd5e1" strokeWidth="2" />
+          {caseType === 'edge' || caseType === 'corner' ? (
+            <rect x="20" y="18" width={caseType === 'corner' ? 92 : 32} height={caseType === 'corner' ? 52 : 128} fill="#e2e8f0" />
+          ) : null}
+          {caseType === 'wall-end' ? (
+            <rect x="68" y="58" width="112" height="26" fill="#1e293b" rx="2" />
+          ) : caseType === 'wall-corner' ? (
+            <path d="M 70 48 H 178 V 74 H 96 V 122 H 70 Z" fill="#1e293b" />
+          ) : caseType === 'round' ? (
+            <circle cx={caseType === 'round' ? 112 : 104} cy="82" r="23" fill="#1e293b" />
+          ) : (
+            <rect x="88" y="58" width="48" height="48" fill="#1e293b" rx="2" />
+          )}
+          {caseType === 'opening' ? (
+            <rect x="166" y="64" width="34" height="34" fill="#fff" stroke="#dc2626" strokeWidth="3" />
+          ) : null}
+          <rect x="70" y="40" width="84" height="84" fill="none" stroke="#059669" strokeWidth="3" strokeDasharray="7 5" />
+          <g color={hasMx ? '#7c3aed' : '#94a3b8'} stroke="currentColor" fill="currentColor">
+            <path d="M 58 138 C 88 154, 136 154, 166 138" fill="none" strokeWidth="3" markerEnd="url(#preview-arrow)" />
+            <text x="112" y="160" textAnchor="middle" fontSize="13" fontWeight="700">Mx</text>
+          </g>
+          <g color={hasMy ? '#7c3aed' : '#94a3b8'} stroke="currentColor" fill="currentColor">
+            <path d="M 204 44 C 224 70, 224 104, 204 130" fill="none" strokeWidth="3" markerEnd="url(#preview-arrow)" />
+            <text x="224" y="90" textAnchor="middle" fontSize="13" fontWeight="700">My</text>
+          </g>
+          <text x="84" y="36" fontSize="11" fill="#047857">контур</text>
+          {caseType === 'edge' ? <text x="26" y="92" fontSize="11" fill="#475569" transform="rotate(-90 26 92)">край</text> : null}
+          {caseType === 'corner' ? <text x="28" y="34" fontSize="11" fill="#475569">угол</text> : null}
+        </svg>
+      </CardContent>
+    </Card>
+  )
 }
