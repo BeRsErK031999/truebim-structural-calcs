@@ -2,9 +2,13 @@
 .gitignore
 node_modules
 dist
+!dist
+!dist/**
 coverage
 *.log
 *.tar
+*.tar.gz
+*.tgz
 .env
 .env.local
 .env.*.local
