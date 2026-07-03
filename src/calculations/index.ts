@@ -11,3 +11,4 @@ export const emptyCalculationResult: CalculationResult = {
 }
 
 export * from './punching-shear'
+export * from './wall-end-openings'

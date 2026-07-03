@@ -18,6 +18,7 @@ import { Separator } from '@/shared/ui/separator'
 import type { CalculationSection } from '@/types/navigation'
 
 const sections: CalculationSection[] = [
+  { title: 'Торец стены с отверстиями', path: '/wall-end-openings', icon: DraftingCompass, status: 'active' },
   { title: 'Продавливание', path: '/', icon: DraftingCompass, status: 'active' },
   { title: 'Портал инженера', path: '/engineer', icon: ClipboardCheck, status: 'active' },
   { title: 'Пилот', path: '/pilot', icon: ListChecks, status: 'active' },

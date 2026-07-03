@@ -9,6 +9,7 @@ import { pilotRoute } from '@/pages/pilot/pilotContent'
 import { ReleaseEvidencePage } from '@/pages/release-evidence/ReleaseEvidencePage'
 import { EngineeringReviewPage } from '@/pages/review/EngineeringReviewPage'
 import { ValidationSessionPage } from '@/pages/validation-session/ValidationSessionPage'
+import { WallEndOpeningsPage } from '@/pages/wall-end-openings/WallEndOpeningsPage'
 import { AppLayout } from '@/widgets/layout/AppLayout'
 
 export function App() {
@@ -19,6 +20,7 @@ export function App() {
           <Route index element={<HomePage />} />
           <Route path="engineer" element={<EngineerPortalPage />} />
           <Route path="engineer-portal" element={<EngineerPortalPage />} />
+          <Route path="wall-end-openings" element={<WallEndOpeningsPage />} />
           <Route path={pilotRoute.slice(1)} element={<PilotPage />} />
           <Route path="review" element={<EngineeringReviewPage />} />
           <Route path="validation-session" element={<ValidationSessionPage />} />
