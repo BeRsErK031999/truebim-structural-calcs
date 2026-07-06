@@ -221,7 +221,8 @@ case "$DEPLOY_MODE" in
     fi
 
     echo "==> Building ${PROJECT_NAME}"
-    VITE_APP_VERSION="$PACKAGE_VERSION" \
+    MSYS_NO_PATHCONV=1 \
+      VITE_APP_VERSION="$PACKAGE_VERSION" \
       VITE_GIT_COMMIT="$GIT_COMMIT" \
       VITE_BUILD_TIME="$BUILD_TIME" \
       VITE_APP_ENV=production \
