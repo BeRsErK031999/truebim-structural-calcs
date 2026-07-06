@@ -12,7 +12,7 @@ export function WallEndOpeningsPreview({ result }: WallEndOpeningsPreviewProps) 
   const gridLines = buildGridLines(plot.bounds)
 
   return (
-    <div className="grid gap-3 rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+    <div className="grid content-start gap-3 rounded-lg border border-slate-200 bg-white p-4 shadow-sm xl:max-h-full xl:self-start">
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div>
           <h2 className="text-base font-semibold text-slate-950">Контур продавливания</h2>
@@ -25,7 +25,7 @@ export function WallEndOpeningsPreview({ result }: WallEndOpeningsPreviewProps) 
         </span>
       </div>
 
-      <div className="aspect-[4/3] min-h-[320px] overflow-hidden rounded-lg border border-slate-200 bg-slate-50">
+      <div className="h-[clamp(300px,40vh,440px)] overflow-hidden rounded-lg border border-slate-200 bg-slate-50">
         <svg
           aria-label="Контур продавливания торца стены"
           className="h-full w-full"

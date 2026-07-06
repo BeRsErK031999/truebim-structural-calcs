@@ -8,7 +8,7 @@ export const wallEndOpeningsRoute = '/wall-end-openings'
 export function WallEndOpeningsPage() {
   return (
     <motion.div
-      className="grid gap-4"
+      className="grid min-h-0 gap-4"
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.35, ease: 'easeOut' }}

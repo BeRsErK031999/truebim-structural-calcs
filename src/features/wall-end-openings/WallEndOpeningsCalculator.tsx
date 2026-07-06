@@ -113,10 +113,10 @@ export function WallEndOpeningsCalculator() {
   }
 
   return (
-    <div className="grid gap-4 xl:grid-cols-[minmax(260px,0.8fr)_minmax(420px,1.1fr)_minmax(420px,1fr)]">
+    <div className="grid min-h-0 items-start gap-4 xl:h-[calc(100vh-11.25rem)] xl:grid-cols-[minmax(210px,0.75fr)_minmax(380px,1.15fr)_minmax(300px,0.85fr)] xl:overflow-hidden">
       <ResultsPanel result={result} />
 
-      <div className="grid gap-4">
+      <div className="grid min-h-0 gap-4 xl:max-h-full xl:overflow-y-auto xl:pr-1">
         <section className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
@@ -138,6 +138,7 @@ export function WallEndOpeningsCalculator() {
           <div className="mt-4 grid gap-4">
             <FieldGroup title="Схема и плита">
               <SelectField
+                className="md:col-span-2"
                 label="Расчетная схема"
                 value={input.scheme}
                 onChange={(event) =>
@@ -146,6 +147,7 @@ export function WallEndOpeningsCalculator() {
                 options={Object.entries(schemeLabels).map(([value, label]) => ({ value, label }))}
               />
               <CheckboxField
+                className="md:col-span-2"
                 checked={input.splitAdditionalMoment}
                 label="Делить дополнительный момент от Fi пополам"
                 onChange={(checked) =>
@@ -322,7 +324,7 @@ export function WallEndOpeningsCalculator() {
 
 function ResultsPanel({ result }: { result: WallEndOpeningsResult }) {
   return (
-    <aside className="grid content-start gap-4">
+    <aside className="grid min-h-0 content-start gap-4 xl:max-h-full xl:overflow-y-auto xl:pr-1">
       <section className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
         <div className="flex flex-wrap items-start justify-between gap-2">
           <div>
@@ -490,17 +492,19 @@ function SelectField({
   value,
   options,
   onChange,
+  className = '',
 }: {
   label: string
   value: string
   options: Array<{ value: string; label: string }>
   onChange: (event: ChangeEvent<HTMLSelectElement>) => void
+  className?: string
 }) {
   return (
-    <label className="grid gap-2">
+    <label className={`grid min-w-0 gap-2 ${className}`}>
       <span className="text-sm font-semibold text-slate-700">{label}</span>
       <select
-        className="h-10 rounded-lg border border-input bg-white px-2.5 py-1 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+        className="h-10 min-w-0 rounded-lg border border-input bg-white px-2.5 py-1 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
         value={value}
         onChange={onChange}
       >
@@ -518,20 +522,22 @@ function CheckboxField({
   checked,
   label,
   onChange,
+  className = '',
 }: {
   checked: boolean
   label: string
   onChange: (checked: boolean) => void
+  className?: string
 }) {
   return (
-    <label className="flex min-h-10 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700">
+    <label className={`flex min-h-10 min-w-0 items-start gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-semibold leading-5 text-slate-700 ${className}`}>
       <input
         checked={checked}
-        className="size-4 accent-slate-950"
+        className="mt-0.5 size-4 shrink-0 accent-slate-950"
         type="checkbox"
         onChange={(event) => onChange(event.target.checked)}
       />
-      {label}
+      <span className="min-w-0">{label}</span>
     </label>
   )
 }
